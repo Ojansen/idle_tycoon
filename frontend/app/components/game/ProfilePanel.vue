@@ -152,6 +152,11 @@ function restoreAccount() {
         </div>
       </div>
     </div>
+    <!-- Multiplier breakdown -->
+    <div class="rounded-lg bg-white/[0.03] border border-white/10 p-5">
+      <GameMultiplierBreakdown />
+    </div>
+
     <!-- Achievements -->
     <div class="rounded-lg bg-white/[0.03] border border-white/10 p-5">
       <GameAchievementGrid />

@@ -14,6 +14,11 @@ const emit = defineEmits<{
 }>()
 
 const { formatNumber } = useNumberFormat()
+const { getBuildingMultiplier } = useGameState()
+
+const milestone = computed(() => getBuildingMultiplier(props.building.id))
+const effectiveOutput = computed(() => props.building.baseOutput * milestone.value)
+const nextMilestoneAt = computed(() => (Math.floor(props.owned / 25) + 1) * 25)
 </script>
 
 <template>
@@ -27,10 +32,12 @@ const { formatNumber } = useNumberFormat()
       <div class="flex items-center gap-2">
         <span class="text-sm font-medium text-white truncate">{{ props.building.name }}</span>
         <UBadge size="xs" color="neutral" variant="subtle">{{ props.owned }}</UBadge>
+        <UBadge v-if="milestone > 1" size="xs" color="success" variant="subtle">×{{ milestone }}</UBadge>
       </div>
       <div class="text-xs text-zinc-400">
-        +{{ formatNumber(props.building.baseOutput) }}
+        +{{ formatNumber(effectiveOutput) }}
         {{ props.building.resource === 'energy' ? 'TW/s each' : props.building.resource === 'autoclick' ? 'clicks/s each' : '₢/s each' }}
+        <span v-if="props.owned > 0" class="text-zinc-600 ml-1">· next ×{{ milestone * 2 }} at {{ nextMilestoneAt }}</span>
       </div>
     </div>
 

@@ -12,9 +12,14 @@ const progress = computed(() => {
   if (!next) return 100
   const current = currentLevel.value
   const eps = energyPerSecond.value
-  const range = next.energyPerSecond - current.energyPerSecond
+  if (eps <= current.energyPerSecond) return 0
+  // Logarithmic progress — Kardashev levels are exponential so linear bars appear stuck
+  const logCurrent = Math.log10(Math.max(1, current.energyPerSecond))
+  const logNext = Math.log10(next.energyPerSecond)
+  const logEps = Math.log10(eps)
+  const range = logNext - logCurrent
   if (range <= 0) return 100
-  return Math.min(100, ((eps - current.energyPerSecond) / range) * 100)
+  return Math.min(100, ((logEps - logCurrent) / range) * 100)
 })
 </script>
 

@@ -41,36 +41,36 @@ export function useGameActions() {
     if (!canPrestige()) return false
 
     const influenceGain = getPrestigeInfluenceGain()
-    const kept = {
+    const now = Date.now()
+
+    // Atomic replacement — ensures Vue detects the change and all computeds recompute
+    state.value = {
+      setupComplete: state.value.setupComplete,
+      companyName: state.value.companyName,
+      companyDescription: state.value.companyDescription,
+      companyTraits: [...state.value.companyTraits],
+      // Reset
+      credits: 0,
+      energy: 0,
+      totalCreditsEarned: 0,
+      totalEnergyEarned: 0,
+      totalClicks: 0,
+      clickPower: 1,
+      buildings: {},
+      clickUpgradesBought: [],
+      stocks: {},
+      // Kept
       influence: state.value.influence + influenceGain,
       prestigeCount: state.value.prestigeCount + 1,
       prestigeUpgradesBought: [...state.value.prestigeUpgradesBought],
       prestigeRepeatables: { ...state.value.prestigeRepeatables },
       kardashevHighWaterMark: state.value.kardashevHighWaterMark,
       ascensionPerks: [...state.value.ascensionPerks],
-      achievements: [...state.value.achievements]
+      achievements: [...state.value.achievements],
+      casinoStats: { ...state.value.casinoStats },
+      lastSaveTimestamp: now,
+      createdAt: state.value.createdAt
     }
-
-    // Reset state
-    const now = Date.now()
-    state.value.credits = 0
-    state.value.energy = 0
-    state.value.totalCreditsEarned = 0
-    state.value.totalEnergyEarned = 0
-    state.value.totalClicks = 0
-    state.value.clickPower = 1
-    state.value.buildings = {}
-    state.value.clickUpgradesBought = []
-    state.value.lastSaveTimestamp = now
-
-    // Restore kept values
-    state.value.influence = kept.influence
-    state.value.prestigeCount = kept.prestigeCount
-    state.value.prestigeUpgradesBought = kept.prestigeUpgradesBought
-    state.value.prestigeRepeatables = kept.prestigeRepeatables
-    state.value.kardashevHighWaterMark = kept.kardashevHighWaterMark
-    state.value.ascensionPerks = kept.ascensionPerks
-    state.value.achievements = kept.achievements
 
     // Apply quick start if purchased
     applyQuickStart()

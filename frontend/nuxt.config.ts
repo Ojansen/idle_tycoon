@@ -11,6 +11,10 @@ export default defineNuxtConfig({
     'nuxt-toast'
   ],
 
+  buildModules: [
+    '@nuxtjs/pwa',
+  ],
+
   devtools: {
     enabled: true
   },

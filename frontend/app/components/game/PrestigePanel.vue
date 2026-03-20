@@ -139,6 +139,7 @@ function handlePrestige() {
           <li>• Energy ({{ formatNumber(state.energy) }} TW)</li>
           <li>• All buildings</li>
           <li>• Click upgrades (click power resets to 1)</li>
+          <li>• Stock portfolio</li>
         </ul>
       </div>
       <div class="rounded-lg bg-green-950/20 border border-green-500/10 p-4">

@@ -73,13 +73,18 @@ export function useGameState() {
     return getAscMult(stat)
   }
 
+  function getBuildingMultiplier(buildingId: string): number {
+    const owned = state.value.buildings[buildingId] || 0
+    return Math.pow(2, Math.floor(owned / 25))
+  }
+
   // Raw pop clicks/sec (before trait multiplier, used for click boost)
   const rawPopClicks = computed(() => {
     let clicks = 0
     for (const b of buildings) {
       if (b.resource !== 'autoclick') continue
       const owned = state.value.buildings[b.id] || 0
-      clicks += owned * b.baseOutput
+      clicks += owned * b.baseOutput * getBuildingMultiplier(b.id)
     }
     return clicks
   })
@@ -95,8 +100,8 @@ export function useGameState() {
     const ascension = getAscensionMultiplier('clickMultiplier')
     const repeatable = getRepeatableMultiplier('clickMultiplier')
     const baseClick = (state.value.clickPower ?? 1) * prestige * trait * ascension * repeatable
-    // Pops multiply each click: clickPower * (1 + popClicks/s)
-    const popBoost = 1 + autoclickPerSecond.value
+    // Pops boost clicks with diminishing returns (sqrt scale)
+    const popBoost = 1 + Math.sqrt(autoclickPerSecond.value)
     return Math.floor(baseClick * popBoost)
   })
 
@@ -117,7 +122,7 @@ export function useGameState() {
     for (const b of buildings) {
       if (b.resource !== 'credits') continue
       const owned = state.value.buildings[b.id] || 0
-      base += owned * b.baseOutput
+      base += owned * b.baseOutput * getBuildingMultiplier(b.id)
     }
     // Pops generate passive credits at their flat rate
     base += autoclickPerSecond.value
@@ -135,7 +140,7 @@ export function useGameState() {
     for (const b of buildings) {
       if (b.resource !== 'energy') continue
       const owned = state.value.buildings[b.id] || 0
-      base += owned * b.baseOutput
+      base += owned * b.baseOutput * getBuildingMultiplier(b.id)
     }
     const prestige = getPrestigeMultiplier('energyMultiplier')
     const trait = getTraitMultiplier('energyMultiplier')
@@ -212,8 +217,10 @@ export function useGameState() {
     kardashevLevel,
     nextKardashevLevel,
     effectiveClickPower,
+    getPrestigeMultiplier,
     getTraitMultiplier,
     getRepeatableMultiplier,
+    getBuildingMultiplier,
     getBuildingCost,
     tick,
     loadState
