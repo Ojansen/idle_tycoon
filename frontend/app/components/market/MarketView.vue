@@ -6,6 +6,9 @@ const { formatNumber } = useNumberFormat()
 
 <template>
   <div class="space-y-4">
+    <!-- Resource Exchange -->
+    <MarketResourceExchangePanel />
+
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">

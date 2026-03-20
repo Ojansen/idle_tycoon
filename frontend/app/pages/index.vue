@@ -2,12 +2,14 @@
 const { state, tick } = useGameState()
 const { loadGame, startAutoSave } = useGamePersistence()
 const { simulatePrices } = useStockMarket()
+const { tickExchange } = useResourceExchange()
 const { checkAchievements, suppressExistingToasts } = useAchievements()
 
-// Game tick - 100ms (includes price simulation)
+// Game tick - 100ms (includes price simulation + exchange decay)
 useIntervalFn(() => {
   tick()
   simulatePrices()
+  tickExchange(0.1)
 }, 100)
 
 // Achievement check - every 1s
