@@ -68,6 +68,9 @@ export function useGameActions() {
       ascensionPerks: [...state.value.ascensionPerks],
       achievements: [...state.value.achievements],
       casinoStats: { ...state.value.casinoStats },
+      completedResearch: [...state.value.completedResearch],
+      activeResearch: state.value.activeResearch ? { ...state.value.activeResearch } : null,
+      megastructures: JSON.parse(JSON.stringify(state.value.megastructures)),
       lastSaveTimestamp: now,
       createdAt: state.value.createdAt
     }

@@ -39,6 +39,15 @@ const hasPendingPerks = computed(() => pendingAscensionLevels.value.length > 0)
         </UButton>
         <UButton
           size="xs"
+          :color="activeTab === 'research' ? 'primary' : 'neutral'"
+          :variant="activeTab === 'research' ? 'solid' : 'ghost'"
+          @click="activeTab = 'research'"
+        >
+          <UIcon name="i-lucide-flask-conical" class="mr-1" />
+          Research
+        </UButton>
+        <UButton
+          size="xs"
           :color="activeTab === 'market' ? 'primary' : 'neutral'"
           :variant="activeTab === 'market' ? 'solid' : 'ghost'"
           @click="activeTab = 'market'"

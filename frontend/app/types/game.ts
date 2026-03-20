@@ -85,6 +85,53 @@ export interface CasinoStats {
   gamesPlayed: number
 }
 
+export type ResearchBranch = 'industry' | 'energy' | 'society' | 'exotic'
+
+export type ResearchEffect =
+  | { type: 'multiplier'; stat: TraitStat; value: number }
+  | { type: 'unlockMegastructure'; megastructureId: string }
+  | { type: 'researchSpeed'; value: number }
+
+export interface ResearchDefinition {
+  id: string
+  name: string
+  description: string
+  icon: string
+  branch: ResearchBranch
+  tier: number
+  energyCost: number
+  researchTime: number
+  prerequisites: string[]
+  effects: ResearchEffect[]
+  unlockKardashev: number
+}
+
+export interface MegastructureDefinition {
+  id: string
+  name: string
+  description: string
+  icon: string
+  stages: number
+  creditsCostPerStage: number
+  energyCostPerStage: number
+  buildTimePerStage: number
+  requiredResearch: string[]
+  unlockKardashev: number
+  effects: ResearchEffect[]
+}
+
+export interface ResearchProgress {
+  techId: string
+  elapsed: number
+  energySpent: number
+}
+
+export interface MegastructureProgress {
+  currentStage: number
+  stageElapsed: number
+  completed: boolean
+}
+
 export interface GameState {
   setupComplete: boolean
   companyName: string
@@ -107,6 +154,9 @@ export interface GameState {
   casinoStats: CasinoStats
   ascensionPerks: string[]
   achievements: string[]
+  completedResearch: string[]
+  activeResearch: ResearchProgress | null
+  megastructures: Record<string, MegastructureProgress>
   lastSaveTimestamp: number
   createdAt: number
 }

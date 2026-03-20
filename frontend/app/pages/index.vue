@@ -87,6 +87,11 @@ function onSetupComplete() {
           <GamePrestigePanel />
         </div>
 
+        <!-- Research tab -->
+        <div v-else-if="activeTab === 'research'">
+          <ResearchView />
+        </div>
+
         <!-- Market tab -->
         <div v-else-if="activeTab === 'market'">
           <MarketView />

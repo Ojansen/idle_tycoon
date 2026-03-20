@@ -814,20 +814,6 @@ const prestigeUpgrades: PrestigeUpgradeDefinition[] = [
     cost: 10,
     effect: { type: 'quickStart', buildings: { mining_drone: 5, solar_array: 5 } }
   },
-  {
-    id: 'deep_space_network',
-    name: 'Deep Space Network',
-    description: 'Unlock Type IV buildings',
-    cost: 15,
-    effect: { type: 'unlockKardashev', level: 4 }
-  },
-  {
-    id: 'cosmic_insight',
-    name: 'Cosmic Insight',
-    description: 'Unlock Type V buildings',
-    cost: 25,
-    effect: { type: 'unlockKardashev', level: 5 }
-  }
 ]
 
 const repeatablePrestigeUpgrades: RepeatablePrestigeUpgrade[] = [

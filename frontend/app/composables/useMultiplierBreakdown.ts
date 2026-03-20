@@ -25,6 +25,7 @@ const statMeta: { stat: TraitStat; label: string; icon: string; hasPrestige: boo
 export function useMultiplierBreakdown() {
   const { getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
   const { getAscensionMultiplier } = useAscensionPerks()
+  const { getResearchMultiplier } = useResearchActions()
 
   const breakdowns = computed<MultiplierBreakdown[]>(() => {
     const results: MultiplierBreakdown[] = []
@@ -45,6 +46,9 @@ export function useMultiplierBreakdown() {
 
       const repeatable = getRepeatableMultiplier(meta.stat)
       if (repeatable !== 1) sources.push({ label: 'Repeatable', value: repeatable })
+
+      const research = getResearchMultiplier(meta.stat)
+      if (research !== 1) sources.push({ label: 'Research', value: research })
 
       if (sources.length === 0) continue
 

@@ -24,6 +24,9 @@ function createDefaultState(): GameState {
     casinoStats: { totalWagered: 0, totalWon: 0, gamesPlayed: 0 },
     ascensionPerks: [],
     achievements: [],
+    completedResearch: [],
+    activeResearch: null,
+    megastructures: {},
     lastSaveTimestamp: now,
     createdAt: now
   }
@@ -73,6 +76,11 @@ export function useGameState() {
     return getAscMult(stat)
   }
 
+  function getResearchMult(stat: TraitStat): number {
+    const { getResearchMultiplier } = useResearchActions()
+    return getResearchMultiplier(stat)
+  }
+
   function getBuildingMultiplier(buildingId: string): number {
     const owned = state.value.buildings[buildingId] || 0
     return Math.pow(2, Math.floor(owned / 25))
@@ -90,7 +98,7 @@ export function useGameState() {
   })
 
   const autoclickPerSecond = computed(() => {
-    return rawPopClicks.value * getTraitMultiplier('popMultiplier') * getAscensionMultiplier('popMultiplier') * getRepeatableMultiplier('popMultiplier')
+    return rawPopClicks.value * getTraitMultiplier('popMultiplier') * getAscensionMultiplier('popMultiplier') * getRepeatableMultiplier('popMultiplier') * getResearchMult('popMultiplier')
   })
 
   const effectiveClickPower = computed(() => {
@@ -99,7 +107,8 @@ export function useGameState() {
     const trait = getTraitMultiplier('clickMultiplier')
     const ascension = getAscensionMultiplier('clickMultiplier')
     const repeatable = getRepeatableMultiplier('clickMultiplier')
-    const baseClick = (state.value.clickPower ?? 1) * prestige * trait * ascension * repeatable
+    const research = getResearchMult('clickMultiplier')
+    const baseClick = (state.value.clickPower ?? 1) * prestige * trait * ascension * repeatable * research
     // Pops boost clicks with diminishing returns (sqrt scale)
     const popBoost = 1 + Math.sqrt(autoclickPerSecond.value)
     return Math.floor(baseClick * popBoost)
@@ -132,7 +141,8 @@ export function useGameState() {
     const trait = getTraitMultiplier('creditsMultiplier')
     const ascension = getAscensionMultiplier('creditsMultiplier')
     const repeatable = getRepeatableMultiplier('creditsMultiplier')
-    return base * prestige * trait * ascension * repeatable
+    const research = getResearchMult('creditsMultiplier')
+    return base * prestige * trait * ascension * repeatable * research
   })
 
   const energyPerSecond = computed(() => {
@@ -146,7 +156,8 @@ export function useGameState() {
     const trait = getTraitMultiplier('energyMultiplier')
     const ascension = getAscensionMultiplier('energyMultiplier')
     const repeatable = getRepeatableMultiplier('energyMultiplier')
-    return base * prestige * trait * ascension * repeatable
+    const research = getResearchMult('energyMultiplier')
+    return base * prestige * trait * ascension * repeatable * research
   })
 
   const kardashevLevel = computed(() => {
@@ -170,9 +181,10 @@ export function useGameState() {
     const traitMult = getTraitMultiplier('buildingCostMultiplier')
     const ascensionMult = getAscensionMultiplier('buildingCostMultiplier')
     const repeatableMult = getRepeatableMultiplier('buildingCostMultiplier')
+    const researchMult = getResearchMult('buildingCostMultiplier')
     let total = 0
     for (let i = 0; i < quantity; i++) {
-      total += Math.floor(def.baseCost * Math.pow(def.costMultiplier, owned + i) * traitMult * ascensionMult * repeatableMult)
+      total += Math.floor(def.baseCost * Math.pow(def.costMultiplier, owned + i) * traitMult * ascensionMult * repeatableMult * researchMult)
     }
     return total
   }
@@ -186,6 +198,11 @@ export function useGameState() {
     state.value.totalCreditsEarned += creditGain
     state.value.energy += energyGain
     state.value.totalEnergyEarned += energyGain
+
+    // Research & megastructure progress
+    const { tickResearch, tickMegastructures } = useResearchActions()
+    tickResearch(dt)
+    tickMegastructures(dt)
 
     if (kardashevLevel.value > state.value.kardashevHighWaterMark) {
       state.value.kardashevHighWaterMark = kardashevLevel.value
@@ -205,6 +222,9 @@ export function useGameState() {
     saved.companyTraits ??= []
     saved.ascensionPerks ??= []
     saved.achievements ??= []
+    saved.completedResearch ??= []
+    saved.activeResearch ??= null
+    saved.megastructures ??= {}
     state.value = saved
   }
 

@@ -1,6 +1,9 @@
 <script setup lang="ts">
 const { state, creditsPerSecond, energyPerSecond } = useGameState()
+const { energyDrainPerSecond, isResearching } = useResearchActions()
 const { formatNumber } = useNumberFormat()
+
+const netEnergy = computed(() => energyPerSecond.value - energyDrainPerSecond.value)
 </script>
 
 <template>
@@ -18,8 +21,13 @@ const { formatNumber } = useNumberFormat()
       <div class="text-xs text-zinc-400">Energy</div>
     </div>
     <div class="rounded-lg bg-white/5 px-3 py-2 text-center">
-      <div class="text-lg font-bold text-amber-300">{{ formatNumber(energyPerSecond) }} TW/s</div>
-      <div class="text-xs text-zinc-400">Energy/sec</div>
+      <div class="text-lg font-bold" :class="isResearching && netEnergy < 0 ? 'text-red-400' : 'text-amber-300'">
+        {{ formatNumber(energyPerSecond) }} TW/s
+      </div>
+      <div class="text-xs text-zinc-400">
+        Energy/sec
+        <span v-if="isResearching" class="text-zinc-500 ml-0.5">(net: {{ formatNumber(netEnergy) }})</span>
+      </div>
     </div>
   </div>
 </template>
