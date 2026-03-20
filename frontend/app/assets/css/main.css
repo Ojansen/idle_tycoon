@@ -1,0 +1,94 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme static {
+  --font-sans: 'Public Sans', sans-serif;
+}
+
+/* Starfield background */
+body {
+  background-color: #09090b;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 30% 65%, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1px 1px at 50% 10%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 70% 40%, rgba(255, 255, 255, 0.2), transparent),
+    radial-gradient(1px 1px at 90% 80%, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 15% 85%, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1px 1px at 45% 50%, rgba(255, 255, 255, 0.2), transparent),
+    radial-gradient(1px 1px at 85% 15%, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(1.5px 1.5px at 25% 35%, rgba(167, 139, 250, 0.4), transparent),
+    radial-gradient(1.5px 1.5px at 75% 55%, rgba(139, 92, 246, 0.3), transparent);
+  background-size: 200px 200px;
+}
+
+/* Click pulse animation */
+@keyframes click-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+.click-pulse {
+  animation: click-pulse 0.15s ease-out;
+}
+
+/* Flyup animation */
+@keyframes flyup {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-60px);
+  }
+}
+
+.flyup {
+  animation: flyup 0.8s ease-out forwards;
+  pointer-events: none;
+}
+
+/* iziToast space theme overrides */
+.iziToast-wrapper {
+  z-index: 9999 !important;
+}
+
+.iziToast {
+  border: 1px solid rgba(139, 92, 246, 0.25) !important;
+  border-radius: 0.75rem !important;
+  backdrop-filter: blur(16px) !important;
+  box-shadow:
+    0 0 20px rgba(139, 92, 246, 0.1),
+    0 8px 32px rgba(0, 0, 0, 0.4) !important;
+  font-family: 'Public Sans', sans-serif !important;
+  min-width: 280px !important;
+}
+
+.iziToast > .iziToast-body .iziToast-title {
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  letter-spacing: 0.025em !important;
+  text-transform: uppercase !important;
+}
+
+.iziToast > .iziToast-body .iziToast-message {
+  font-size: 12px !important;
+  margin-top: 2px !important;
+}
+
+.iziToast > .iziToast-progressbar > div {
+  border-radius: 0 0 0.75rem 0.75rem !important;
+}
+
+.iziToast.iziToast-color-green {
+  border-color: rgba(34, 197, 94, 0.3) !important;
+  box-shadow:
+    0 0 20px rgba(34, 197, 94, 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+.iziToast.iziToast-color-green > .iziToast-progressbar > div {
+  background: rgb(34, 197, 94) !important;
+}

@@ -1,0 +1,133 @@
+import type { GameState } from '~/types/game'
+
+export interface AchievementDefinition {
+  id: string
+  name: string
+  description: string
+  icon: string
+  category: string
+  check: (state: GameState, extra: AchievementContext) => boolean
+}
+
+interface AchievementContext {
+  energyPerSecond: number
+  portfolioValue: number
+}
+
+const achievements: AchievementDefinition[] = [
+  // Clicks
+  { id: 'first_click', name: 'First Click', description: 'Make your first click', icon: 'i-lucide-mouse-pointer-click', category: 'Clicks', check: s => s.totalClicks >= 1 },
+  { id: 'click_100', name: 'Dedicated Clicker', description: 'Reach 100 clicks', icon: 'i-lucide-mouse-pointer-click', category: 'Clicks', check: s => s.totalClicks >= 100 },
+  { id: 'click_10000', name: 'Carpal Tunnel', description: 'Reach 10,000 clicks', icon: 'i-lucide-mouse-pointer-click', category: 'Clicks', check: s => s.totalClicks >= 10000 },
+
+  // Credits
+  { id: 'credits_10k', name: 'Getting Started', description: 'Earn 10K total credits', icon: 'i-lucide-banknote', category: 'Credits', check: s => s.totalCreditsEarned >= 10000 },
+  { id: 'credits_1m', name: 'Millionaire', description: 'Earn 1M total credits', icon: 'i-lucide-banknote', category: 'Credits', check: s => s.totalCreditsEarned >= 1e6 },
+  { id: 'credits_1b', name: 'Billionaire', description: 'Earn 1B total credits', icon: 'i-lucide-banknote', category: 'Credits', check: s => s.totalCreditsEarned >= 1e9 },
+  { id: 'credits_1t', name: 'Trillionaire', description: 'Earn 1T total credits', icon: 'i-lucide-banknote', category: 'Credits', check: s => s.totalCreditsEarned >= 1e12 },
+
+  // Energy
+  { id: 'energy_10k', name: 'Power On', description: 'Reach 10K TW/s', icon: 'i-lucide-zap', category: 'Energy', check: (_s, ctx) => ctx.energyPerSecond >= 10000 },
+  { id: 'energy_1m', name: 'Stellar Power', description: 'Reach 1M TW/s', icon: 'i-lucide-zap', category: 'Energy', check: (_s, ctx) => ctx.energyPerSecond >= 1e6 },
+
+  // Kardashev
+  { id: 'type_1', name: 'Planetary Civilization', description: 'Reach Type I', icon: 'i-lucide-globe', category: 'Kardashev', check: s => s.kardashevHighWaterMark >= 1 },
+  { id: 'type_2', name: 'Stellar Civilization', description: 'Reach Type II', icon: 'i-lucide-sun', category: 'Kardashev', check: s => s.kardashevHighWaterMark >= 2 },
+  { id: 'type_3', name: 'Galactic Civilization', description: 'Reach Type III', icon: 'i-lucide-orbit', category: 'Kardashev', check: s => s.kardashevHighWaterMark >= 3 },
+
+  // Prestige
+  { id: 'first_prestige', name: 'Fresh Start', description: 'Prestige for the first time', icon: 'i-lucide-refresh-cw', category: 'Prestige', check: s => s.prestigeCount >= 1 },
+  { id: 'prestige_5', name: 'Serial Restructurer', description: 'Prestige 5 times', icon: 'i-lucide-refresh-cw', category: 'Prestige', check: s => s.prestigeCount >= 5 },
+
+  // Casino
+  { id: 'casino_win_big', name: 'High Roller', description: 'Win 100K+ in a single casino game', icon: 'i-lucide-dice-5', category: 'Casino', check: s => s.casinoStats.totalWon >= 100000 },
+  { id: 'casino_100_games', name: 'Gambling Addiction', description: 'Play 100 casino games', icon: 'i-lucide-dice-5', category: 'Casino', check: s => s.casinoStats.gamesPlayed >= 100 },
+
+  // Market
+  {
+    id: 'first_subsidiary',
+    name: 'Hostile Takeover',
+    description: 'Fully acquire a company',
+    icon: 'i-lucide-briefcase',
+    category: 'Market',
+    check: (s) => {
+      for (const shares of Object.values(s.stocks)) {
+        if (shares >= 100) return true
+      }
+      return false
+    }
+  },
+  { id: 'portfolio_1m', name: 'Investor', description: 'Portfolio value exceeds 1M', icon: 'i-lucide-trending-up', category: 'Market', check: (_s, ctx) => ctx.portfolioValue >= 1e6 },
+
+  // Buildings
+  {
+    id: 'building_100',
+    name: 'Empire Builder',
+    description: 'Own 100+ of any single building',
+    icon: 'i-lucide-building-2',
+    category: 'Buildings',
+    check: (s) => {
+      for (const count of Object.values(s.buildings)) {
+        if (count >= 100) return true
+      }
+      return false
+    }
+  },
+  {
+    id: 'all_type0',
+    name: 'Full Spectrum',
+    description: 'Own at least 1 of every Type 0 building',
+    icon: 'i-lucide-check-circle',
+    category: 'Buildings',
+    check: (s) => {
+      const type0Ids = [
+        'mining_drone', 'ore_refinery', 'cargo_shuttle', 'orbital_factory', 'space_station',
+        'solar_array', 'wind_turbine_grid', 'geothermal_tap', 'fission_plant', 'orbital_mirror',
+        'corporate_drone'
+      ]
+      return type0Ids.every(id => (s.buildings[id] || 0) >= 1)
+    }
+  }
+]
+
+export function useAchievements() {
+  const { state, energyPerSecond } = useGameState()
+  const { portfolioValue } = useStockMarket()
+  const toast = useToast()
+
+  // Track which achievements we've already toasted this session to avoid re-toasting on load
+  const toastedThisSession = new Set<string>()
+
+  function checkAchievements() {
+    const ctx: AchievementContext = {
+      energyPerSecond: energyPerSecond.value,
+      portfolioValue: portfolioValue.value
+    }
+
+    for (const achievement of achievements) {
+      if (state.value.achievements.includes(achievement.id)) continue
+      if (achievement.check(state.value, ctx)) {
+        state.value.achievements.push(achievement.id)
+        if (!toastedThisSession.has(achievement.id)) {
+          toastedThisSession.add(achievement.id)
+          toast.success({ title: 'Achievement Unlocked!', message: achievement.name })
+        }
+      }
+    }
+  }
+
+  // Mark all currently unlocked achievements as already toasted (for load)
+  function suppressExistingToasts() {
+    for (const id of state.value.achievements) {
+      toastedThisSession.add(id)
+    }
+  }
+
+  const allAchievements = readonly(achievements)
+
+  return {
+    allAchievements,
+    checkAchievements,
+    suppressExistingToasts
+  }
+}
