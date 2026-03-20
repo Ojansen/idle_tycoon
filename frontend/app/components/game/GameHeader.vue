@@ -4,74 +4,59 @@ const { state } = useGameState()
 const activeTab = defineModel<string>('tab', { default: 'empire' })
 const { pendingAscensionLevels } = useAscensionPerks()
 const hasPendingPerks = computed(() => pendingAscensionLevels.value.length > 0)
+
+const mobileMenuOpen = ref(false)
+
+const tabs = [
+  { key: 'empire', label: 'Empire', icon: 'i-lucide-building-2' },
+  { key: 'prestige', label: 'Prestige', icon: 'i-lucide-star' },
+  { key: 'research', label: 'Research', icon: 'i-lucide-flask-conical' },
+  { key: 'market', label: 'Market', icon: 'i-lucide-trending-up' },
+  { key: 'casino', label: 'Casino', icon: 'i-lucide-dices' },
+  { key: 'profile', label: 'Profile', icon: 'i-lucide-user-circle' },
+]
+
+function selectTab(key: string) {
+  activeTab.value = key
+  mobileMenuOpen.value = false
+}
 </script>
 
 <template>
   <header class="flex items-center justify-between px-4 py-3 border-b border-white/10">
     <div class="flex items-center gap-4">
+      <!-- Hamburger button (mobile only) -->
+      <UButton
+        class="md:hidden"
+        size="xs"
+        color="neutral"
+        variant="ghost"
+        @click="mobileMenuOpen = true"
+      >
+        <UIcon name="i-lucide-menu" class="text-lg" />
+      </UButton>
+
       <div class="flex items-center gap-2">
         <UIcon name="i-lucide-hexagon" class="text-2xl text-violet-500" />
         <h1 class="text-xl font-bold text-white tracking-tight">{{ state.companyName || 'MEGACORP' }}</h1>
       </div>
 
-      <!-- Tab navigation -->
-      <div class="flex gap-1 ml-4">
+      <!-- Tab navigation (desktop only) -->
+      <div class="hidden md:flex gap-1 ml-4">
         <UButton
+          v-for="tab in tabs"
+          :key="tab.key"
           size="xs"
-          :color="activeTab === 'empire' ? 'primary' : 'neutral'"
-          :variant="activeTab === 'empire' ? 'solid' : 'ghost'"
-          @click="activeTab = 'empire'"
+          :color="activeTab === tab.key ? 'primary' : 'neutral'"
+          :variant="activeTab === tab.key ? 'solid' : 'ghost'"
+          @click="activeTab = tab.key"
         >
-          <UIcon name="i-lucide-building-2" class="mr-1" />
-          Empire
-        </UButton>
-        <UButton
-          size="xs"
-          :color="activeTab === 'prestige' ? 'primary' : 'neutral'"
-          :variant="activeTab === 'prestige' ? 'solid' : 'ghost'"
-          @click="activeTab = 'prestige'"
-        >
-          <span class="relative">
-            <UIcon name="i-lucide-star" class="mr-1" />
+          <span v-if="tab.key === 'prestige'" class="relative">
+            <UIcon :name="tab.icon" class="mr-1" />
             <span v-if="hasPendingPerks" class="absolute -top-1 -right-1 w-2 h-2 bg-violet-500 rounded-full animate-pulse" />
           </span>
-          Prestige
-        </UButton>
-        <UButton
-          size="xs"
-          :color="activeTab === 'research' ? 'primary' : 'neutral'"
-          :variant="activeTab === 'research' ? 'solid' : 'ghost'"
-          @click="activeTab = 'research'"
-        >
-          <UIcon name="i-lucide-flask-conical" class="mr-1" />
-          Research
-        </UButton>
-        <UButton
-          size="xs"
-          :color="activeTab === 'market' ? 'primary' : 'neutral'"
-          :variant="activeTab === 'market' ? 'solid' : 'ghost'"
-          @click="activeTab = 'market'"
-        >
-          <UIcon name="i-lucide-trending-up" class="mr-1" />
-          Market
-        </UButton>
-        <UButton
-          size="xs"
-          :color="activeTab === 'casino' ? 'primary' : 'neutral'"
-          :variant="activeTab === 'casino' ? 'solid' : 'ghost'"
-          @click="activeTab = 'casino'"
-        >
-          <UIcon name="i-lucide-dices" class="mr-1" />
-          Casino
-        </UButton>
-        <UButton
-          size="xs"
-          :color="activeTab === 'profile' ? 'primary' : 'neutral'"
-          :variant="activeTab === 'profile' ? 'solid' : 'ghost'"
-          @click="activeTab = 'profile'"
-        >
-          <UIcon name="i-lucide-user-circle" class="mr-1" />
-          Profile
+          <UIcon v-else :name="tab.icon" class="mr-1" />
+          {{ tab.label }}
         </UButton>
       </div>
     </div>
@@ -84,4 +69,57 @@ const hasPendingPerks = computed(() => pendingAscensionLevels.value.length > 0)
       <span>Clicks: {{ state.totalClicks }}</span>
     </div>
   </header>
+
+  <!-- Mobile slide-over menu -->
+  <USlideover v-model:open="mobileMenuOpen" side="left" class="md:hidden">
+    <template #content>
+      <div class="flex flex-col h-full bg-zinc-950 p-4">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-2">
+            <UIcon name="i-lucide-hexagon" class="text-2xl text-violet-500" />
+            <span class="text-lg font-bold text-white">{{ state.companyName || 'MEGACORP' }}</span>
+          </div>
+          <UButton
+            size="xs"
+            color="neutral"
+            variant="ghost"
+            @click="mobileMenuOpen = false"
+          >
+            <UIcon name="i-lucide-x" class="text-lg" />
+          </UButton>
+        </div>
+
+        <!-- Nav items -->
+        <nav class="flex flex-col gap-1">
+          <UButton
+            v-for="tab in tabs"
+            :key="tab.key"
+            size="lg"
+            :color="activeTab === tab.key ? 'primary' : 'neutral'"
+            :variant="activeTab === tab.key ? 'solid' : 'ghost'"
+            block
+            class="justify-start"
+            @click="selectTab(tab.key)"
+          >
+            <span v-if="tab.key === 'prestige'" class="relative">
+              <UIcon :name="tab.icon" class="mr-2" />
+              <span v-if="hasPendingPerks" class="absolute -top-1 -right-1 w-2 h-2 bg-violet-500 rounded-full animate-pulse" />
+            </span>
+            <UIcon v-else :name="tab.icon" class="mr-2" />
+            {{ tab.label }}
+          </UButton>
+        </nav>
+
+        <!-- Stats at bottom -->
+        <div class="mt-auto pt-6 border-t border-white/10 text-sm text-zinc-400 space-y-2">
+          <div v-if="state.prestigeCount > 0">
+            <UIcon name="i-lucide-star" class="text-amber-400 align-middle" />
+            {{ state.influence }} Influence
+          </div>
+          <div>Clicks: {{ state.totalClicks }}</div>
+        </div>
+      </div>
+    </template>
+  </USlideover>
 </template>
