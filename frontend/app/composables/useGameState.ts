@@ -1,4 +1,5 @@
 import type { GameState, TraitStat } from '~/types/game'
+import { calcBuildingMultiplier, calcClickPower, calcBuildingCost as calcBuildingCostPure } from '~/utils/gameMath'
 
 function createDefaultState(): GameState {
   const now = Date.now()
@@ -14,7 +15,7 @@ function createDefaultState(): GameState {
     totalClicks: 0,
     clickPower: 1,
     buildings: {},
-    clickUpgradesBought: [],
+    clickUpgradeLevel: 0,
     influence: 0,
     prestigeCount: 0,
     prestigeUpgradesBought: [],
@@ -27,6 +28,9 @@ function createDefaultState(): GameState {
     completedResearch: [],
     activeResearch: null,
     megastructures: {},
+    totalPlayTime: 0,
+    runPlayTime: 0,
+    allTimeClicks: 0,
     lastSaveTimestamp: now,
     createdAt: now
   }
@@ -36,7 +40,7 @@ export function useGameState() {
   const state = useState<GameState>('gameState', createDefaultState)
   const { buildings, kardashevLevels, prestigeUpgrades, repeatablePrestigeUpgrades } = useGameConfig()
 
-  function getPrestigeMultiplier(type: 'creditsMultiplier' | 'energyMultiplier' | 'clickMultiplier'): number {
+  function getPrestigeMultiplier(type: 'creditsMultiplier' | 'energyMultiplier' | 'clickMultiplier' | 'popMultiplier' | 'buildingCostMultiplier'): number {
     let multiplier = 1
     for (const upgradeId of state.value.prestigeUpgradesBought) {
       const upgrade = prestigeUpgrades.find(u => u.id === upgradeId)
@@ -83,7 +87,7 @@ export function useGameState() {
 
   function getBuildingMultiplier(buildingId: string): number {
     const owned = state.value.buildings[buildingId] || 0
-    return Math.pow(2, Math.floor(owned / 25))
+    return calcBuildingMultiplier(owned)
   }
 
   // Raw pop clicks/sec (before trait multiplier, used for click boost)
@@ -98,7 +102,7 @@ export function useGameState() {
   })
 
   const autoclickPerSecond = computed(() => {
-    return rawPopClicks.value * getTraitMultiplier('popMultiplier') * getAscensionMultiplier('popMultiplier') * getRepeatableMultiplier('popMultiplier') * getResearchMult('popMultiplier')
+    return rawPopClicks.value * getPrestigeMultiplier('popMultiplier') * getTraitMultiplier('popMultiplier') * getAscensionMultiplier('popMultiplier') * getRepeatableMultiplier('popMultiplier') * getResearchMult('popMultiplier')
   })
 
   const effectiveClickPower = computed(() => {
@@ -109,9 +113,7 @@ export function useGameState() {
     const repeatable = getRepeatableMultiplier('clickMultiplier')
     const research = getResearchMult('clickMultiplier')
     const baseClick = (state.value.clickPower ?? 1) * prestige * trait * ascension * repeatable * research
-    // Pops boost clicks with diminishing returns (sqrt scale)
-    const popBoost = 1 + Math.sqrt(autoclickPerSecond.value)
-    return Math.floor(baseClick * popBoost)
+    return calcClickPower(baseClick, autoclickPerSecond.value)
   })
 
   // Dividends only from fully owned subsidiaries (100% shares)
@@ -178,15 +180,12 @@ export function useGameState() {
     const def = buildings.find(b => b.id === buildingId)
     if (!def) return Infinity
     const owned = state.value.buildings[buildingId] || 0
-    const traitMult = getTraitMultiplier('buildingCostMultiplier')
-    const ascensionMult = getAscensionMultiplier('buildingCostMultiplier')
-    const repeatableMult = getRepeatableMultiplier('buildingCostMultiplier')
-    const researchMult = getResearchMult('buildingCostMultiplier')
-    let total = 0
-    for (let i = 0; i < quantity; i++) {
-      total += Math.floor(def.baseCost * Math.pow(def.costMultiplier, owned + i) * traitMult * ascensionMult * repeatableMult * researchMult)
-    }
-    return total
+    const combinedMult = getPrestigeMultiplier('buildingCostMultiplier')
+      * getTraitMultiplier('buildingCostMultiplier')
+      * getAscensionMultiplier('buildingCostMultiplier')
+      * getRepeatableMultiplier('buildingCostMultiplier')
+      * getResearchMult('buildingCostMultiplier')
+    return calcBuildingCostPure(def.baseCost, def.costMultiplier, owned, quantity, combinedMult)
   }
 
   function tick() {
@@ -198,6 +197,8 @@ export function useGameState() {
     state.value.totalCreditsEarned += creditGain
     state.value.energy += energyGain
     state.value.totalEnergyEarned += energyGain
+    state.value.totalPlayTime += dt
+    state.value.runPlayTime += dt
 
     // Research & megastructure progress
     const { tickResearch, tickMegastructures } = useResearchActions()
@@ -210,7 +211,7 @@ export function useGameState() {
   }
 
   function loadState(saved: GameState) {
-    saved.clickUpgradesBought ??= []
+    saved.clickUpgradeLevel ??= 0
     saved.clickPower ??= 1
     saved.prestigeUpgradesBought ??= []
     saved.prestigeRepeatables ??= {}
@@ -225,6 +226,9 @@ export function useGameState() {
     saved.completedResearch ??= []
     saved.activeResearch ??= null
     saved.megastructures ??= {}
+    saved.totalPlayTime ??= 0
+    saved.runPlayTime ??= 0
+    saved.allTimeClicks ??= 0
     state.value = saved
   }
 

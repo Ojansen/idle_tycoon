@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const { state } = useGameState()
 const { traits } = useTraits()
-const { formatNumber } = useNumberFormat()
 
 const playerId = useCookie('megacorp-player-id')
 
@@ -21,10 +20,25 @@ function copyAccountId() {
   setTimeout(() => { copied.value = false }, 2000)
 }
 
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const restoreError = ref('')
+
 function restoreAccount() {
   const id = restoreId.value.trim()
   if (!id) return
+  if (!uuidRegex.test(id)) {
+    restoreError.value = 'Invalid account ID format. Must be a valid UUID.'
+    return
+  }
+  restoreError.value = ''
   playerId.value = id
+  window.location.reload()
+}
+
+const showDeleteConfirm = ref(false)
+
+function deleteAccount() {
+  playerId.value = null
   window.location.reload()
 }
 </script>
@@ -71,95 +85,101 @@ function restoreAccount() {
         </div>
       </div>
 
-      <!-- Account & Stats -->
-      <div class="space-y-4">
-        <!-- Account ID -->
-        <div class="rounded-lg bg-white/[0.03] border border-white/10 p-5 space-y-3">
-          <div class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Account ID</div>
-          <p class="text-xs text-zinc-500">Use this ID to restore your empire on another device.</p>
-          <div class="flex items-center gap-2 rounded bg-zinc-900 px-3 py-2">
-            <code class="text-sm text-violet-300 flex-1 break-all select-all">{{ playerId }}</code>
-            <UButton size="xs" color="neutral" variant="ghost" @click="copyAccountId">
-              <UIcon :name="copied ? 'i-lucide-check' : 'i-lucide-copy'" />
-            </UButton>
-          </div>
-
-          <button
-            class="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
-            @click="showRestore = !showRestore"
-          >
-            Restore a different account
-          </button>
-
-          <div v-if="showRestore" class="space-y-2 pt-2 border-t border-white/5">
-            <UInput
-              v-model="restoreId"
-              placeholder="Paste account ID..."
-              size="sm"
-            />
-            <UButton
-              size="sm"
-              color="warning"
-              :disabled="!restoreId.trim()"
-              block
-              @click="restoreAccount"
-            >
-              Restore Account
-            </UButton>
-            <p class="text-xs text-red-400">This will replace your current save on this device.</p>
-          </div>
+      <!-- Account ID -->
+      <div class="rounded-lg bg-white/[0.03] border border-white/10 p-5 space-y-3">
+        <div class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Account ID</div>
+        <p class="text-xs text-zinc-500">Use this ID to restore your empire on another device.</p>
+        <div class="flex items-center gap-2 rounded bg-zinc-900 px-3 py-2">
+          <code class="text-sm text-violet-300 flex-1 break-all select-all">{{ playerId }}</code>
+          <UButton size="xs" color="neutral" variant="ghost" @click="copyAccountId">
+            <UIcon :name="copied ? 'i-lucide-check' : 'i-lucide-copy'" />
+          </UButton>
         </div>
 
-        <!-- Stats summary -->
-        <div class="rounded-lg bg-white/[0.03] border border-white/10 p-5">
-          <div class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-3">Statistics</div>
-          <div class="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <div class="text-zinc-500">Total Clicks</div>
-              <div class="text-white font-medium">{{ formatNumber(state.totalClicks) }}</div>
-            </div>
-            <div>
-              <div class="text-zinc-500">Total Credits Earned</div>
-              <div class="text-white font-medium">₢{{ formatNumber(state.totalCreditsEarned) }}</div>
-            </div>
-            <div>
-              <div class="text-zinc-500">Total Energy Earned</div>
-              <div class="text-white font-medium">{{ formatNumber(state.totalEnergyEarned) }} TW</div>
-            </div>
-            <div>
-              <div class="text-zinc-500">Prestige Count</div>
-              <div class="text-white font-medium">{{ state.prestigeCount }}</div>
-            </div>
-            <div>
-              <div class="text-zinc-500">Influence</div>
-              <div class="text-amber-400 font-medium">{{ state.influence }}</div>
-            </div>
-            <div>
-              <div class="text-zinc-500">Kardashev Record</div>
-              <div class="text-white font-medium">Type {{ state.kardashevHighWaterMark }}</div>
-            </div>
-            <div>
-              <div class="text-zinc-500">Casino Games</div>
-              <div class="text-white font-medium">{{ state.casinoStats.gamesPlayed }}</div>
-            </div>
-            <div>
-              <div class="text-zinc-500">Casino P/L</div>
-              <div :class="state.casinoStats.totalWon >= state.casinoStats.totalWagered ? 'text-green-400' : 'text-red-400'" class="font-medium">
-                ₢{{ formatNumber(state.casinoStats.totalWon - state.casinoStats.totalWagered) }}
-              </div>
-            </div>
-          </div>
+        <button
+          class="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+          @click="showRestore = !showRestore"
+        >
+          Restore a different account
+        </button>
+
+        <div v-if="showRestore" class="space-y-2 pt-2 border-t border-white/5">
+          <UInput
+            v-model="restoreId"
+            placeholder="Paste account ID..."
+            size="sm"
+          />
+          <UButton
+            size="sm"
+            color="warning"
+            :disabled="!restoreId.trim()"
+            block
+            @click="restoreAccount"
+          >
+            Restore Account
+          </UButton>
+          <p v-if="restoreError" class="text-xs text-red-400">{{ restoreError }}</p>
+          <p v-else class="text-xs text-red-400">This will replace your current save on this device.</p>
         </div>
       </div>
     </div>
-    <!-- Multiplier breakdown -->
-    <div class="rounded-lg bg-white/[0.03] border border-white/10 p-5">
-      <GameMultiplierBreakdown />
+
+    <!-- Danger zone -->
+    <div class="rounded-lg bg-red-500/5 border border-red-500/20 p-5 space-y-3">
+      <div class="text-xs font-semibold uppercase tracking-wider text-red-400">Danger Zone</div>
+      <p class="text-xs text-zinc-500">Start over with a new corporation. Your current save will be permanently deleted.</p>
+      <UButton
+        size="sm"
+        color="error"
+        variant="outline"
+        @click="showDeleteConfirm = true"
+      >
+        <UIcon name="i-lucide-trash-2" class="mr-1" />
+        Delete Account & Start Over
+      </UButton>
     </div>
 
-    <!-- Achievements -->
-    <div class="rounded-lg bg-white/[0.03] border border-white/10 p-5">
-      <GameAchievementGrid />
-    </div>
+    <!-- Delete confirmation modal -->
+    <UModal v-model:open="showDeleteConfirm">
+      <template #content>
+        <div class="p-6 space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="rounded-full bg-red-500/10 p-2">
+              <UIcon name="i-lucide-alert-triangle" class="text-2xl text-red-400" />
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-white">Delete {{ state.companyName }}?</h3>
+              <p class="text-sm text-zinc-400">This action cannot be undone.</p>
+            </div>
+          </div>
+
+          <div class="rounded bg-zinc-900 p-3 text-xs text-zinc-400 space-y-1">
+            <div>Prestige count: {{ state.prestigeCount }}</div>
+            <div>Influence: {{ state.influence }}</div>
+            <div>Kardashev record: Type {{ state.kardashevHighWaterMark }}</div>
+          </div>
+
+          <p class="text-sm text-zinc-300">All progress, prestige upgrades, research, and achievements will be permanently lost. You will start fresh with a new account.</p>
+
+          <div class="flex gap-3 pt-2">
+            <UButton
+              color="neutral"
+              variant="outline"
+              block
+              @click="showDeleteConfirm = false"
+            >
+              Cancel
+            </UButton>
+            <UButton
+              color="error"
+              block
+              @click="deleteAccount"
+            >
+              Delete Forever
+            </UButton>
+          </div>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>

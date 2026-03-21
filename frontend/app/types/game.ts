@@ -22,6 +22,8 @@ export type PrestigeEffect =
   | { type: 'creditsMultiplier'; value: number }
   | { type: 'energyMultiplier'; value: number }
   | { type: 'clickMultiplier'; value: number }
+  | { type: 'popMultiplier'; value: number }
+  | { type: 'buildingCostMultiplier'; value: number }
   | { type: 'quickStart'; buildings: Record<string, number> }
   | { type: 'unlockKardashev'; level: number }
 
@@ -36,11 +38,9 @@ export interface RepeatablePrestigeUpgrade {
   effect: { type: TraitStat; valuePerLevel: number }
 }
 
-export interface ClickUpgradeDefinition {
-  id: string
-  name: string
-  description: string
-  cost: number
+export interface ClickUpgradeConfig {
+  baseCost: number
+  costMultiplier: number
   clickPowerAdd: number
 }
 
@@ -144,7 +144,7 @@ export interface GameState {
   totalClicks: number
   clickPower: number
   buildings: Record<string, number>
-  clickUpgradesBought: string[]
+  clickUpgradeLevel: number
   influence: number
   prestigeCount: number
   prestigeUpgradesBought: string[]
@@ -157,6 +157,9 @@ export interface GameState {
   completedResearch: string[]
   activeResearch: ResearchProgress | null
   megastructures: Record<string, MegastructureProgress>
+  totalPlayTime: number
+  runPlayTime: number
+  allTimeClicks: number
   lastSaveTimestamp: number
   createdAt: number
 }

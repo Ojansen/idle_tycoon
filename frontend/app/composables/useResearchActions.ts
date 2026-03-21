@@ -3,7 +3,7 @@ import type { TraitStat } from '~/types/game'
 export type MegastructureState = 'locked' | 'available' | 'building' | 'awaiting_stage' | 'complete'
 
 export function useResearchActions() {
-  const { state } = useGameState()
+  const { state, kardashevLevel } = useGameState()
   const { researchTree, megastructures } = useResearchConfig()
   const toast = useToast()
 
@@ -20,7 +20,7 @@ export function useResearchActions() {
     if (!def) return false
     if (isResearchComplete(techId)) return false
     if (state.value.activeResearch?.techId === techId) return false
-    if (def.unlockKardashev > state.value.kardashevHighWaterMark) return false
+    if (def.unlockKardashev > kardashevLevel.value) return false
     return def.prerequisites.every(prereqId => isResearchComplete(prereqId))
   }
 
@@ -139,7 +139,7 @@ export function useResearchActions() {
     const def = megastructures.find(m => m.id === megaId)
     if (!def) return false
     if (megaId in state.value.megastructures) return false
-    if (def.unlockKardashev > state.value.kardashevHighWaterMark) return false
+    if (def.unlockKardashev > kardashevLevel.value) return false
     return def.requiredResearch.every(techId => isResearchComplete(techId))
   }
 

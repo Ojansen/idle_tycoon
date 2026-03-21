@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ResearchBranch } from '~/types/game'
 
-const { state } = useGameState()
+const { state, kardashevLevel } = useGameState()
 const { researchTree } = useResearchConfig()
 
 interface BranchConfig {
@@ -21,7 +21,7 @@ const branches: BranchConfig[] = [
 
 function techsForBranch(branch: ResearchBranch) {
   return researchTree
-    .filter(t => t.branch === branch && t.unlockKardashev <= state.value.kardashevHighWaterMark)
+    .filter(t => t.branch === branch && t.unlockKardashev <= kardashevLevel.value)
     .sort((a, b) => a.tier - b.tier)
 }
 </script>

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-const { state } = useGameState()
+const { state, kardashevLevel } = useGameState()
 const { megastructures } = useResearchConfig()
 
 const visibleMegastructures = computed(() =>
-  megastructures.filter(m => m.unlockKardashev <= state.value.kardashevHighWaterMark)
+  megastructures.filter(m => m.unlockKardashev <= kardashevLevel.value)
 )
 </script>
 

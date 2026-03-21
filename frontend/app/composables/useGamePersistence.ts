@@ -71,7 +71,7 @@ export function useGamePersistence() {
     // Watch for building/upgrade purchases and save shortly after
     watch(() => [
       Object.keys(state.value.buildings).length + Object.values(state.value.buildings).reduce((a, b) => a + b, 0),
-      state.value.clickUpgradesBought.length,
+      state.value.clickUpgradeLevel,
       state.value.prestigeUpgradesBought.length,
       state.value.prestigeCount
     ], () => {

@@ -6,6 +6,19 @@ const { formatNumber } = useNumberFormat()
 
 const showConfirm = ref(false)
 
+const currentInfluenceGain = computed(() => getPrestigeInfluenceGain())
+const nextInfluenceThreshold = computed(() => {
+  const next = currentInfluenceGain.value + 1
+  return next * next * 100000
+})
+const influenceProgress = computed(() => {
+  const current = currentInfluenceGain.value
+  const currentThreshold = current * current * 100000
+  const nextThreshold = nextInfluenceThreshold.value
+  const progress = (state.value.totalEnergyEarned - currentThreshold) / (nextThreshold - currentThreshold)
+  return Math.min(Math.max(progress * 100, 0), 100)
+})
+
 function handlePrestige() {
   showConfirm.value = false
   performPrestige()
@@ -40,10 +53,20 @@ function handlePrestige() {
         <p class="text-sm text-zinc-400 mb-4">
           Reset your Credits, Energy, buildings, and click upgrades.
         </p>
-        <p class="text-sm text-zinc-300 mb-4">
+        <p class="text-sm text-zinc-300 mb-2">
           You will gain
-          <span class="text-amber-300 font-bold text-lg">{{ getPrestigeInfluenceGain() }} Influence</span>
+          <span class="text-amber-300 font-bold text-lg">{{ currentInfluenceGain }} Influence</span>
         </p>
+
+        <!-- Progress to next influence -->
+        <div class="mb-4 space-y-1">
+          <div class="flex justify-between text-xs text-zinc-500">
+            <span>{{ formatNumber(state.totalEnergyEarned) }} / {{ formatNumber(nextInfluenceThreshold) }} TW</span>
+            <span>Next: {{ currentInfluenceGain + 1 }} Influence</span>
+          </div>
+          <UProgress :model-value="influenceProgress" size="xs" color="warning" />
+        </div>
+
         <UButton
           color="warning"
           size="lg"
@@ -54,9 +77,6 @@ function handlePrestige() {
         </UButton>
         <p v-if="!canPrestige()" class="text-xs text-zinc-500 mt-3">
           Earn more Energy to gain at least 1 Influence
-        </p>
-        <p class="text-xs text-zinc-600 mt-2">
-          Formula: floor(sqrt(totalEnergy / 10,000))
         </p>
       </div>
 
@@ -140,6 +160,8 @@ function handlePrestige() {
           <li>• All buildings</li>
           <li>• Click upgrades (click power resets to 1)</li>
           <li>• Stock portfolio</li>
+          <li>• Ascension perks</li>
+          <li>• Research &amp; megastructures</li>
         </ul>
       </div>
       <div class="rounded-lg bg-green-950/20 border border-green-500/10 p-4">
@@ -147,7 +169,6 @@ function handlePrestige() {
         <ul class="text-xs text-zinc-400 space-y-1">
           <li>• Influence ({{ state.influence }} + {{ getPrestigeInfluenceGain() }} = {{ state.influence + getPrestigeInfluenceGain() }})</li>
           <li>• Prestige shop purchases</li>
-          <li>• Ascension perks</li>
           <li>• Achievements</li>
           <li>• Kardashev high-water mark (Type {{ state.kardashevHighWaterMark }})</li>
           <li>• Casino stats</li>

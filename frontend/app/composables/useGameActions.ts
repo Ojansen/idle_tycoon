@@ -1,12 +1,15 @@
+import { calcPrestigeInfluence, calcRepeatableCost } from '~/utils/gameMath'
+
 export function useGameActions() {
-  const { state, effectiveClickPower, getBuildingCost } = useGameState()
-  const { buildings, clickUpgrades, prestigeUpgrades, repeatablePrestigeUpgrades } = useGameConfig()
+  const { state, effectiveClickPower, getBuildingCost, kardashevLevel } = useGameState()
+  const { buildings, clickUpgradeConfig, prestigeUpgrades, repeatablePrestigeUpgrades } = useGameConfig()
 
   function click() {
     const gain = effectiveClickPower.value
     state.value.credits += gain
     state.value.totalCreditsEarned += gain
     state.value.totalClicks++
+    state.value.allTimeClicks++
   }
 
   function buyBuilding(buildingId: string, quantity = 1) {
@@ -18,14 +21,17 @@ export function useGameActions() {
     return true
   }
 
-  function buyClickUpgrade(upgradeId: string) {
-    if (state.value.clickUpgradesBought.includes(upgradeId)) return false
-    const upgrade = clickUpgrades.find(u => u.id === upgradeId)
-    if (!upgrade || state.value.credits < upgrade.cost) return false
+  function getClickUpgradeCost(): number {
+    return Math.floor(clickUpgradeConfig.baseCost * Math.pow(clickUpgradeConfig.costMultiplier, state.value.clickUpgradeLevel))
+  }
 
-    state.value.credits -= upgrade.cost
-    state.value.clickPower += upgrade.clickPowerAdd
-    state.value.clickUpgradesBought.push(upgradeId)
+  function buyClickUpgrade() {
+    const cost = getClickUpgradeCost()
+    if (state.value.credits < cost) return false
+
+    state.value.credits -= cost
+    state.value.clickPower += clickUpgradeConfig.clickPowerAdd
+    state.value.clickUpgradeLevel++
     return true
   }
 
@@ -34,7 +40,7 @@ export function useGameActions() {
   }
 
   function getPrestigeInfluenceGain(): number {
-    return Math.floor(Math.sqrt(state.value.totalEnergyEarned / 10000))
+    return calcPrestigeInfluence(state.value.totalEnergyEarned)
   }
 
   function performPrestige() {
@@ -57,7 +63,7 @@ export function useGameActions() {
       totalClicks: 0,
       clickPower: 1,
       buildings: {},
-      clickUpgradesBought: [],
+      clickUpgradeLevel: 0,
       stocks: {},
       // Kept
       influence: state.value.influence + influenceGain,
@@ -65,12 +71,15 @@ export function useGameActions() {
       prestigeUpgradesBought: [...state.value.prestigeUpgradesBought],
       prestigeRepeatables: { ...state.value.prestigeRepeatables },
       kardashevHighWaterMark: state.value.kardashevHighWaterMark,
-      ascensionPerks: [...state.value.ascensionPerks],
+      ascensionPerks: [],
       achievements: [...state.value.achievements],
       casinoStats: { ...state.value.casinoStats },
-      completedResearch: [...state.value.completedResearch],
-      activeResearch: state.value.activeResearch ? { ...state.value.activeResearch } : null,
-      megastructures: JSON.parse(JSON.stringify(state.value.megastructures)),
+      completedResearch: [],
+      activeResearch: null,
+      megastructures: {},
+      totalPlayTime: state.value.totalPlayTime,
+      runPlayTime: 0,
+      allTimeClicks: state.value.allTimeClicks,
       lastSaveTimestamp: now,
       createdAt: state.value.createdAt
     }
@@ -95,7 +104,7 @@ export function useGameActions() {
     const upgrade = repeatablePrestigeUpgrades.find(u => u.id === upgradeId)
     if (!upgrade) return Infinity
     const level = state.value.prestigeRepeatables[upgradeId] || 0
-    return Math.floor(upgrade.baseCost * Math.pow(upgrade.costScale, level))
+    return calcRepeatableCost(upgrade.baseCost, upgrade.costScale, level)
   }
 
   function buyRepeatableUpgrade(upgradeId: string): boolean {
@@ -128,7 +137,7 @@ export function useGameActions() {
 
     const requiredLevel = def.unlockKardashev
     // Check if player has reached this Kardashev level naturally or via prestige unlock
-    if (state.value.kardashevHighWaterMark >= requiredLevel) return true
+    if (kardashevLevel.value >= requiredLevel) return true
 
     // Check prestige shop unlocks
     for (const upgradeId of state.value.prestigeUpgradesBought) {
@@ -145,6 +154,7 @@ export function useGameActions() {
     click,
     buyBuilding,
     buyClickUpgrade,
+    getClickUpgradeCost,
     canPrestige,
     getPrestigeInfluenceGain,
     performPrestige,

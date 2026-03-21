@@ -1,4 +1,4 @@
-import type { BuildingDefinition, ClickUpgradeDefinition, KardashevLevel, PrestigeUpgradeDefinition, RepeatablePrestigeUpgrade } from '~/types/game'
+import type { BuildingDefinition, ClickUpgradeConfig, KardashevLevel, PrestigeUpgradeDefinition, RepeatablePrestigeUpgrade } from '~/types/game'
 
 // Real Kardashev scale: ~10^10 ratio between each level
 // Energy unit: TW (terawatts). Type I ≈ 10^4 TW/s
@@ -15,8 +15,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Autonomous drones extracting resources from nearby asteroids.',
     icon: 'i-lucide-pickaxe',
     baseCost: 10,
-    costMultiplier: 1.12,
-    baseOutput: 0.5,
+    costMultiplier: 1.045,
+    baseOutput: 0.50,
     resource: 'credits',
     unlockKardashev: 0
   },
@@ -26,8 +26,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Processes raw minerals into valuable commodities.',
     icon: 'i-lucide-hammer',
     baseCost: 150,
-    costMultiplier: 1.13,
-    baseOutput: 3,
+    costMultiplier: 1.048,
+    baseOutput: 5.3,
     resource: 'credits',
     unlockKardashev: 0
   },
@@ -37,8 +37,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Small-range transport shuttles running trade loops.',
     icon: 'i-lucide-truck',
     baseCost: 1500,
-    costMultiplier: 1.14,
-    baseOutput: 15,
+    costMultiplier: 1.050,
+    baseOutput: 37,
     resource: 'credits',
     unlockKardashev: 0
   },
@@ -48,8 +48,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Zero-gravity manufacturing of high-value goods.',
     icon: 'i-lucide-factory',
     baseCost: 10000,
-    costMultiplier: 1.14,
-    baseOutput: 60,
+    costMultiplier: 1.053,
+    baseOutput: 172,
     resource: 'credits',
     unlockKardashev: 0
   },
@@ -59,8 +59,8 @@ const buildings: BuildingDefinition[] = [
     description: 'A bustling hub of commerce in low orbit.',
     icon: 'i-lucide-satellite',
     baseCost: 50000,
-    costMultiplier: 1.15,
-    baseOutput: 200,
+    costMultiplier: 1.055,
+    baseOutput: 600,
     resource: 'credits',
     unlockKardashev: 0
   },
@@ -72,8 +72,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Orbital solar panels harvesting stellar energy.',
     icon: 'i-lucide-sun',
     baseCost: 50,
-    costMultiplier: 1.12,
-    baseOutput: 2,
+    costMultiplier: 1.045,
+    baseOutput: 2.00,
     resource: 'energy',
     unlockKardashev: 0
   },
@@ -83,8 +83,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Continent-spanning atmospheric energy harvesting.',
     icon: 'i-lucide-fan',
     baseCost: 400,
-    costMultiplier: 1.13,
-    baseOutput: 10,
+    costMultiplier: 1.048,
+    baseOutput: 11.2,
     resource: 'energy',
     unlockKardashev: 0
   },
@@ -94,8 +94,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Deep planetary core energy extraction.',
     icon: 'i-lucide-thermometer',
     baseCost: 3000,
-    costMultiplier: 1.13,
-    baseOutput: 50,
+    costMultiplier: 1.050,
+    baseOutput: 59,
     resource: 'energy',
     unlockKardashev: 0
   },
@@ -105,8 +105,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Nuclear fission reactors providing steady baseload power.',
     icon: 'i-lucide-radiation',
     baseCost: 20000,
-    costMultiplier: 1.14,
-    baseOutput: 250,
+    costMultiplier: 1.053,
+    baseOutput: 274,
     resource: 'energy',
     unlockKardashev: 0
   },
@@ -116,8 +116,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Giant reflectors focusing sunlight onto collection stations.',
     icon: 'i-lucide-eclipse',
     baseCost: 80000,
-    costMultiplier: 1.15,
-    baseOutput: 800,
+    costMultiplier: 1.055,
+    baseOutput: 960,
     resource: 'energy',
     unlockKardashev: 0
   },
@@ -129,7 +129,7 @@ const buildings: BuildingDefinition[] = [
     description: 'A loyal employee who clicks on your behalf. Tirelessly.',
     icon: 'i-lucide-user',
     baseCost: 50,
-    costMultiplier: 1.14,
+    costMultiplier: 1.050,
     baseOutput: 1,
     resource: 'autoclick',
     unlockKardashev: 0
@@ -146,8 +146,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Industrial-scale mining operations on mineral-rich asteroids.',
     icon: 'i-lucide-mountain',
     baseCost: 200000,
-    costMultiplier: 1.12,
-    baseOutput: 500,
+    costMultiplier: 1.045,
+    baseOutput: 3000,
     resource: 'credits',
     unlockKardashev: 1
   },
@@ -157,8 +157,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Orbital marketplace connecting interstellar trade routes.',
     icon: 'i-lucide-arrow-left-right',
     baseCost: 1e6,
-    costMultiplier: 1.13,
-    baseOutput: 2000,
+    costMultiplier: 1.048,
+    baseOutput: 10500,
     resource: 'credits',
     unlockKardashev: 1
   },
@@ -168,8 +168,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Planet-wide commodities trading network.',
     icon: 'i-lucide-bar-chart-3',
     baseCost: 5e6,
-    costMultiplier: 1.13,
-    baseOutput: 8000,
+    costMultiplier: 1.050,
+    baseOutput: 36800,
     resource: 'credits',
     unlockKardashev: 1
   },
@@ -179,8 +179,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Your corporate headquarters. Generates revenue from subsidiaries.',
     icon: 'i-lucide-building-2',
     baseCost: 25e6,
-    costMultiplier: 1.14,
-    baseOutput: 30000,
+    costMultiplier: 1.053,
+    baseOutput: 129000,
     resource: 'credits',
     unlockKardashev: 1
   },
@@ -190,8 +190,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Total economic control over an entire star system.',
     icon: 'i-lucide-gem',
     baseCost: 100e6,
-    costMultiplier: 1.15,
-    baseOutput: 100000,
+    costMultiplier: 1.055,
+    baseOutput: 360000,
     resource: 'credits',
     unlockKardashev: 1
   },
@@ -203,8 +203,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Advanced fusion plants powering entire orbital stations.',
     icon: 'i-lucide-atom',
     baseCost: 300000,
-    costMultiplier: 1.12,
-    baseOutput: 1000,
+    costMultiplier: 1.045,
+    baseOutput: 3600,
     resource: 'energy',
     unlockKardashev: 1
   },
@@ -214,8 +214,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Unified energy grid harnessing an entire planet\'s output.',
     icon: 'i-lucide-network',
     baseCost: 2e6,
-    costMultiplier: 1.13,
-    baseOutput: 5000,
+    costMultiplier: 1.048,
+    baseOutput: 16800,
     resource: 'energy',
     unlockKardashev: 1
   },
@@ -225,8 +225,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Produces and annihilates antimatter for enormous energy yields.',
     icon: 'i-lucide-flask-conical',
     baseCost: 15e6,
-    costMultiplier: 1.13,
-    baseOutput: 25000,
+    costMultiplier: 1.050,
+    baseOutput: 88200,
     resource: 'energy',
     unlockKardashev: 1
   },
@@ -236,8 +236,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Scoops fusion fuel from gas giant atmospheres.',
     icon: 'i-lucide-cloud',
     baseCost: 80e6,
-    costMultiplier: 1.14,
-    baseOutput: 100000,
+    costMultiplier: 1.053,
+    baseOutput: 329000,
     resource: 'energy',
     unlockKardashev: 1
   },
@@ -247,8 +247,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Early prototype for capturing a fraction of a star\'s output.',
     icon: 'i-lucide-sunset',
     baseCost: 500e6,
-    costMultiplier: 1.15,
-    baseOutput: 500000,
+    costMultiplier: 1.055,
+    baseOutput: 1.44e6,
     resource: 'energy',
     unlockKardashev: 1
   },
@@ -260,7 +260,7 @@ const buildings: BuildingDefinition[] = [
     description: 'Highly efficient middle management. Delegates at scale.',
     icon: 'i-lucide-user-check',
     baseCost: 500000,
-    costMultiplier: 1.14,
+    costMultiplier: 1.050,
     baseOutput: 15,
     resource: 'autoclick',
     unlockKardashev: 1
@@ -277,8 +277,8 @@ const buildings: BuildingDefinition[] = [
     description: 'A fully colonized planet generating massive economic output.',
     icon: 'i-lucide-globe',
     baseCost: 1e9,
-    costMultiplier: 1.12,
-    baseOutput: 1e6,
+    costMultiplier: 1.045,
+    baseOutput: 4.50e6,
     resource: 'credits',
     unlockKardashev: 2
   },
@@ -288,8 +288,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Constructs starships in orbit, fueling interstellar commerce.',
     icon: 'i-lucide-rocket',
     baseCost: 10e9,
-    costMultiplier: 1.13,
-    baseOutput: 5e6,
+    costMultiplier: 1.048,
+    baseOutput: 3.15e7,
     resource: 'credits',
     unlockKardashev: 2
   },
@@ -299,8 +299,8 @@ const buildings: BuildingDefinition[] = [
     description: 'A financial institution spanning multiple star systems.',
     icon: 'i-lucide-landmark',
     baseCost: 100e9,
-    costMultiplier: 1.13,
-    baseOutput: 25e6,
+    costMultiplier: 1.050,
+    baseOutput: 2.21e8,
     resource: 'credits',
     unlockKardashev: 2
   },
@@ -310,8 +310,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Creates valuable materials from raw energy. Alchemy perfected.',
     icon: 'i-lucide-sparkles',
     baseCost: 1e12,
-    costMultiplier: 1.14,
-    baseOutput: 200e6,
+    costMultiplier: 1.053,
+    baseOutput: 1.54e9,
     resource: 'credits',
     unlockKardashev: 2
   },
@@ -321,8 +321,8 @@ const buildings: BuildingDefinition[] = [
     description: 'A sprawling corporate empire controlling dozens of systems.',
     icon: 'i-lucide-briefcase',
     baseCost: 20e12,
-    costMultiplier: 1.15,
-    baseOutput: 2e9,
+    costMultiplier: 1.055,
+    baseOutput: 2.16e10,
     resource: 'credits',
     unlockKardashev: 2
   },
@@ -334,8 +334,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Millions of orbital collectors surrounding a star.',
     icon: 'i-lucide-orbit',
     baseCost: 2e9,
-    costMultiplier: 1.12,
-    baseOutput: 1e7,
+    costMultiplier: 1.045,
+    baseOutput: 7.20e6,
     resource: 'energy',
     unlockKardashev: 2
   },
@@ -345,8 +345,8 @@ const buildings: BuildingDefinition[] = [
     description: 'A megastructure fully enclosing a star to capture its total output.',
     icon: 'i-lucide-circle-dot',
     baseCost: 50e9,
-    costMultiplier: 1.13,
-    baseOutput: 1e9,
+    costMultiplier: 1.048,
+    baseOutput: 1.26e8,
     resource: 'energy',
     unlockKardashev: 2
   },
@@ -356,8 +356,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Extracts rotational energy from spinning black holes.',
     icon: 'i-lucide-rotate-cw',
     baseCost: 500e9,
-    costMultiplier: 1.13,
-    baseOutput: 1e11,
+    costMultiplier: 1.050,
+    baseOutput: 8.82e8,
     resource: 'energy',
     unlockKardashev: 2
   },
@@ -367,8 +367,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Harvests matter directly from a star\'s surface.',
     icon: 'i-lucide-arrow-up-from-line',
     baseCost: 10e12,
-    costMultiplier: 1.14,
-    baseOutput: 5e12,
+    costMultiplier: 1.053,
+    baseOutput: 1.24e10,
     resource: 'energy',
     unlockKardashev: 2
   },
@@ -378,8 +378,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Artificial micro black holes converting matter to energy at near 100% efficiency.',
     icon: 'i-lucide-diameter',
     baseCost: 500e12,
-    costMultiplier: 1.15,
-    baseOutput: 1e14,
+    costMultiplier: 1.055,
+    baseOutput: 4.32e11,
     resource: 'energy',
     unlockKardashev: 2
   },
@@ -391,7 +391,7 @@ const buildings: BuildingDefinition[] = [
     description: 'Oversees an entire sector of your empire.',
     icon: 'i-lucide-crown',
     baseCost: 5e9,
-    costMultiplier: 1.15,
+    costMultiplier: 1.050,
     baseOutput: 500,
     resource: 'autoclick',
     unlockKardashev: 2
@@ -408,8 +408,8 @@ const buildings: BuildingDefinition[] = [
     description: 'A galaxy-scale industrial complex building wonders.',
     icon: 'i-lucide-boxes',
     baseCost: 1e15,
-    costMultiplier: 1.12,
-    baseOutput: 1e12,
+    costMultiplier: 1.045,
+    baseOutput: 1.35e12,
     resource: 'credits',
     unlockKardashev: 3
   },
@@ -419,8 +419,8 @@ const buildings: BuildingDefinition[] = [
     description: 'An economic alliance spanning the entire galaxy.',
     icon: 'i-lucide-handshake',
     baseCost: 50e15,
-    costMultiplier: 1.13,
-    baseOutput: 50e12,
+    costMultiplier: 1.048,
+    baseOutput: 4.73e13,
     resource: 'credits',
     unlockKardashev: 3
   },
@@ -430,8 +430,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Trading in simulated universes, pocket dimensions, and exotic matter.',
     icon: 'i-lucide-layout-grid',
     baseCost: 1e18,
-    costMultiplier: 1.13,
-    baseOutput: 1e15,
+    costMultiplier: 1.050,
+    baseOutput: 6.62e14,
     resource: 'credits',
     unlockKardashev: 3
   },
@@ -441,8 +441,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Joint ventures with civilizations in neighboring galaxies.',
     icon: 'i-lucide-globe-2',
     baseCost: 50e18,
-    costMultiplier: 1.14,
-    baseOutput: 50e15,
+    costMultiplier: 1.053,
+    baseOutput: 2.32e16,
     resource: 'credits',
     unlockKardashev: 3
   },
@@ -452,8 +452,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Exploits temporal differentials for guaranteed profit across timelines.',
     icon: 'i-lucide-timer',
     baseCost: 1e21,
-    costMultiplier: 1.15,
-    baseOutput: 1e18,
+    costMultiplier: 1.055,
+    baseOutput: 3.24e17,
     resource: 'credits',
     unlockKardashev: 3
   },
@@ -465,8 +465,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Harnesses the thrust of entire stars as propulsion.',
     icon: 'i-lucide-flame',
     baseCost: 5e15,
-    costMultiplier: 1.12,
-    baseOutput: 1e17,
+    costMultiplier: 1.045,
+    baseOutput: 5.41e12,
     resource: 'energy',
     unlockKardashev: 3
   },
@@ -476,8 +476,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Extracts energy from the supermassive black hole at the galactic center.',
     icon: 'i-lucide-target',
     baseCost: 100e15,
-    costMultiplier: 1.13,
-    baseOutput: 1e19,
+    costMultiplier: 1.048,
+    baseOutput: 7.57e13,
     resource: 'energy',
     unlockKardashev: 3
   },
@@ -487,8 +487,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Collects the jets of energy erupting from active galactic nuclei.',
     icon: 'i-lucide-cone',
     baseCost: 5e18,
-    costMultiplier: 1.13,
-    baseOutput: 1e21,
+    costMultiplier: 1.050,
+    baseOutput: 2.65e15,
     resource: 'energy',
     unlockKardashev: 3
   },
@@ -498,8 +498,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Annihilates dark matter particles for incomprehensible energy yields.',
     icon: 'i-lucide-moon',
     baseCost: 100e18,
-    costMultiplier: 1.14,
-    baseOutput: 1e23,
+    costMultiplier: 1.053,
+    baseOutput: 3.71e16,
     resource: 'energy',
     unlockKardashev: 3
   },
@@ -509,8 +509,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Stores and releases the spin-down energy of magnetars.',
     icon: 'i-lucide-circle',
     baseCost: 5e21,
-    costMultiplier: 1.15,
-    baseOutput: 5e24,
+    costMultiplier: 1.055,
+    baseOutput: 1.30e18,
     resource: 'energy',
     unlockKardashev: 3
   },
@@ -522,7 +522,7 @@ const buildings: BuildingDefinition[] = [
     description: 'Commands entire galactic arms on your behalf.',
     icon: 'i-lucide-swords',
     baseCost: 1e16,
-    costMultiplier: 1.15,
+    costMultiplier: 1.050,
     baseOutput: 25000,
     resource: 'autoclick',
     unlockKardashev: 3
@@ -539,8 +539,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Manufactures pocket universes optimized for resource extraction.',
     icon: 'i-lucide-package',
     baseCost: 1e24,
-    costMultiplier: 1.12,
-    baseOutput: 1e21,
+    costMultiplier: 1.045,
+    baseOutput: 4.06e20,
     resource: 'credits',
     unlockKardashev: 4
   },
@@ -550,8 +550,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Trades in negentropy — the most valuable commodity in a dying universe.',
     icon: 'i-lucide-database',
     baseCost: 50e24,
-    costMultiplier: 1.13,
-    baseOutput: 50e21,
+    costMultiplier: 1.048,
+    baseOutput: 1.42e22,
     resource: 'credits',
     unlockKardashev: 4
   },
@@ -561,8 +561,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Facilitates commerce between parallel dimensional planes.',
     icon: 'i-lucide-layers',
     baseCost: 1e27,
-    costMultiplier: 1.13,
-    baseOutput: 1e24,
+    costMultiplier: 1.050,
+    baseOutput: 1.99e23,
     resource: 'credits',
     unlockKardashev: 4
   },
@@ -572,8 +572,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Trades cause-and-effect chains across the multiverse.',
     icon: 'i-lucide-git-branch',
     baseCost: 50e27,
-    costMultiplier: 1.14,
-    baseOutput: 50e24,
+    costMultiplier: 1.053,
+    baseOutput: 6.96e24,
     resource: 'credits',
     unlockKardashev: 4
   },
@@ -583,8 +583,8 @@ const buildings: BuildingDefinition[] = [
     description: 'The ultimate corporation. Transcends spacetime itself.',
     icon: 'i-lucide-hexagon',
     baseCost: 1e30,
-    costMultiplier: 1.15,
-    baseOutput: 1e27,
+    costMultiplier: 1.055,
+    baseOutput: 9.75e25,
     resource: 'credits',
     unlockKardashev: 4
   },
@@ -596,8 +596,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Extracts energy from the quantum vacuum of spacetime itself.',
     icon: 'i-lucide-waves',
     baseCost: 5e24,
-    costMultiplier: 1.12,
-    baseOutput: 1e27,
+    costMultiplier: 1.045,
+    baseOutput: 1.62e21,
     resource: 'energy',
     unlockKardashev: 4
   },
@@ -607,8 +607,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Harvests immense energy from topological defects in spacetime.',
     icon: 'i-lucide-zap',
     baseCost: 100e24,
-    costMultiplier: 1.13,
-    baseOutput: 1e29,
+    costMultiplier: 1.048,
+    baseOutput: 2.27e22,
     resource: 'energy',
     unlockKardashev: 4
   },
@@ -618,8 +618,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Carefully extracts energy from metastable vacuum states.',
     icon: 'i-lucide-alert-triangle',
     baseCost: 5e27,
-    costMultiplier: 1.13,
-    baseOutput: 1e31,
+    costMultiplier: 1.050,
+    baseOutput: 7.94e23,
     resource: 'energy',
     unlockKardashev: 4
   },
@@ -629,8 +629,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Creates artificial white holes as unlimited energy fountains.',
     icon: 'i-lucide-sun-dim',
     baseCost: 100e27,
-    costMultiplier: 1.14,
-    baseOutput: 1e33,
+    costMultiplier: 1.053,
+    baseOutput: 1.11e25,
     resource: 'energy',
     unlockKardashev: 4
   },
@@ -640,8 +640,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Taps residual energy from the cosmic microwave background at universal scale.',
     icon: 'i-lucide-radio',
     baseCost: 5e30,
-    costMultiplier: 1.15,
-    baseOutput: 5e34,
+    costMultiplier: 1.055,
+    baseOutput: 3.89e26,
     resource: 'energy',
     unlockKardashev: 4
   },
@@ -657,8 +657,8 @@ const buildings: BuildingDefinition[] = [
     description: 'A conglomerate operating across infinite parallel realities.',
     icon: 'i-lucide-infinity',
     baseCost: 1e33,
-    costMultiplier: 1.12,
-    baseOutput: 1e30,
+    costMultiplier: 1.045,
+    baseOutput: 1.22e29,
     resource: 'credits',
     unlockKardashev: 5
   },
@@ -668,8 +668,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Mines favorable probability outcomes from the quantum foam.',
     icon: 'i-lucide-dice-5',
     baseCost: 50e33,
-    costMultiplier: 1.13,
-    baseOutput: 50e30,
+    costMultiplier: 1.048,
+    baseOutput: 4.26e30,
     resource: 'credits',
     unlockKardashev: 5
   },
@@ -679,8 +679,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Writes new physical laws optimized for profit.',
     icon: 'i-lucide-code',
     baseCost: 1e36,
-    costMultiplier: 1.13,
-    baseOutput: 1e33,
+    costMultiplier: 1.050,
+    baseOutput: 5.97e31,
     resource: 'credits',
     unlockKardashev: 5
   },
@@ -690,8 +690,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Reverses thermodynamic entropy. Creates value from nothing.',
     icon: 'i-lucide-refresh-cw',
     baseCost: 50e36,
-    costMultiplier: 1.14,
-    baseOutput: 50e33,
+    costMultiplier: 1.053,
+    baseOutput: 2.09e33,
     resource: 'credits',
     unlockKardashev: 5
   },
@@ -701,8 +701,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Perfect knowledge of all realities. Perfect profit.',
     icon: 'i-lucide-eye',
     baseCost: 1e39,
-    costMultiplier: 1.15,
-    baseOutput: 1e36,
+    costMultiplier: 1.055,
+    baseOutput: 2.92e34,
     resource: 'credits',
     unlockKardashev: 5
   },
@@ -714,8 +714,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Triggers controlled universal collapses to harvest total cosmic energy.',
     icon: 'i-lucide-shrink',
     baseCost: 5e33,
-    costMultiplier: 1.12,
-    baseOutput: 1e37,
+    costMultiplier: 1.045,
+    baseOutput: 4.87e29,
     resource: 'energy',
     unlockKardashev: 5
   },
@@ -725,8 +725,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Siphons energy across the membrane between parallel universes.',
     icon: 'i-lucide-git-merge',
     baseCost: 100e33,
-    costMultiplier: 1.13,
-    baseOutput: 1e39,
+    costMultiplier: 1.048,
+    baseOutput: 6.82e30,
     resource: 'energy',
     unlockKardashev: 5
   },
@@ -736,8 +736,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Cultivates spontaneous consciousness fluctuations as energy sources.',
     icon: 'i-lucide-brain',
     baseCost: 5e36,
-    costMultiplier: 1.13,
-    baseOutput: 1e41,
+    costMultiplier: 1.050,
+    baseOutput: 2.39e32,
     resource: 'energy',
     unlockKardashev: 5
   },
@@ -747,8 +747,8 @@ const buildings: BuildingDefinition[] = [
     description: 'Converts entire universes into pure energy.',
     icon: 'i-lucide-bomb',
     baseCost: 100e36,
-    costMultiplier: 1.14,
-    baseOutput: 1e43,
+    costMultiplier: 1.053,
+    baseOutput: 3.34e33,
     resource: 'energy',
     unlockKardashev: 5
   },
@@ -758,21 +758,18 @@ const buildings: BuildingDefinition[] = [
     description: 'Harnesses the final singularity. Infinite energy from the end of time.',
     icon: 'i-lucide-star',
     baseCost: 5e39,
-    costMultiplier: 1.15,
-    baseOutput: 5e44,
+    costMultiplier: 1.055,
+    baseOutput: 1.17e35,
     resource: 'energy',
     unlockKardashev: 5
   }
 ]
 
-const clickUpgrades: ClickUpgradeDefinition[] = [
-  { id: 'reinforced_gloves', name: 'Reinforced Gloves', description: 'Better grip, harder clicks.', cost: 100, clickPowerAdd: 1 },
-  { id: 'neural_interface', name: 'Neural Interface', description: 'Think-to-click technology.', cost: 1000, clickPowerAdd: 5 },
-  { id: 'cybernetic_arm', name: 'Cybernetic Arm', description: 'Mechanical precision, organic ambition.', cost: 10000, clickPowerAdd: 25 },
-  { id: 'quantum_clicker', name: 'Quantum Clicker', description: 'Clicks in multiple dimensions simultaneously.', cost: 250000, clickPowerAdd: 100 },
-  { id: 'psionic_amplifier', name: 'Psionic Amplifier', description: 'Channel raw psychic energy into each click.', cost: 5e6, clickPowerAdd: 1000 },
-  { id: 'galactic_decree', name: 'Galactic Decree', description: 'Each click carries the weight of an empire.', cost: 1e9, clickPowerAdd: 50000 }
-]
+const clickUpgradeConfig: ClickUpgradeConfig = {
+  baseCost: 50,
+  costMultiplier: 1.18,
+  clickPowerAdd: 1,
+}
 
 // Real Kardashev scale: ~10^10 ratio between each level
 // Energy unit: TW (terawatts)
@@ -787,32 +784,74 @@ const kardashevLevels: KardashevLevel[] = [
 
 const prestigeUpgrades: PrestigeUpgradeDefinition[] = [
   {
-    id: 'efficient_management',
-    name: 'Efficient Management',
-    description: '+50% Credits per second',
-    cost: 5,
-    effect: { type: 'creditsMultiplier', value: 1.5 }
+    id: 'quantum_computing',
+    name: 'Quantum Computing',
+    description: '5x Credits per second — quantum algorithms revolutionize every transaction',
+    cost: 5000,
+    effect: { type: 'creditsMultiplier', value: 5 }
   },
   {
-    id: 'advanced_reactors',
-    name: 'Advanced Reactors',
-    description: '+50% Energy per second',
-    cost: 5,
-    effect: { type: 'energyMultiplier', value: 1.5 }
+    id: 'plasma_reactors',
+    name: 'Plasma Reactors',
+    description: '5x Energy per second — next-gen plasma confinement multiplies all energy',
+    cost: 5000,
+    effect: { type: 'energyMultiplier', value: 5 }
   },
   {
-    id: 'power_clicks',
-    name: 'Power Clicks',
-    description: '2x click power',
-    cost: 3,
-    effect: { type: 'clickMultiplier', value: 2 }
+    id: 'neural_clicking',
+    name: 'Neural Clicking',
+    description: '10x Click power — brain-computer interface amplifies click power tenfold',
+    cost: 7500,
+    effect: { type: 'clickMultiplier', value: 10 }
   },
   {
     id: 'quick_start',
     name: 'Quick Start',
-    description: 'Start with 5 Mining Drones and 5 Solar Arrays after prestige',
-    cost: 10,
-    effect: { type: 'quickStart', buildings: { mining_drone: 5, solar_array: 5 } }
+    description: 'Start with 25 Mining Drones and 25 Solar Arrays after prestige',
+    cost: 7500,
+    effect: { type: 'quickStart', buildings: { mining_drone: 25, solar_array: 25 } }
+  },
+  {
+    id: 'corporate_synergy',
+    name: 'Corporate Synergy',
+    description: '10x Credits per second — vertical integration creates unstoppable revenue',
+    cost: 10000,
+    effect: { type: 'creditsMultiplier', value: 10 }
+  },
+  {
+    id: 'fusion_breakthrough',
+    name: 'Fusion Breakthrough',
+    description: '10x Energy per second — cold fusion breakthrough, energy output explodes',
+    cost: 10000,
+    effect: { type: 'energyMultiplier', value: 10 }
+  },
+  {
+    id: 'drone_swarm_ai',
+    name: 'Drone Swarm AI',
+    description: '10x Pop output — autonomous drone networks multiply workforce tenfold',
+    cost: 15000,
+    effect: { type: 'popMultiplier', value: 10 }
+  },
+  {
+    id: 'bulk_contracts',
+    name: 'Bulk Contracts',
+    description: 'Buildings cost 75% less — galaxy-wide procurement slashes prices',
+    cost: 20000,
+    effect: { type: 'buildingCostMultiplier', value: 0.25 }
+  },
+  {
+    id: 'stellar_mastery',
+    name: 'Stellar Mastery',
+    description: '25x Energy per second — complete mastery over stellar energy harvesting',
+    cost: 30000,
+    effect: { type: 'energyMultiplier', value: 25 }
+  },
+  {
+    id: 'galactic_monopoly',
+    name: 'Galactic Monopoly',
+    description: '25x Credits per second — total economic dominance. Credits rain like starlight.',
+    cost: 50000,
+    effect: { type: 'creditsMultiplier', value: 25 }
   },
 ]
 
@@ -882,7 +921,7 @@ const repeatablePrestigeUpgrades: RepeatablePrestigeUpgrade[] = [
 export function useGameConfig() {
   return {
     buildings: readonly(buildings),
-    clickUpgrades: readonly(clickUpgrades),
+    clickUpgradeConfig: readonly(clickUpgradeConfig),
     kardashevLevels: readonly(kardashevLevels),
     prestigeUpgrades: readonly(prestigeUpgrades),
     repeatablePrestigeUpgrades: readonly(repeatablePrestigeUpgrades)

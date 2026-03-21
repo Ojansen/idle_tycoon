@@ -1,3 +1,5 @@
+import { calcCrashPoint } from '~/utils/gameMath'
+
 export function useCasino() {
   const { state, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
 
@@ -30,7 +32,7 @@ export function useCasino() {
   }
 
   function generateCrashPoint(): number {
-    return Math.max(1.0, 0.97 / (1 - Math.random()))
+    return calcCrashPoint(Math.random())
   }
 
   return {

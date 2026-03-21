@@ -104,6 +104,11 @@ function onSetupComplete() {
           <CasinoView />
         </div>
 
+        <!-- Stats tab -->
+        <div v-else-if="activeTab === 'stats'">
+          <GameStatsPanel />
+        </div>
+
         <!-- Profile tab -->
         <div v-else-if="activeTab === 'profile'">
           <GameProfilePanel />

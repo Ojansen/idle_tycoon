@@ -155,7 +155,7 @@ const ascensionPerkPools: Record<number, AscensionPerk[]> = {
 const allPerks: AscensionPerk[] = Object.values(ascensionPerkPools).flat()
 
 export function useAscensionPerks() {
-  const { state } = useGameState()
+  const { state, kardashevLevel } = useGameState()
 
   function getPerksForLevel(level: number): AscensionPerk[] {
     return ascensionPerkPools[level] || []
@@ -195,7 +195,7 @@ export function useAscensionPerks() {
   const pendingAscensionLevels = computed(() => {
     const pending: number[] = []
     for (let level = 1; level <= 5; level++) {
-      if (state.value.kardashevHighWaterMark >= level && !hasChosenPerkForLevel(level)) {
+      if (kardashevLevel.value >= level && !hasChosenPerkForLevel(level)) {
         pending.push(level)
       }
     }

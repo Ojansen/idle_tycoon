@@ -47,12 +47,18 @@ async function enterGame() {
   emit('complete')
 }
 
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const restoreError = ref('')
+
 async function restoreAccount() {
   const id = restoreId.value.trim()
   if (!id) return
-
+  if (!uuidRegex.test(id)) {
+    restoreError.value = 'Invalid account ID format. Must be a valid UUID.'
+    return
+  }
+  restoreError.value = ''
   playerId.value = id
-  // Reload to fetch the save with this ID
   window.location.reload()
 }
 
@@ -184,6 +190,7 @@ function copyAccountId() {
         placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
         size="lg"
       />
+      <p v-if="restoreError" class="text-xs text-red-400">{{ restoreError }}</p>
 
       <div class="flex gap-3">
         <UButton color="neutral" variant="outline" block @click="restoreMode = false">

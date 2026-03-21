@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const { state } = useGameState()
+const { state, creditsPerSecond } = useGameState()
+const { formatNumber } = useNumberFormat()
 
 const activeTab = defineModel<string>('tab', { default: 'empire' })
 const { pendingAscensionLevels } = useAscensionPerks()
@@ -13,6 +14,7 @@ const tabs = [
   { key: 'research', label: 'Research', icon: 'i-lucide-flask-conical' },
   { key: 'market', label: 'Market', icon: 'i-lucide-trending-up' },
   { key: 'casino', label: 'Casino', icon: 'i-lucide-dices' },
+  { key: 'stats', label: 'Stats', icon: 'i-lucide-bar-chart-3' },
   { key: 'profile', label: 'Profile', icon: 'i-lucide-user-circle' },
 ]
 
@@ -23,7 +25,7 @@ function selectTab(key: string) {
 </script>
 
 <template>
-  <header class="flex items-center justify-between px-4 py-3 border-b border-white/10">
+  <header class="sticky top-0 z-50 bg-zinc-950/95 backdrop-blur-sm flex items-center justify-between px-4 py-3 border-b border-white/10">
     <div class="flex items-center gap-4">
       <!-- Hamburger button (mobile only) -->
       <UButton
@@ -62,11 +64,11 @@ function selectTab(key: string) {
     </div>
 
     <div class="flex items-center gap-4 text-sm text-zinc-400">
-      <span v-if="state.prestigeCount > 0">
-        <UIcon name="i-lucide-star" class="text-amber-400 align-middle" />
-        {{ state.influence }} Influence
+      <span>
+        <UIcon name="i-lucide-banknote" class="text-emerald-400 align-middle" />
+        ₢{{ formatNumber(state.credits) }}
       </span>
-      <span>Clicks: {{ state.totalClicks }}</span>
+      <span class="hidden sm:inline text-xs text-zinc-500">{{ formatNumber(creditsPerSecond) }}/s</span>
     </div>
   </header>
 
@@ -113,11 +115,15 @@ function selectTab(key: string) {
 
         <!-- Stats at bottom -->
         <div class="mt-auto pt-6 border-t border-white/10 text-sm text-zinc-400 space-y-2">
+          <div>
+            <UIcon name="i-lucide-banknote" class="text-emerald-400 align-middle" />
+            ₢{{ formatNumber(state.credits) }}
+            <span class="text-xs text-zinc-500 ml-1">{{ formatNumber(creditsPerSecond) }}/s</span>
+          </div>
           <div v-if="state.prestigeCount > 0">
             <UIcon name="i-lucide-star" class="text-amber-400 align-middle" />
             {{ state.influence }} Influence
           </div>
-          <div>Clicks: {{ state.totalClicks }}</div>
         </div>
       </div>
     </template>
