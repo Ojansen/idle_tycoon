@@ -4,6 +4,7 @@ const { loadGame, startAutoSave } = useGamePersistence()
 const { simulatePrices } = useStockMarket()
 const { tickExchange } = useResourceExchange()
 const { checkAchievements, suppressExistingToasts } = useAchievements()
+const { sample: sampleHistory } = useProductionHistory()
 
 // Game tick - 100ms (includes price simulation + exchange decay)
 useIntervalFn(() => {
@@ -12,10 +13,11 @@ useIntervalFn(() => {
   tickExchange(0.1)
 }, 100)
 
-// Achievement check - every 1s
+// Achievement check + production history sampling - every 1s
 useIntervalFn(() => {
   if (state.value.setupComplete) {
     checkAchievements()
+    sampleHistory()
   }
 }, 1000)
 
@@ -28,6 +30,19 @@ const loaded = ref(false)
 // Offline earnings modal
 const offlineData = ref<{ credits: number; energy: number; seconds: number } | null>(null)
 const showOfflineModal = ref(false)
+
+// Victory modal
+const showVictoryModal = ref(false)
+
+watch(
+  () => state.value.megastructures.omega_structure?.completed,
+  (completed) => {
+    if (completed && !state.value.victoryAchieved) {
+      state.value.victoryAchieved = true
+      showVictoryModal.value = true
+    }
+  }
+)
 
 onMounted(async () => {
   const { offlineCredits, offlineEnergy, offlineSeconds } = await loadGame()
@@ -84,6 +99,11 @@ function onSetupComplete() {
           </div>
         </div>
 
+        <!-- Overview tab -->
+        <div v-else-if="activeTab === 'overview'">
+          <GameOverviewPanel />
+        </div>
+
         <!-- Prestige tab -->
         <div v-else-if="activeTab === 'prestige'">
           <GamePrestigePanel />
@@ -123,6 +143,9 @@ function onSetupComplete() {
         :energy="offlineData.energy"
         :seconds="offlineData.seconds"
       />
+
+      <!-- Victory modal -->
+      <GameVictoryModal v-model:open="showVictoryModal" />
     </template>
   </div>
 </template>

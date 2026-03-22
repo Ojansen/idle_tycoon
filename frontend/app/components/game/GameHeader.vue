@@ -10,6 +10,7 @@ const mobileMenuOpen = ref(false)
 
 const tabs = [
   { key: 'empire', label: 'Empire', icon: 'i-lucide-building-2' },
+  { key: 'overview', label: 'Overview', icon: 'i-lucide-gauge' },
   { key: 'prestige', label: 'Prestige', icon: 'i-lucide-star' },
   { key: 'research', label: 'Research', icon: 'i-lucide-flask-conical' },
   { key: 'market', label: 'Market', icon: 'i-lucide-trending-up' },
