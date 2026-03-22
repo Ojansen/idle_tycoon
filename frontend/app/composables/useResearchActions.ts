@@ -4,7 +4,7 @@ export type MegastructureState = 'locked' | 'available' | 'building' | 'awaiting
 
 export function useResearchActions() {
   const { state, kardashevLevel } = useGameState()
-  const { researchTree, megastructures } = useResearchConfig()
+  const { researchTree, megastructures, repeatableResearchDefs } = useResearchConfig()
   const toast = useToast()
 
   // ---------------------------------------------------------------------------
@@ -83,6 +83,14 @@ export function useResearchActions() {
       }
     }
 
+    for (const rep of repeatableResearchDefs) {
+      if (rep.effect.stat !== stat) continue
+      const level = state.value.repeatableResearch[rep.id] || 0
+      if (level > 0) {
+        multiplier *= Math.pow(rep.effect.valuePerLevel, level)
+      }
+    }
+
     return multiplier
   }
 
@@ -99,9 +107,78 @@ export function useResearchActions() {
     state.value.activeResearch = null
   }
 
+  // ---------------------------------------------------------------------------
+  // Repeatable research helpers
+  // ---------------------------------------------------------------------------
+
+  function isAllFixedResearchComplete(): boolean {
+    return state.value.completedResearch.length >= researchTree.length
+  }
+
+  function getRepeatableResearchLevel(repId: string): number {
+    return state.value.repeatableResearch[repId] || 0
+  }
+
+  function getRepeatableResearchCost(repId: string): number {
+    const def = repeatableResearchDefs.find(r => r.id === repId)
+    if (!def) return Infinity
+    const level = getRepeatableResearchLevel(repId)
+    return Math.floor(def.baseEnergyCost * Math.pow(def.costScale, level))
+  }
+
+  function getRepeatableResearchTime(repId: string): number {
+    const def = repeatableResearchDefs.find(r => r.id === repId)
+    if (!def) return Infinity
+    const level = getRepeatableResearchLevel(repId)
+    return def.baseResearchTime * Math.pow(def.timeScale, level)
+  }
+
+  function startRepeatableResearch(repId: string): boolean {
+    if (state.value.activeResearch !== null) return false
+    const def = repeatableResearchDefs.find(r => r.id === repId)
+    if (!def) return false
+    if (state.value.energy <= 0) return false
+
+    state.value.activeResearch = { techId: `rep:${repId}`, elapsed: 0, energySpent: 0 }
+    return true
+  }
+
   function tickResearch(dt: number): void {
     const active = state.value.activeResearch
     if (!active) return
+
+    // Handle repeatable research (techId starts with 'rep:')
+    if (active.techId.startsWith('rep:')) {
+      const repId = active.techId.slice(4)
+      const def = repeatableResearchDefs.find(r => r.id === repId)
+      if (!def) return
+
+      const totalTime = getRepeatableResearchTime(repId)
+      const totalCost = getRepeatableResearchCost(repId)
+      const drainRate = totalCost / totalTime
+      const drain = drainRate * dt
+
+      if (state.value.energy < drain) return
+
+      state.value.energy -= drain
+
+      const speedMult = getResearchSpeedMultiplier()
+      const newElapsed = active.elapsed + dt * speedMult
+      const newEnergySpent = active.energySpent + drain
+
+      if (newElapsed >= totalTime) {
+        state.value.repeatableResearch[repId] = (state.value.repeatableResearch[repId] || 0) + 1
+        state.value.activeResearch = null
+        toast.success({ title: 'Research Complete!', message: `${def.name} (Lv ${state.value.repeatableResearch[repId]})` })
+      } else {
+        state.value.activeResearch = {
+          techId: active.techId,
+          elapsed: newElapsed,
+          energySpent: newEnergySpent
+        }
+      }
+      return
+    }
 
     const def = researchTree.find(r => r.id === active.techId)
     if (!def) return
@@ -140,7 +217,15 @@ export function useResearchActions() {
     if (!def) return false
     if (megaId in state.value.megastructures) return false
     if (def.unlockKardashev > kardashevLevel.value) return false
-    return def.requiredResearch.every(techId => isResearchComplete(techId))
+    if (!def.requiredResearch.every(techId => isResearchComplete(techId))) return false
+
+    // Omega Structure requires all other megastructures completed
+    if (megaId === 'omega_structure') {
+      const baseMegas = ['stellar_forge', 'dyson_brain', 'nidavellir_forge', 'matrioshka_brain', 'genesis_engine', 'cosmic_engine', 'reality_engine']
+      if (!baseMegas.every(id => state.value.megastructures[id]?.completed)) return false
+    }
+
+    return true
   }
 
   function getMegastructureState(megaId: string): MegastructureState {
@@ -223,22 +308,40 @@ export function useResearchActions() {
 
   const isResearching = computed(() => state.value.activeResearch !== null)
 
+  const allFixedResearchComplete = computed(() => {
+    return state.value.completedResearch.length >= researchTree.length
+  })
+
   const activeResearchDef = computed(() => {
     const active = state.value.activeResearch
     if (!active) return null
+    if (active.techId.startsWith('rep:')) {
+      const repId = active.techId.slice(4)
+      return repeatableResearchDefs.find(r => r.id === repId) ?? null
+    }
     return researchTree.find(r => r.id === active.techId) ?? null
   })
 
   const researchProgress = computed(() => {
     const active = state.value.activeResearch
     if (!active || !activeResearchDef.value) return 0
-    return Math.min(active.elapsed / activeResearchDef.value.researchTime, 1)
+    if (active.techId.startsWith('rep:')) {
+      const repId = active.techId.slice(4)
+      const totalTime = getRepeatableResearchTime(repId)
+      return Math.min(active.elapsed / totalTime, 1)
+    }
+    const def = activeResearchDef.value as { researchTime: number }
+    return Math.min(active.elapsed / def.researchTime, 1)
   })
 
   const energyDrainPerSecond = computed(() => {
     const active = state.value.activeResearch
     if (!active || !activeResearchDef.value) return 0
-    const def = activeResearchDef.value
+    if (active.techId.startsWith('rep:')) {
+      const repId = active.techId.slice(4)
+      return getRepeatableResearchCost(repId) / getRepeatableResearchTime(repId)
+    }
+    const def = activeResearchDef.value as { energyCost: number; researchTime: number }
     return def.energyCost / def.researchTime
   })
 
@@ -254,6 +357,12 @@ export function useResearchActions() {
     startResearch,
     cancelResearch,
     tickResearch,
+    // Repeatable research
+    isAllFixedResearchComplete,
+    getRepeatableResearchLevel,
+    getRepeatableResearchCost,
+    getRepeatableResearchTime,
+    startRepeatableResearch,
     // Megastructure queries
     isMegastructureAvailable,
     getMegastructureState,
@@ -263,6 +372,7 @@ export function useResearchActions() {
     tickMegastructures,
     // Computeds
     isResearching,
+    allFixedResearchComplete,
     activeResearchDef,
     researchProgress,
     energyDrainPerSecond

@@ -46,7 +46,7 @@ const ascensionPerkPools: Record<number, AscensionPerk[]> = {
       description: '-30% building costs permanently',
       icon: 'i-lucide-hard-hat',
       kardashevLevel: 2,
-      effect: { stat: 'buildingCostMultiplier', value: 0.7 }
+      effect: { stat: 'buildingCostMultiplier', value: 0.8 }
     },
     {
       id: 'stellar_harvesting',
@@ -59,10 +59,10 @@ const ascensionPerkPools: Record<number, AscensionPerk[]> = {
     {
       id: 'corporate_dominance',
       name: 'Corporate Dominance',
-      description: '+100% Casino winnings permanently',
+      description: '+50% Casino winnings permanently',
       icon: 'i-lucide-trophy',
       kardashevLevel: 2,
-      effect: { stat: 'casinoMultiplier', value: 2.0 }
+      effect: { stat: 'casinoMultiplier', value: 1.5 }
     }
   ],
 
@@ -74,23 +74,23 @@ const ascensionPerkPools: Record<number, AscensionPerk[]> = {
       description: '-50% building costs permanently',
       icon: 'i-lucide-truck',
       kardashevLevel: 3,
-      effect: { stat: 'buildingCostMultiplier', value: 0.5 }
+      effect: { stat: 'buildingCostMultiplier', value: 0.7 }
     },
     {
       id: 'dark_energy_mastery',
       name: 'Dark Energy Mastery',
-      description: '+100% Energy/s permanently',
+      description: '+50% Energy/s permanently',
       icon: 'i-lucide-moon',
       kardashevLevel: 3,
-      effect: { stat: 'energyMultiplier', value: 2.0 }
+      effect: { stat: 'energyMultiplier', value: 1.5 }
     },
     {
       id: 'temporal_arbitrage',
       name: 'Temporal Arbitrage',
-      description: '+200% Credits/s permanently',
+      description: '+50% Credits/s permanently',
       icon: 'i-lucide-timer',
       kardashevLevel: 3,
-      effect: { stat: 'creditsMultiplier', value: 3.0 }
+      effect: { stat: 'creditsMultiplier', value: 1.5 }
     }
   ],
 
@@ -99,26 +99,26 @@ const ascensionPerkPools: Record<number, AscensionPerk[]> = {
     {
       id: 'universal_omniscience',
       name: 'Universal Omniscience',
-      description: '+200% all production permanently',
+      description: '+50% all production permanently',
       icon: 'i-lucide-eye',
       kardashevLevel: 4,
-      effect: { stat: 'creditsMultiplier', value: 3.0 }
+      effect: { stat: 'creditsMultiplier', value: 1.5 }
     },
     {
       id: 'vacuum_manipulation',
       name: 'Vacuum Manipulation',
-      description: '+500% Energy/s permanently',
+      description: '+100% Energy/s permanently',
       icon: 'i-lucide-waves',
       kardashevLevel: 4,
-      effect: { stat: 'energyMultiplier', value: 6.0 }
+      effect: { stat: 'energyMultiplier', value: 2.0 }
     },
     {
       id: 'infinite_workforce',
       name: 'Infinite Workforce',
-      description: '+500% Pop output permanently',
+      description: '+100% Pop output permanently',
       icon: 'i-lucide-users',
       kardashevLevel: 4,
-      effect: { stat: 'popMultiplier', value: 6.0 }
+      effect: { stat: 'popMultiplier', value: 2.0 }
     }
   ],
 
@@ -127,26 +127,26 @@ const ascensionPerkPools: Record<number, AscensionPerk[]> = {
     {
       id: 'reality_engineering',
       name: 'Reality Engineering',
-      description: '+1000% all production permanently',
+      description: '+100% all production permanently',
       icon: 'i-lucide-code',
       kardashevLevel: 5,
-      effect: { stat: 'creditsMultiplier', value: 11.0 }
+      effect: { stat: 'creditsMultiplier', value: 2.0 }
     },
     {
       id: 'entropy_reversal',
       name: 'Entropy Reversal',
-      description: '+1000% Energy/s permanently',
+      description: '+100% Energy/s permanently',
       icon: 'i-lucide-refresh-cw',
       kardashevLevel: 5,
-      effect: { stat: 'energyMultiplier', value: 11.0 }
+      effect: { stat: 'energyMultiplier', value: 2.0 }
     },
     {
       id: 'omega_point',
       name: 'Omega Point',
-      description: '+1000% Click power permanently',
+      description: '+100% Click power permanently',
       icon: 'i-lucide-star',
       kardashevLevel: 5,
-      effect: { stat: 'clickMultiplier', value: 11.0 }
+      effect: { stat: 'clickMultiplier', value: 2.0 }
     }
   ]
 }
