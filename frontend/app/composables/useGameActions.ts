@@ -94,6 +94,7 @@ export function useGameActions() {
     if (state.value.prestigeUpgradesBought.includes(upgradeId)) return false
     const upgrade = prestigeUpgrades.find(u => u.id === upgradeId)
     if (!upgrade || state.value.influence < upgrade.cost) return false
+    if (upgrade.requiredKardashev != null && state.value.kardashevHighWaterMark < upgrade.requiredKardashev) return false
 
     state.value.influence -= upgrade.cost
     state.value.prestigeUpgradesBought.push(upgradeId)

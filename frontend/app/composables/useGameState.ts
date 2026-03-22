@@ -1,5 +1,5 @@
 import type { GameState, TraitStat } from '~/types/game'
-import { calcBuildingMultiplier, calcClickPower, calcBuildingCost as calcBuildingCostPure } from '~/utils/gameMath'
+import { calcBuildingMultiplier, calcClickPower, calcBuildingCost as calcBuildingCostPure, calcMaxBuyable, KARDASHEV_MILESTONE_GRANTS } from '~/utils/gameMath'
 
 function createDefaultState(): GameState {
   const now = Date.now()
@@ -32,7 +32,9 @@ function createDefaultState(): GameState {
     runPlayTime: 0,
     allTimeClicks: 0,
     lastSaveTimestamp: now,
-    createdAt: now
+    createdAt: now,
+    victoryAchieved: false,
+    repeatableResearch: {}
   }
 }
 
@@ -188,15 +190,28 @@ export function useGameState() {
     return calcBuildingCostPure(def.baseCost, def.costMultiplier, owned, quantity, combinedMult)
   }
 
+  function getMaxBuyableCount(buildingId: string): number {
+    const def = buildings.find(b => b.id === buildingId)
+    if (!def) return 0
+    const owned = state.value.buildings[buildingId] || 0
+    const combinedMult = getPrestigeMultiplier('buildingCostMultiplier')
+      * getTraitMultiplier('buildingCostMultiplier')
+      * getAscensionMultiplier('buildingCostMultiplier')
+      * getRepeatableMultiplier('buildingCostMultiplier')
+      * getResearchMult('buildingCostMultiplier')
+    return calcMaxBuyable(def.baseCost, def.costMultiplier, owned, state.value.credits, combinedMult)
+  }
+
   function tick() {
     const dt = 0.1
-    const creditGain = creditsPerSecond.value * dt
-    const energyGain = energyPerSecond.value * dt
+    const { netCreditsPerSecond, netEnergyPerSecond } = useUpkeep()
+    const creditGain = netCreditsPerSecond.value * dt
+    const energyGain = netEnergyPerSecond.value * dt
 
-    state.value.credits += creditGain
-    state.value.totalCreditsEarned += creditGain
-    state.value.energy += energyGain
-    state.value.totalEnergyEarned += energyGain
+    state.value.credits = Math.max(0, state.value.credits + creditGain)
+    state.value.energy = Math.max(0, state.value.energy + energyGain)
+    if (creditGain > 0) state.value.totalCreditsEarned += creditGain
+    if (energyGain > 0) state.value.totalEnergyEarned += energyGain
     state.value.totalPlayTime += dt
     state.value.runPlayTime += dt
 
@@ -206,6 +221,11 @@ export function useGameState() {
     tickMegastructures(dt)
 
     if (kardashevLevel.value > state.value.kardashevHighWaterMark) {
+      // Grant one-time milestone influence for each new Kardashev level reached
+      for (let lvl = state.value.kardashevHighWaterMark + 1; lvl <= kardashevLevel.value; lvl++) {
+        const grant = KARDASHEV_MILESTONE_GRANTS[lvl]
+        if (grant) state.value.influence += grant
+      }
       state.value.kardashevHighWaterMark = kardashevLevel.value
     }
   }
@@ -229,6 +249,8 @@ export function useGameState() {
     saved.totalPlayTime ??= 0
     saved.runPlayTime ??= 0
     saved.allTimeClicks ??= 0
+    saved.victoryAchieved ??= false
+    saved.repeatableResearch ??= {}
     state.value = saved
   }
 
@@ -246,6 +268,7 @@ export function useGameState() {
     getRepeatableMultiplier,
     getBuildingMultiplier,
     getBuildingCost,
+    getMaxBuyableCount,
     tick,
     loadState
   }

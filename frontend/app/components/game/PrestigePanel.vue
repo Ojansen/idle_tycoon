@@ -1,22 +1,33 @@
 <script setup lang="ts">
 const { state } = useGameState()
 const { canPrestige, getPrestigeInfluenceGain, performPrestige, buyPrestigeUpgrade, getRepeatableCost, buyRepeatableUpgrade } = useGameActions()
-const { prestigeUpgrades, repeatablePrestigeUpgrades } = useGameConfig()
+const { prestigeUpgrades, repeatablePrestigeUpgrades, kardashevLevels } = useGameConfig()
 const { formatNumber } = useNumberFormat()
 
 const showConfirm = ref(false)
 
 const currentInfluenceGain = computed(() => getPrestigeInfluenceGain())
-const nextInfluenceThreshold = computed(() => {
-  const next = currentInfluenceGain.value + 1
-  return next * next * 100000
-})
-const influenceProgress = computed(() => {
-  const current = currentInfluenceGain.value
-  const currentThreshold = current * current * 100000
-  const nextThreshold = nextInfluenceThreshold.value
-  const progress = (state.value.totalEnergyEarned - currentThreshold) / (nextThreshold - currentThreshold)
-  return Math.min(Math.max(progress * 100, 0), 100)
+
+const prestigeTiers = computed(() => {
+  const tiers: { level: number; name: string; unlocked: boolean; upgrades: typeof prestigeUpgrades.value[] }[] = []
+  const tierMap = new Map<number, typeof prestigeUpgrades.value[]>()
+
+  for (const upgrade of prestigeUpgrades) {
+    const k = upgrade.requiredKardashev ?? 0
+    if (!tierMap.has(k)) tierMap.set(k, [])
+    tierMap.get(k)!.push(upgrade)
+  }
+
+  for (const [level, upgrades] of [...tierMap.entries()].sort((a, b) => a[0] - b[0])) {
+    const kDef = kardashevLevels.find(k => k.level === level)
+    tiers.push({
+      level,
+      name: level === 0 ? 'Starter' : `Requires ${kDef?.name ?? `Type ${level}`}`,
+      unlocked: state.value.kardashevHighWaterMark >= level,
+      upgrades
+    })
+  }
+  return tiers
 })
 
 function handlePrestige() {
@@ -39,7 +50,7 @@ function handlePrestige() {
       <div class="flex items-center gap-3 text-sm">
         <span class="text-amber-400 font-bold">
           <UIcon name="i-lucide-star" class="align-middle" />
-          {{ state.influence }} Influence
+          {{ formatNumber(state.influence) }} Influence
         </span>
         <span class="text-zinc-500">Prestiges: {{ state.prestigeCount }}</span>
       </div>
@@ -55,17 +66,11 @@ function handlePrestige() {
         </p>
         <p class="text-sm text-zinc-300 mb-2">
           You will gain
-          <span class="text-amber-300 font-bold text-lg">{{ currentInfluenceGain }} Influence</span>
+          <span class="text-amber-300 font-bold text-lg">{{ formatNumber(currentInfluenceGain) }} Influence</span>
         </p>
-
-        <!-- Progress to next influence -->
-        <div class="mb-4 space-y-1">
-          <div class="flex justify-between text-xs text-zinc-500">
-            <span>{{ formatNumber(state.totalEnergyEarned) }} / {{ formatNumber(nextInfluenceThreshold) }} TW</span>
-            <span>Next: {{ currentInfluenceGain + 1 }} Influence</span>
-          </div>
-          <UProgress :model-value="influenceProgress" size="xs" color="warning" />
-        </div>
+        <p class="text-xs text-zinc-500 mb-4">
+          Total energy earned: {{ formatNumber(state.totalEnergyEarned) }} TW
+        </p>
 
         <UButton
           color="warning"
@@ -83,31 +88,41 @@ function handlePrestige() {
       <!-- Prestige shop -->
       <div class="lg:col-span-2 rounded-lg bg-white/[0.03] border border-white/10 p-4">
         <h3 class="text-xs font-semibold uppercase tracking-wider text-amber-400 mb-3">Prestige Shop</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <div
-            v-for="upgrade in prestigeUpgrades"
-            :key="upgrade.id"
-            class="flex items-center justify-between px-3 py-3 rounded-lg"
-            :class="state.prestigeUpgradesBought.includes(upgrade.id) ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-white/5 border border-white/5'"
-          >
-            <div class="min-w-0 flex-1">
-              <div class="text-sm font-medium text-white">{{ upgrade.name }}</div>
-              <div class="text-xs text-zinc-400">{{ upgrade.description }}</div>
-            </div>
-            <UBadge v-if="state.prestigeUpgradesBought.includes(upgrade.id)" color="success" variant="subtle" size="xs" class="ml-2 shrink-0">
-              Owned
+        <div v-for="tier in prestigeTiers" :key="tier.level" class="mb-4 last:mb-0">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs font-semibold uppercase tracking-wider" :class="tier.unlocked ? 'text-zinc-400' : 'text-zinc-600'">
+              {{ tier.name }}
+            </span>
+            <UBadge v-if="!tier.unlocked" color="neutral" variant="subtle" size="xs">
+              <UIcon name="i-lucide-lock" class="mr-1" />Locked
             </UBadge>
-            <UButton
-              v-else
-              size="xs"
-              color="warning"
-              variant="outline"
-              :disabled="state.influence < upgrade.cost"
-              class="ml-2 shrink-0"
-              @click="buyPrestigeUpgrade(upgrade.id)"
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" :class="{ 'opacity-40 pointer-events-none': !tier.unlocked }">
+            <div
+              v-for="upgrade in tier.upgrades"
+              :key="upgrade.id"
+              class="flex items-center justify-between px-3 py-3 rounded-lg"
+              :class="state.prestigeUpgradesBought.includes(upgrade.id) ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-white/5 border border-white/5'"
             >
-              {{ upgrade.cost }} Inf
-            </UButton>
+              <div class="min-w-0 flex-1">
+                <div class="text-sm font-medium text-white">{{ upgrade.name }}</div>
+                <div class="text-xs text-zinc-400">{{ upgrade.description }}</div>
+              </div>
+              <UBadge v-if="state.prestigeUpgradesBought.includes(upgrade.id)" color="success" variant="subtle" size="xs" class="ml-2 shrink-0">
+                Owned
+              </UBadge>
+              <UButton
+                v-else
+                size="xs"
+                color="warning"
+                variant="outline"
+                :disabled="state.influence < upgrade.cost || !tier.unlocked"
+                class="ml-2 shrink-0"
+                @click="buyPrestigeUpgrade(upgrade.id)"
+              >
+                {{ formatNumber(upgrade.cost) }} Inf
+              </UButton>
+            </div>
           </div>
         </div>
       </div>
@@ -141,7 +156,7 @@ function handlePrestige() {
             class="shrink-0"
             @click="buyRepeatableUpgrade(upgrade.id)"
           >
-            {{ getRepeatableCost(upgrade.id) }} Inf
+            {{ formatNumber(getRepeatableCost(upgrade.id)) }} Inf
           </UButton>
           <UBadge v-else color="success" variant="subtle" size="xs" class="shrink-0">
             MAX

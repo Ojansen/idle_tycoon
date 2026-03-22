@@ -8,6 +8,8 @@ export interface BuildingDefinition {
   baseOutput: number
   resource: 'credits' | 'energy' | 'autoclick'
   unlockKardashev: number
+  energyUpkeep?: number    // energy/s consumed per building (credit & pop buildings)
+  creditsUpkeep?: number   // credits/s consumed per building (energy & pop buildings)
 }
 
 export interface PrestigeUpgradeDefinition {
@@ -16,6 +18,7 @@ export interface PrestigeUpgradeDefinition {
   description: string
   cost: number
   effect: PrestigeEffect
+  requiredKardashev?: number
 }
 
 export type PrestigeEffect =
@@ -51,7 +54,7 @@ export interface KardashevLevel {
   energyPerSecond: number
 }
 
-export type TraitStat = 'creditsMultiplier' | 'energyMultiplier' | 'clickMultiplier' | 'popMultiplier' | 'buildingCostMultiplier' | 'casinoMultiplier' | 'casinoDisabled'
+export type TraitStat = 'creditsMultiplier' | 'energyMultiplier' | 'clickMultiplier' | 'popMultiplier' | 'buildingCostMultiplier' | 'casinoMultiplier' | 'casinoDisabled' | 'upkeepReduction'
 
 export interface TraitEffect {
   stat: TraitStat
@@ -91,6 +94,7 @@ export type ResearchEffect =
   | { type: 'multiplier'; stat: TraitStat; value: number }
   | { type: 'unlockMegastructure'; megastructureId: string }
   | { type: 'researchSpeed'; value: number }
+  | { type: 'upkeepReduction'; value: number }
 
 export interface ResearchDefinition {
   id: string
@@ -106,6 +110,19 @@ export interface ResearchDefinition {
   unlockKardashev: number
 }
 
+export interface RepeatableResearchDefinition {
+  id: string
+  name: string
+  description: string
+  icon: string
+  branch: ResearchBranch
+  baseEnergyCost: number
+  costScale: number
+  baseResearchTime: number
+  timeScale: number
+  effect: { stat: TraitStat; valuePerLevel: number }
+}
+
 export interface MegastructureDefinition {
   id: string
   name: string
@@ -118,6 +135,8 @@ export interface MegastructureDefinition {
   requiredResearch: string[]
   unlockKardashev: number
   effects: ResearchEffect[]
+  energyUpkeepPerSecond?: number
+  creditsUpkeepPerSecond?: number
 }
 
 export interface ResearchProgress {
@@ -162,4 +181,6 @@ export interface GameState {
   allTimeClicks: number
   lastSaveTimestamp: number
   createdAt: number
+  victoryAchieved: boolean
+  repeatableResearch: Record<string, number>
 }

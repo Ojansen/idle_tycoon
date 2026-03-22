@@ -5,6 +5,7 @@ import {
   calcRepeatableCost,
   calcBuildingMultiplier,
   calcBuildingCost,
+  calcMaxBuyable,
   calcClickPower,
   calcCreditsReceived,
   calcEnergyReceived,
@@ -65,33 +66,45 @@ describe('formatNumber', () => {
 })
 
 // ── calcPrestigeInfluence ──
+// Formula: floor(log2(totalEnergyEarned / 1e5) * 50)
+// Kardashev milestone grants are awarded separately (one-time, not per-prestige)
 
 describe('calcPrestigeInfluence', () => {
   it('returns 0 for 0 energy', () => {
     expect(calcPrestigeInfluence(0)).toBe(0)
   })
 
-  it('returns 1 for exactly 100000 energy', () => {
-    expect(calcPrestigeInfluence(100000)).toBe(1)
+  it('returns 0 for energy below threshold (1e5)', () => {
+    expect(calcPrestigeInfluence(99999)).toBe(0)
+    expect(calcPrestigeInfluence(1e5)).toBe(0) // log2(1) = 0
   })
 
-  it('returns 2 for 400000 energy', () => {
-    expect(calcPrestigeInfluence(400000)).toBe(2)
+  it('returns ~166 for 1e6 energy', () => {
+    // log2(10) * 50 ≈ 166
+    expect(calcPrestigeInfluence(1e6)).toBe(Math.floor(Math.log2(10) * 50))
   })
 
-  it('returns 100 for 1e9 energy', () => {
-    expect(calcPrestigeInfluence(1e9)).toBe(100)
+  it('returns ~830 for 1e10 energy', () => {
+    // log2(1e5) * 50 ≈ 830
+    expect(calcPrestigeInfluence(1e10)).toBe(Math.floor(Math.log2(1e5) * 50))
+  })
+
+  it('growth is logarithmic — doubling energy adds exactly 50 influence', () => {
+    const at1e10 = calcPrestigeInfluence(1e10)
+    const at2e10 = calcPrestigeInfluence(2e10)
+    expect(at2e10 - at1e10).toBe(50)
+  })
+
+  it('late game stays controlled — 1e30 gives only ~4.2K', () => {
+    const result = calcPrestigeInfluence(1e30)
+    // log2(1e25) * 50 ≈ 4152
+    expect(result).toBeLessThan(5000)
+    expect(result).toBeGreaterThan(4000)
   })
 
   it('floors fractional results', () => {
-    // 150000 → sqrt(1.5) ≈ 1.22 → floor = 1
-    expect(calcPrestigeInfluence(150000)).toBe(1)
-    // 399999 → sqrt(3.99999) ≈ 1.999 → floor = 1
-    expect(calcPrestigeInfluence(399999)).toBe(1)
-  })
-
-  it('returns 0 for energy below threshold', () => {
-    expect(calcPrestigeInfluence(99999)).toBe(0)
+    const result = calcPrestigeInfluence(2e5) // log2(2) * 50 = 50 exactly
+    expect(result).toBe(50)
   })
 })
 
@@ -218,64 +231,91 @@ describe('calcClickPower', () => {
 // ── calcCreditsReceived (exchange) ──
 
 describe('calcCreditsReceived', () => {
+  const PROD = 1000 // test production rate
+
   it('returns 0 for 0 amount', () => {
-    expect(calcCreditsReceived(0, 0)).toBe(0)
+    expect(calcCreditsReceived(0, 0, PROD)).toBe(0)
   })
 
   it('returns 0 for negative amount', () => {
-    expect(calcCreditsReceived(-10, 0)).toBe(0)
+    expect(calcCreditsReceived(-10, 0, PROD)).toBe(0)
+  })
+
+  it('returns 0 for 0 production rate', () => {
+    expect(calcCreditsReceived(100, 0, 0)).toBe(0)
   })
 
   it('approximates BASE_RATE for small amounts with 0 pressure', () => {
-    // For very small amounts, integral ≈ BASE_RATE * amount
-    const result = calcCreditsReceived(1, 0)
+    // For very small amounts relative to production, integral ≈ BASE_RATE * amount
+    const result = calcCreditsReceived(1, 0, PROD)
     expect(result).toBeCloseTo(BASE_RATE * 1, 1)
   })
 
-  it('gives diminishing returns for large amounts', () => {
-    const small = calcCreditsReceived(100, 0)
-    const large = calcCreditsReceived(10000, 0)
-    // Large trade should get worse average rate
+  it('gives diminishing returns for large amounts relative to production', () => {
+    const small = calcCreditsReceived(100, 0, PROD)
+    const large = calcCreditsReceived(10000, 0, PROD)
     const smallAvg = small / 100
     const largeAvg = large / 10000
     expect(largeAvg).toBeLessThan(smallAvg)
   })
 
   it('gives worse rate with existing pressure', () => {
-    const noPressure = calcCreditsReceived(1000, 0)
-    const withPressure = calcCreditsReceived(1000, 5000)
+    const noPressure = calcCreditsReceived(1000, 0, PROD)
+    const withPressure = calcCreditsReceived(1000, 5000, PROD)
     expect(withPressure).toBeLessThan(noPressure)
+  })
+
+  it('scales proportionally with production rate', () => {
+    // Selling 10% of production should give similar % return regardless of scale
+    const smallProd = 100
+    const largeProd = 1e24
+    const smallResult = calcCreditsReceived(smallProd * 0.1, 0, smallProd)
+    const largeResult = calcCreditsReceived(largeProd * 0.1, 0, largeProd)
+    // Both should yield ~10% of production * BASE_RATE
+    const smallPct = smallResult / (smallProd * 0.1 * BASE_RATE)
+    const largePct = largeResult / (largeProd * 0.1 * BASE_RATE)
+    expect(Math.abs(smallPct - largePct)).toBeLessThan(0.01)
   })
 })
 
 // ── calcEnergyReceived (exchange) ──
 
 describe('calcEnergyReceived', () => {
+  const PROD = 1000
+
   it('returns 0 for 0 amount', () => {
-    expect(calcEnergyReceived(0, 0)).toBe(0)
+    expect(calcEnergyReceived(0, 0, PROD)).toBe(0)
   })
 
   it('approximates amount/BASE_RATE for small amounts', () => {
-    // 10 credits at base rate of 10 credits/energy ≈ 1 energy
-    const result = calcEnergyReceived(10, 0)
+    // 10 credits at base rate of 1 credit/energy ≈ 10 energy
+    const result = calcEnergyReceived(10, 0, PROD)
     expect(result).toBeCloseTo(10 / BASE_RATE, 1)
   })
 
-  it('gives diminishing returns for large amounts', () => {
-    const small = calcEnergyReceived(1000, 0)
-    const large = calcEnergyReceived(100000, 0)
-    const smallAvg = 1000 / small // credits per energy
+  it('gives diminishing returns for large amounts relative to production', () => {
+    const small = calcEnergyReceived(1000, 0, PROD)
+    const large = calcEnergyReceived(100000, 0, PROD)
+    const smallAvg = 1000 / small
     const largeAvg = 100000 / large
     expect(largeAvg).toBeGreaterThan(smallAvg)
   })
 
   it('selling energy then buying back costs more (no arbitrage)', () => {
     const energySold = 1000
-    const creditsGained = calcCreditsReceived(energySold, 0)
-    // Now try to buy back energy with those credits
-    const energyBought = calcEnergyReceived(creditsGained, 0)
-    // Should get back less energy than we started with (spread)
+    const creditsGained = calcCreditsReceived(energySold, 0, PROD)
+    const energyBought = calcEnergyReceived(creditsGained, 0, PROD)
     expect(energyBought).toBeLessThan(energySold)
+  })
+
+  it('scales proportionally with production rate', () => {
+    const smallProd = 100
+    const largeProd = 1e24
+    const smallResult = calcEnergyReceived(smallProd * 0.1, 0, smallProd)
+    const largeResult = calcEnergyReceived(largeProd * 0.1, 0, largeProd)
+    const smallPct = smallResult / (smallProd * 0.1 / BASE_RATE)
+    const largePct = largeResult / (largeProd * 0.1 / BASE_RATE)
+    expect(Math.abs(smallPct - largePct)).toBeLessThan(0.01)
   })
 })
 
@@ -383,7 +423,7 @@ describe('game progression', () => {
     })
   })
 
-  it('prestige influence scales with sqrt of energy', () => {
+  it('prestige influence scales logarithmically with energy', () => {
     // Doubling energy does not double influence
     const inf1 = calcPrestigeInfluence(1e6)
     const inf2 = calcPrestigeInfluence(2e6)
@@ -392,10 +432,65 @@ describe('game progression', () => {
   })
 
   it('exchange flooding prevents dump-and-convert exploits', () => {
-    // Selling 1M energy in one go gives much less than 1M * BASE_RATE credits
-    const bigSell = calcCreditsReceived(1e6, 0)
-    const idealCredits = 1e6 * BASE_RATE
-    // Should get significantly less — at least 30% degradation for a dump this large
+    // Selling 10000x your production rate should get significantly degraded
+    const prodRate = 1000
+    const bigSell = calcCreditsReceived(prodRate * 10000, 0, prodRate)
+    const idealCredits = prodRate * 10000 * BASE_RATE
+    // Should get significantly less — at least 30% degradation for a massive dump
     expect(bigSell).toBeLessThan(idealCredits * 0.7)
+  })
+})
+
+// ── calcMaxBuyable ──
+
+describe('calcMaxBuyable', () => {
+  it('returns 0 for 0 budget', () => {
+    expect(calcMaxBuyable(10, 1.045, 0, 0)).toBe(0)
+  })
+
+  it('returns 0 for negative budget', () => {
+    expect(calcMaxBuyable(10, 1.045, 0, -100)).toBe(0)
+  })
+
+  it('returns 1 when budget equals first building cost', () => {
+    // First mining drone costs 10
+    expect(calcMaxBuyable(10, 1.045, 0, 10)).toBe(1)
+  })
+
+  it('returns correct count for exact budget', () => {
+    // Calculate cost of 5 buildings and verify max buyable
+    const cost5 = calcBuildingCost(10, 1.045, 0, 5)
+    expect(calcMaxBuyable(10, 1.045, 0, cost5)).toBe(5)
+    // Just under should give 4
+    expect(calcMaxBuyable(10, 1.045, 0, cost5 - 1)).toBe(4)
+  })
+
+  it('accounts for already-owned buildings', () => {
+    // With 50 owned, each new building is more expensive
+    const cost1 = calcBuildingCost(10, 1.045, 50, 1)
+    expect(calcMaxBuyable(10, 1.045, 50, cost1)).toBe(1)
+    expect(calcMaxBuyable(10, 1.045, 50, cost1 - 1)).toBe(0)
+  })
+
+  it('applies cost reduction multiplier', () => {
+    // With 50% cost reduction, should afford more buildings
+    const normalMax = calcMaxBuyable(100, 1.05, 0, 10000, 1)
+    const discountMax = calcMaxBuyable(100, 1.05, 0, 10000, 0.5)
+    expect(discountMax).toBeGreaterThan(normalMax)
+  })
+
+  it('handles large budgets efficiently', () => {
+    // Should not timeout even with huge budget
+    const result = calcMaxBuyable(10, 1.045, 0, 1e15)
+    expect(result).toBeGreaterThan(100)
+    // Verify the result is correct: cost of N should be <= budget, cost of N+1 should exceed
+    const costN = calcBuildingCost(10, 1.045, 0, result)
+    const costN1 = calcBuildingCost(10, 1.045, 0, result + 1)
+    expect(costN).toBeLessThanOrEqual(1e15)
+    expect(costN1).toBeGreaterThan(1e15)
+  })
+
+  it('returns 0 when even 1 building is too expensive', () => {
+    expect(calcMaxBuyable(1000, 1.05, 0, 500)).toBe(0)
   })
 })

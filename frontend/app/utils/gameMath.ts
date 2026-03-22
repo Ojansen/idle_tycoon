@@ -1,5 +1,5 @@
 // ── Exchange constants ──
-export const BASE_RATE = 10
+export const BASE_RATE = 1
 export const ENERGY_PRESSURE_K = 0.001
 export const CREDITS_PRESSURE_K = 0.0001
 export const PRESSURE_DECAY_RATE = 0.01
@@ -20,7 +20,19 @@ export function formatNumber(n: number): string {
 
 // ── Prestige ──
 export function calcPrestigeInfluence(totalEnergyEarned: number): number {
-  return Math.floor(Math.sqrt(totalEnergyEarned / 1e5))
+  if (totalEnergyEarned < 1e5) return 0
+  return Math.floor(Math.log2(totalEnergyEarned / 1e5) * 50)
+}
+
+// One-time Kardashev milestone influence grants (awarded when kardashevHighWaterMark increases)
+// Index = Kardashev level reached
+export const KARDASHEV_MILESTONE_GRANTS: Record<number, number> = {
+  1: 500,
+  2: 5000,
+  3: 50000,
+  4: 500000,
+  5: 2000000,
+  6: 10000000,
 }
 
 // ── Repeatable upgrade cost ──
@@ -48,6 +60,35 @@ export function calcBuildingCost(
   return total
 }
 
+// ── Max buyable buildings for a budget ──
+export function calcMaxBuyable(
+  baseCost: number,
+  costMultiplier: number,
+  owned: number,
+  budget: number,
+  combinedMult: number = 1
+): number {
+  if (budget <= 0) return 0
+  // Binary search for the max quantity affordable
+  let lo = 0
+  let hi = 1
+  // Find upper bound
+  while (calcBuildingCost(baseCost, costMultiplier, owned, hi, combinedMult) <= budget) {
+    hi *= 2
+    if (hi > 10000) break // safety cap
+  }
+  // Binary search
+  while (lo < hi) {
+    const mid = Math.floor((lo + hi + 1) / 2)
+    if (calcBuildingCost(baseCost, costMultiplier, owned, mid, combinedMult) <= budget) {
+      lo = mid
+    } else {
+      hi = mid - 1
+    }
+  }
+  return lo
+}
+
 // ── Click power with pop boost ──
 export function calcClickPower(baseClick: number, autoclickPerSecond: number): number {
   const popBoost = 1 + Math.sqrt(autoclickPerSecond)
@@ -55,19 +96,27 @@ export function calcClickPower(baseClick: number, autoclickPerSecond: number): n
 }
 
 // ── Resource exchange: sell energy → credits ──
-export function calcCreditsReceived(amount: number, pressure: number): number {
-  if (amount <= 0) return 0
+// productionRate normalizes the trade so market impact is relative to economy size
+export function calcCreditsReceived(amount: number, pressure: number, productionRate: number = 1): number {
+  if (amount <= 0 || productionRate <= 0) return 0
   const k = ENERGY_PRESSURE_K
-  return (BASE_RATE / k) * Math.log((1 + k * (pressure + amount)) / (1 + k * pressure))
+  const norm = productionRate
+  const normAmount = amount / norm
+  const normPressure = pressure / norm
+  const normResult = (BASE_RATE / k) * Math.log((1 + k * (normPressure + normAmount)) / (1 + k * normPressure))
+  return normResult * norm
 }
 
 // ── Resource exchange: sell credits → energy ──
-export function calcEnergyReceived(amount: number, pressure: number): number {
-  if (amount <= 0) return 0
+// productionRate normalizes the trade so market impact is relative to economy size
+export function calcEnergyReceived(amount: number, pressure: number, productionRate: number = 1): number {
+  if (amount <= 0 || productionRate <= 0) return 0
   const k = CREDITS_PRESSURE_K
-  // Integral of (1/BASE_RATE) / (1 + k*(p + x)) dx from 0 to amount
-  // = (1 / (BASE_RATE * k)) * ln((1 + k*(p + amount)) / (1 + k*p))
-  return (1 / (BASE_RATE * k)) * Math.log((1 + k * (pressure + amount)) / (1 + k * pressure))
+  const norm = productionRate
+  const normAmount = amount / norm
+  const normPressure = pressure / norm
+  const normResult = (1 / (BASE_RATE * k)) * Math.log((1 + k * (normPressure + normAmount)) / (1 + k * normPressure))
+  return normResult * norm
 }
 
 // ── Exchange spot rate ──
