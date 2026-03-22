@@ -19,13 +19,15 @@ const statMeta: { stat: TraitStat; label: string; icon: string; hasPrestige: boo
   { stat: 'clickMultiplier', label: 'Click Power', icon: 'i-lucide-mouse-pointer-click', hasPrestige: true },
   { stat: 'popMultiplier', label: 'Pop Output', icon: 'i-lucide-users', hasPrestige: true },
   { stat: 'buildingCostMultiplier', label: 'Building Costs', icon: 'i-lucide-tags', hasPrestige: true },
-  { stat: 'casinoMultiplier', label: 'Casino Winnings', icon: 'i-lucide-dices', hasPrestige: false }
+  { stat: 'casinoMultiplier', label: 'Casino Winnings', icon: 'i-lucide-dices', hasPrestige: false },
+  { stat: 'upkeepReduction', label: 'Upkeep Costs', icon: 'i-lucide-trending-down', hasPrestige: false }
 ]
 
 export function useMultiplierBreakdown() {
   const { getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
   const { getAscensionMultiplier } = useAscensionPerks()
   const { getResearchMultiplier } = useResearchActions()
+  const { getFullUpkeepReduction } = useUpkeep()
 
   const breakdowns = computed<MultiplierBreakdown[]>(() => {
     const results: MultiplierBreakdown[] = []
@@ -47,8 +49,14 @@ export function useMultiplierBreakdown() {
       const repeatable = getRepeatableMultiplier(meta.stat)
       if (repeatable !== 1) sources.push({ label: 'Repeatable', value: repeatable })
 
-      const research = getResearchMultiplier(meta.stat)
-      if (research !== 1) sources.push({ label: 'Research', value: research })
+      if (meta.stat === 'upkeepReduction') {
+        // upkeepReduction uses a custom research effect type, not the standard multiplier
+        const reduction = getFullUpkeepReduction()
+        if (reduction !== 1) sources.push({ label: 'Combined', value: reduction })
+      } else {
+        const research = getResearchMultiplier(meta.stat)
+        if (research !== 1) sources.push({ label: 'Research', value: research })
+      }
 
       if (sources.length === 0) continue
 

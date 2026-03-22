@@ -42,6 +42,8 @@ function effectLabel(effect: ResearchEffect): string {
   return ''
 }
 
+const hasMegaUpkeep = computed(() => (props.mega.energyUpkeepPerSecond ?? 0) > 0 || (props.mega.creditsUpkeepPerSecond ?? 0) > 0)
+
 function formatTime(seconds: number): string {
   if (seconds < 60) return `${Math.ceil(seconds)}s`
   if (seconds < 3600) {
@@ -113,7 +115,7 @@ const canAfford = computed(() =>
       </div>
     </div>
 
-    <!-- Complete: show effects -->
+    <!-- Complete: show effects and ongoing upkeep -->
     <template v-if="megaState === 'complete'">
       <div class="mt-3 flex flex-wrap gap-1.5">
         <UBadge
@@ -125,6 +127,12 @@ const canAfford = computed(() =>
         >
           {{ effectLabel(effect) }}
         </UBadge>
+      </div>
+      <div v-if="hasMegaUpkeep" class="mt-2 text-xs text-red-400/70">
+        Ongoing:
+        <span v-if="mega.energyUpkeepPerSecond">{{ formatNumber(mega.energyUpkeepPerSecond) }} TW/s</span>
+        <span v-if="mega.energyUpkeepPerSecond && mega.creditsUpkeepPerSecond"> + </span>
+        <span v-if="mega.creditsUpkeepPerSecond">₢{{ formatNumber(mega.creditsUpkeepPerSecond) }}/s</span>
       </div>
     </template>
 

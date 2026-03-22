@@ -11,11 +11,12 @@ import {
 } from '~/utils/gameMath'
 
 // Ephemeral module-level state (resets on page load, like stock prices)
+// Pressure is now normalized (in "seconds of production" units)
 const energyPressure = ref(0)
 const creditsPressure = ref(0)
 
 export function useResourceExchange() {
-  const { state } = useGameState()
+  const { state, creditsPerSecond, energyPerSecond } = useGameState()
 
   // Spot rates (what 1 unit gets you right now, before pressure from the trade itself)
   const energyToCreditsRate = computed(() => {
@@ -38,26 +39,30 @@ export function useResourceExchange() {
   function previewSellEnergy(amount: number) {
     const qty = Math.min(amount, state.value.energy)
     if (qty <= 0) return { spent: 0, received: 0, avgRate: BASE_RATE }
-    const received = calcCreditsReceived(qty, energyPressure.value)
+    const prodRate = Math.max(1, energyPerSecond.value)
+    const received = calcCreditsReceived(qty, energyPressure.value * prodRate, prodRate)
     return { spent: qty, received, avgRate: received / qty }
   }
 
   function previewSellCredits(amount: number) {
     const qty = Math.min(amount, state.value.credits)
     if (qty <= 0) return { spent: 0, received: 0, avgRate: BASE_RATE }
-    const received = calcEnergyReceived(qty, creditsPressure.value)
-    return { spent: qty, received, avgRate: qty / received }
+    const prodRate = Math.max(1, creditsPerSecond.value)
+    const received = calcEnergyReceived(qty, creditsPressure.value * prodRate, prodRate)
+    return { spent: qty, received, avgRate: qty / Math.max(1, received) }
   }
 
   function sellEnergy(amount: number): boolean {
     const qty = Math.min(amount, state.value.energy)
     if (qty <= 0) return false
 
-    const creditsGained = calcCreditsReceived(qty, energyPressure.value)
+    const prodRate = Math.max(1, energyPerSecond.value)
+    const creditsGained = calcCreditsReceived(qty, energyPressure.value * prodRate, prodRate)
     state.value.energy -= qty
     state.value.credits += creditsGained
     // Intentionally NOT adding to totalCreditsEarned or totalEnergyEarned
-    energyPressure.value += qty
+    // Pressure stored in normalized "seconds of production" units
+    energyPressure.value += qty / prodRate
 
     return true
   }
@@ -66,11 +71,13 @@ export function useResourceExchange() {
     const qty = Math.min(amount, state.value.credits)
     if (qty <= 0) return false
 
-    const energyGained = calcEnergyReceived(qty, creditsPressure.value)
+    const prodRate = Math.max(1, creditsPerSecond.value)
+    const energyGained = calcEnergyReceived(qty, creditsPressure.value * prodRate, prodRate)
     state.value.credits -= qty
     state.value.energy += energyGained
     // Intentionally NOT adding to totalEnergyEarned — prevents prestige exploit
-    creditsPressure.value += qty / BASE_RATE
+    // Pressure stored in normalized "seconds of production" units
+    creditsPressure.value += qty / prodRate
 
     return true
   }

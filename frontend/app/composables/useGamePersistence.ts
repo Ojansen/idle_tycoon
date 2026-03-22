@@ -1,5 +1,5 @@
 export function useGamePersistence() {
-  const { state, creditsPerSecond, energyPerSecond, loadState } = useGameState()
+  const { state, loadState } = useGameState()
   const playerId = useCookie('megacorp-player-id', {
     maxAge: 365 * 24 * 60 * 60,
     path: '/'
@@ -41,8 +41,9 @@ export function useGamePersistence() {
       const cappedElapsed = Math.min(elapsed, maxOffline)
 
       if (cappedElapsed > 10) {
-        const offlineCredits = cappedElapsed * creditsPerSecond.value
-        const offlineEnergy = cappedElapsed * energyPerSecond.value
+        const { netCreditsPerSecond, netEnergyPerSecond } = useUpkeep()
+        const offlineCredits = Math.max(0, cappedElapsed * netCreditsPerSecond.value)
+        const offlineEnergy = Math.max(0, cappedElapsed * netEnergyPerSecond.value)
 
         state.value.credits += offlineCredits
         state.value.totalCreditsEarned += offlineCredits

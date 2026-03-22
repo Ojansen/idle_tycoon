@@ -18,7 +18,9 @@ const { getBuildingMultiplier } = useGameState()
 
 const milestone = computed(() => getBuildingMultiplier(props.building.id))
 const effectiveOutput = computed(() => props.building.baseOutput * milestone.value)
-const nextMilestoneAt = computed(() => (Math.floor(props.owned / 25) + 1) * 25)
+const effectiveEnergyUpkeep = computed(() => (props.building.energyUpkeep ?? 0) * milestone.value)
+const effectiveCreditsUpkeep = computed(() => (props.building.creditsUpkeep ?? 0) * milestone.value)
+const hasUpkeep = computed(() => effectiveEnergyUpkeep.value > 0 || effectiveCreditsUpkeep.value > 0)
 </script>
 
 <template>
@@ -37,7 +39,12 @@ const nextMilestoneAt = computed(() => (Math.floor(props.owned / 25) + 1) * 25)
       <div class="text-xs text-zinc-400">
         +{{ formatNumber(effectiveOutput) }}
         {{ props.building.resource === 'energy' ? 'TW/s each' : props.building.resource === 'autoclick' ? 'clicks/s each' : '₢/s each' }}
-        <span v-if="props.owned > 0" class="text-zinc-600 ml-1">· next ×{{ milestone * 2 }} at {{ nextMilestoneAt }}</span>
+      </div>
+      <div v-if="hasUpkeep" class="text-xs text-red-400/70">
+        <span v-if="effectiveEnergyUpkeep > 0">-{{ formatNumber(effectiveEnergyUpkeep) }} TW/s</span>
+        <span v-if="effectiveEnergyUpkeep > 0 && effectiveCreditsUpkeep > 0"> · </span>
+        <span v-if="effectiveCreditsUpkeep > 0">-₢{{ formatNumber(effectiveCreditsUpkeep) }}/s</span>
+        <span class="text-zinc-600 ml-1">upkeep each</span>
       </div>
     </div>
 
