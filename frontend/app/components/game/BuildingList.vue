@@ -21,6 +21,10 @@ const energyBuildings = computed(() =>
   unlockedBuildings.value.filter(b => b.resource === 'energy')
 )
 
+const cgBuildings = computed(() =>
+  unlockedBuildings.value.filter(b => b.resource === 'consumer_goods')
+)
+
 function groupByTier(blds: typeof buildings) {
   const groups: { name: string; buildings: typeof buildings }[] = []
   for (const k of kardashevLevels) {
@@ -91,6 +95,24 @@ function handleBuy(buildingId: string) {
           <div class="space-y-1">
             <GameBuildingCard
               v-for="b in autoclickBuildings"
+              :key="b.id"
+              :building="b"
+              :owned="state.buildings[b.id] || 0"
+              :cost="getCost(b.id)"
+              :affordable="isAffordable(b.id)"
+              :quantity="getEffectiveQuantity(b.id)"
+              @buy="handleBuy(b.id)"
+            />
+          </div>
+        </div>
+
+        <div v-if="cgBuildings.length">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-amber-600 mb-2 px-1">
+            Consumer Goods
+          </h3>
+          <div class="space-y-1">
+            <GameBuildingCard
+              v-for="b in cgBuildings"
               :key="b.id"
               :building="b"
               :owned="state.buildings[b.id] || 0"

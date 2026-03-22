@@ -42,7 +42,7 @@ function effectLabel(effect: ResearchEffect): string {
   return ''
 }
 
-const hasMegaUpkeep = computed(() => (props.mega.energyUpkeepPerSecond ?? 0) > 0 || (props.mega.creditsUpkeepPerSecond ?? 0) > 0)
+const hasMegaUpkeep = computed(() => (props.mega.energyUpkeepPerSecond ?? 0) > 0 || (props.mega.creditsUpkeepPerSecond ?? 0) > 0 || (props.mega.cgUpkeepPerSecond ?? 0) > 0)
 
 function formatTime(seconds: number): string {
   if (seconds < 60) return `${Math.ceil(seconds)}s`
@@ -133,6 +133,8 @@ const canAfford = computed(() =>
         <span v-if="mega.energyUpkeepPerSecond">{{ formatNumber(mega.energyUpkeepPerSecond) }} TW/s</span>
         <span v-if="mega.energyUpkeepPerSecond && mega.creditsUpkeepPerSecond"> + </span>
         <span v-if="mega.creditsUpkeepPerSecond">₢{{ formatNumber(mega.creditsUpkeepPerSecond) }}/s</span>
+        <span v-if="mega.cgUpkeepPerSecond && (mega.energyUpkeepPerSecond || mega.creditsUpkeepPerSecond)"> + </span>
+        <span v-if="mega.cgUpkeepPerSecond">{{ formatNumber(mega.cgUpkeepPerSecond) }} CG/s</span>
       </div>
     </template>
 

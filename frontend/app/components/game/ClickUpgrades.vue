@@ -1,10 +1,13 @@
 <script setup lang="ts">
-const { state } = useGameState()
+import { calcBuildingMultiplier } from '~/utils/gameMath'
+
+const { state, effectiveClickPower } = useGameState()
 const { buyClickUpgrade, getClickUpgradeCost } = useGameActions()
 const { formatNumber } = useNumberFormat()
 
 const cost = computed(() => getClickUpgradeCost())
 const canAfford = computed(() => state.value.credits >= cost.value)
+const milestone = computed(() => calcBuildingMultiplier(state.value.clickUpgradeLevel))
 </script>
 
 <template>
@@ -20,8 +23,9 @@ const canAfford = computed(() => state.value.credits >= cost.value)
         <div class="text-sm font-medium text-white">
           Click Power
           <span class="text-xs text-zinc-500 ml-1">Lv {{ state.clickUpgradeLevel }}</span>
+          <span v-if="milestone > 1" class="text-xs text-violet-400 ml-1">&times;{{ milestone }}</span>
         </div>
-        <div class="text-xs text-zinc-400">+1 base click power per level</div>
+        <div class="text-xs text-zinc-400">₢{{ formatNumber(effectiveClickPower) }}/click</div>
       </div>
       <UButton
         size="xs"

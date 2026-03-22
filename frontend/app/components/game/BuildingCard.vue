@@ -19,8 +19,36 @@ const { getBuildingMultiplier } = useGameState()
 const milestone = computed(() => getBuildingMultiplier(props.building.id))
 const effectiveOutput = computed(() => props.building.baseOutput * milestone.value)
 const effectiveEnergyUpkeep = computed(() => (props.building.energyUpkeep ?? 0) * milestone.value)
-const effectiveCreditsUpkeep = computed(() => (props.building.creditsUpkeep ?? 0) * milestone.value)
-const hasUpkeep = computed(() => effectiveEnergyUpkeep.value > 0 || effectiveCreditsUpkeep.value > 0)
+const effectiveCgUpkeep = computed(() => (props.building.cgUpkeep ?? 0) * milestone.value)
+const hasUpkeep = computed(() => effectiveEnergyUpkeep.value > 0 || effectiveCgUpkeep.value > 0)
+
+const resourceColor = computed(() => {
+  switch (props.building.resource) {
+    case 'energy': return 'text-amber-400'
+    case 'autoclick': return 'text-cyan-400'
+    case 'consumer_goods': return 'text-amber-600'
+    default: return 'text-violet-400'
+  }
+})
+
+const buttonColor = computed(() => {
+  if (!props.affordable) return 'neutral'
+  switch (props.building.resource) {
+    case 'energy': return 'warning'
+    case 'autoclick': return 'info'
+    case 'consumer_goods': return 'warning'
+    default: return 'primary'
+  }
+})
+
+const outputLabel = computed(() => {
+  switch (props.building.resource) {
+    case 'energy': return 'TW/s each'
+    case 'autoclick': return 'clicks/s each'
+    case 'consumer_goods': return 'CG/s each'
+    default: return '₢/s each'
+  }
+})
 </script>
 
 <template>
@@ -28,7 +56,7 @@ const hasUpkeep = computed(() => effectiveEnergyUpkeep.value > 0 || effectiveCre
     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors"
     :class="affordable ? 'bg-white/5 hover:bg-white/10' : 'bg-white/[0.02] opacity-60'"
   >
-    <UIcon :name="props.building.icon" class="text-xl shrink-0" :class="props.building.resource === 'energy' ? 'text-amber-400' : props.building.resource === 'autoclick' ? 'text-cyan-400' : 'text-violet-400'" />
+    <UIcon :name="props.building.icon" class="text-xl shrink-0" :class="resourceColor" />
 
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2">
@@ -38,19 +66,19 @@ const hasUpkeep = computed(() => effectiveEnergyUpkeep.value > 0 || effectiveCre
       </div>
       <div class="text-xs text-zinc-400">
         +{{ formatNumber(effectiveOutput) }}
-        {{ props.building.resource === 'energy' ? 'TW/s each' : props.building.resource === 'autoclick' ? 'clicks/s each' : '₢/s each' }}
+        {{ outputLabel }}
       </div>
       <div v-if="hasUpkeep" class="text-xs text-red-400/70">
         <span v-if="effectiveEnergyUpkeep > 0">-{{ formatNumber(effectiveEnergyUpkeep) }} TW/s</span>
-        <span v-if="effectiveEnergyUpkeep > 0 && effectiveCreditsUpkeep > 0"> · </span>
-        <span v-if="effectiveCreditsUpkeep > 0">-₢{{ formatNumber(effectiveCreditsUpkeep) }}/s</span>
+        <span v-if="effectiveEnergyUpkeep > 0 && effectiveCgUpkeep > 0"> · </span>
+        <span v-if="effectiveCgUpkeep > 0">-{{ formatNumber(effectiveCgUpkeep) }} CG/s</span>
         <span class="text-zinc-600 ml-1">upkeep each</span>
       </div>
     </div>
 
     <UButton
       size="xs"
-      :color="affordable ? (props.building.resource === 'energy' ? 'warning' : props.building.resource === 'autoclick' ? 'info' : 'primary') : 'neutral'"
+      :color="buttonColor"
       :variant="affordable ? 'solid' : 'outline'"
       :disabled="!affordable"
       @click="emit('buy')"

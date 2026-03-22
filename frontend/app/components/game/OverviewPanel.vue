@@ -2,16 +2,16 @@
 import { CurveType } from '@unovis/ts'
 
 const { creditsPerSecond, energyPerSecond, state, getBuildingMultiplier, getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
-const { totalEnergyUpkeep, totalCreditsUpkeep, creditThrottle, energyThrottle, netCreditsPerSecond, netEnergyPerSecond, hasUpkeep, getFullUpkeepReduction } = useUpkeep()
-const { energyChartData, creditsChartData, growthChartData } = useProductionHistory()
+const { totalEnergyUpkeep, effectiveCgProduction, totalCgConsumption, energyThrottle, cgThrottle, netEnergyPerSecond, hasUpkeep, getFullUpkeepReduction } = useUpkeep()
+const { energyChartData, cgChartData, growthChartData } = useProductionHistory()
 const { buildings } = useGameConfig()
 const { megastructures } = useResearchConfig()
 const { getAscensionMultiplier } = useAscensionPerks()
 const { getResearchMultiplier } = useResearchActions()
 const { formatNumber } = useNumberFormat()
 
-const energyEffPct = computed(() => Math.round(creditThrottle.value * 100))
-const creditsEffPct = computed(() => Math.round(energyThrottle.value * 100))
+const energyEffPct = computed(() => Math.round(energyThrottle.value * 100))
+const cgEffPct = computed(() => Math.round(cgThrottle.value * 100))
 const upkeepReduction = computed(() => {
   const reduction = getFullUpkeepReduction()
   return Math.round((1 - reduction) * 100)
@@ -22,9 +22,9 @@ const energyCategories = {
   upkeep: { name: 'Upkeep', color: '#f87171', label: 'Upkeep' }
 }
 
-const creditsCategories = {
-  production: { name: 'Production', color: '#a78bfa', label: 'Production' },
-  upkeep: { name: 'Upkeep', color: '#f87171', label: 'Upkeep' }
+const cgCategories = {
+  production: { name: 'Production', color: '#4ade80', label: 'Production' },
+  consumption: { name: 'Consumption', color: '#f87171', label: 'Consumption' }
 }
 
 const growthCategories = {
@@ -38,59 +38,49 @@ interface UpkeepEntry {
   icon: string
   count: number
   energyUpkeep: number
-  creditsUpkeep: number
+  cgUpkeep: number
 }
 
 const buildingUpkeepBreakdown = computed(() => {
   const entries: UpkeepEntry[] = []
 
-  // Get production multiplier stacks (same as useUpkeep uses)
-  const energyMultStack = getPrestigeMultiplier('energyMultiplier')
-    * getTraitMultiplier('energyMultiplier')
-    * getAscensionMultiplier('energyMultiplier')
-    * getRepeatableMultiplier('energyMultiplier')
-    * getResearchMultiplier('energyMultiplier')
-  const creditsMultStack = getPrestigeMultiplier('creditsMultiplier')
-    * getTraitMultiplier('creditsMultiplier')
-    * getAscensionMultiplier('creditsMultiplier')
-    * getRepeatableMultiplier('creditsMultiplier')
-    * getResearchMultiplier('creditsMultiplier')
-
   const reduction = getFullUpkeepReduction()
 
+  // CG buildings: show energy upkeep
+  // All other buildings: show CG upkeep
   for (const b of buildings) {
     const owned = state.value.buildings[b.id] || 0
     if (owned === 0) continue
-    if (!b.energyUpkeep && !b.creditsUpkeep) continue
+    if (!b.energyUpkeep && !b.cgUpkeep) continue
 
     const milestone = getBuildingMultiplier(b.id)
     entries.push({
       name: b.name,
       icon: b.icon,
       count: owned,
-      energyUpkeep: (b.energyUpkeep ?? 0) * owned * milestone * energyMultStack * reduction,
-      creditsUpkeep: (b.creditsUpkeep ?? 0) * owned * milestone * creditsMultStack * reduction
+      energyUpkeep: (b.energyUpkeep ?? 0) * owned * milestone * reduction,
+      cgUpkeep: (b.cgUpkeep ?? 0) * owned * milestone * reduction
     })
   }
 
-  // Megastructure upkeep
+  // Megastructure upkeep (energy + credits + CG)
   for (const [megaId, progress] of Object.entries(state.value.megastructures)) {
     if (!progress.completed) continue
     const def = megastructures.find(m => m.id === megaId)
     if (!def) continue
-    if (!def.energyUpkeepPerSecond && !def.creditsUpkeepPerSecond) continue
+    if (!def.energyUpkeepPerSecond && !def.creditsUpkeepPerSecond && !def.cgUpkeepPerSecond) continue
 
     entries.push({
       name: def.name,
       icon: def.icon,
       count: 1,
-      energyUpkeep: (def.energyUpkeepPerSecond ?? 0) * energyMultStack * reduction,
-      creditsUpkeep: (def.creditsUpkeepPerSecond ?? 0) * creditsMultStack * reduction
+      energyUpkeep: (def.energyUpkeepPerSecond ?? 0) * reduction,
+      cgUpkeep: (def.cgUpkeepPerSecond ?? 0) * reduction
     })
   }
 
   // Sort by total upkeep descending
-  entries.sort((a, b) => (b.energyUpkeep + b.creditsUpkeep) - (a.energyUpkeep + a.creditsUpkeep))
+  entries.sort((a, b) => (b.energyUpkeep + b.cgUpkeep) - (a.energyUpkeep + a.cgUpkeep))
 
   return entries
 })
@@ -141,7 +131,7 @@ const buildingUpkeepBreakdown = computed(() => {
       <div class="flex items-center gap-2 mb-3">
         <UIcon name="i-lucide-zap" class="text-lg text-amber-400" />
         <h3 class="text-sm font-bold text-white uppercase tracking-wider">Energy Balance</h3>
-        <UBadge v-if="creditThrottle < 1" size="xs" :color="energyEffPct >= 75 ? 'warning' : 'error'" variant="subtle">
+        <UBadge v-if="energyThrottle < 1" size="xs" :color="energyEffPct >= 75 ? 'warning' : 'error'" variant="subtle">
           {{ energyEffPct }}% efficiency
         </UBadge>
       </div>
@@ -183,37 +173,44 @@ const buildingUpkeepBreakdown = computed(() => {
       </div>
     </div>
 
-    <!-- Credits Balance -->
-    <div class="rounded-lg bg-white/[0.03] border border-white/10 p-4">
+    <!-- Consumer Goods Balance -->
+    <div v-if="totalCgConsumption > 0 || effectiveCgProduction > 0" class="rounded-lg bg-white/[0.03] border border-white/10 p-4">
       <div class="flex items-center gap-2 mb-3">
-        <UIcon name="i-lucide-banknote" class="text-lg text-violet-400" />
-        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Credits Balance</h3>
-        <UBadge v-if="energyThrottle < 1" size="xs" :color="creditsEffPct >= 75 ? 'warning' : 'error'" variant="subtle">
-          {{ creditsEffPct }}% efficiency
+        <UIcon name="i-lucide-package" class="text-lg text-amber-600" />
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Consumer Goods Balance</h3>
+        <UBadge v-if="cgThrottle < 1" size="xs" :color="cgEffPct >= 75 ? 'warning' : 'error'" variant="subtle">
+          {{ cgEffPct }}% efficiency
         </UBadge>
       </div>
 
       <div class="grid grid-cols-3 gap-4 mb-3 text-center">
         <div>
-          <div class="text-sm font-bold text-emerald-400">₢{{ formatNumber(creditsPerSecond) }}/s</div>
+          <div class="text-sm font-bold text-emerald-400">{{ formatNumber(effectiveCgProduction) }}/s</div>
           <div class="text-xs text-zinc-500">Production</div>
         </div>
         <div>
-          <div class="text-sm font-bold text-red-400">-₢{{ formatNumber(totalCreditsUpkeep) }}/s</div>
-          <div class="text-xs text-zinc-500">Upkeep</div>
+          <div class="text-sm font-bold text-red-400">{{ formatNumber(totalCgConsumption) }}/s</div>
+          <div class="text-xs text-zinc-500">Consumption</div>
         </div>
         <div>
-          <div class="text-sm font-bold" :class="netCreditsPerSecond >= 0 ? 'text-violet-300' : 'text-red-400'">
-            ₢{{ formatNumber(netCreditsPerSecond) }}/s
+          <div class="text-sm font-bold" :class="effectiveCgProduction >= totalCgConsumption ? 'text-amber-500' : 'text-red-400'">
+            {{ effectiveCgProduction >= totalCgConsumption ? '+' : '' }}{{ formatNumber(effectiveCgProduction - totalCgConsumption) }}/s
           </div>
-          <div class="text-xs text-zinc-500">Net</div>
+          <div class="text-xs text-zinc-500">Balance</div>
         </div>
       </div>
 
-      <div v-if="creditsChartData.length >= 2" class="h-32 w-full">
+      <p v-if="cgThrottle < 1" class="text-xs text-orange-400/80">
+        CG deficit is throttling credit and pop production. Build more Consumer Goods factories.
+      </p>
+      <p v-if="energyThrottle < 1" class="text-xs text-red-400/80">
+        Energy deficit is reducing CG production. Build more energy generators.
+      </p>
+
+      <div v-if="cgChartData.length >= 2" class="h-32 w-full mt-3">
         <AreaChart
-          :data="creditsChartData"
-          :categories="creditsCategories"
+          :data="cgChartData"
+          :categories="cgCategories"
           x-label=""
           y-label=""
           :hide-x-axis="true"
@@ -225,7 +222,7 @@ const buildingUpkeepBreakdown = computed(() => {
           :curve-type="CurveType.MonotoneX"
         />
       </div>
-      <div v-else class="h-32 flex items-center justify-center text-xs text-zinc-600">
+      <div v-else class="h-32 flex items-center justify-center text-xs text-zinc-600 mt-3">
         Collecting data...
       </div>
     </div>
@@ -251,8 +248,8 @@ const buildingUpkeepBreakdown = computed(() => {
           <span v-if="entry.energyUpkeep > 0" class="text-red-400/70 text-xs tabular-nums">
             -{{ formatNumber(entry.energyUpkeep) }} TW/s
           </span>
-          <span v-if="entry.creditsUpkeep > 0" class="text-red-400/70 text-xs tabular-nums">
-            -₢{{ formatNumber(entry.creditsUpkeep) }}/s
+          <span v-if="entry.cgUpkeep > 0" class="text-amber-600/70 text-xs tabular-nums">
+            -{{ formatNumber(entry.cgUpkeep) }} CG/s
           </span>
         </div>
       </div>
@@ -274,8 +271,8 @@ const buildingUpkeepBreakdown = computed(() => {
     <!-- Empty state -->
     <div v-if="!hasUpkeep" class="rounded-lg bg-white/[0.03] border border-white/10 p-8 text-center">
       <UIcon name="i-lucide-gauge" class="text-3xl text-zinc-600 mb-2" />
-      <p class="text-sm text-zinc-500">Upkeep activates at Type II (Stellar) civilization.</p>
-      <p class="text-xs text-zinc-600 mt-1">Build energy and credit buildings to reach 10<sup>14</sup> TW/s.</p>
+      <p class="text-sm text-zinc-500">Build Consumer Goods factories to sustain your empire.</p>
+      <p class="text-xs text-zinc-600 mt-1">Every building consumes consumer goods — expand responsibly.</p>
     </div>
   </div>
 </template>
