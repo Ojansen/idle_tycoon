@@ -1,6 +1,5 @@
 <script setup lang="ts">
-const { state, creditsPerSecond } = useGameState()
-const { formatNumber } = useNumberFormat()
+const { state } = useGameState()
 
 const activeTab = defineModel<string>('tab', { default: 'empire' })
 const { pendingAscensionLevels } = useAscensionPerks()
@@ -26,7 +25,7 @@ function selectTab(key: string) {
 </script>
 
 <template>
-  <header class="sticky top-0 z-50 bg-zinc-950/95 backdrop-blur-sm flex items-center justify-between px-4 py-3 border-b border-white/10">
+  <header class="bg-zinc-950/95 backdrop-blur-sm flex items-center px-4 py-3 border-b border-white/10">
     <div class="flex items-center gap-4">
       <!-- Hamburger button (mobile only) -->
       <UButton
@@ -64,13 +63,6 @@ function selectTab(key: string) {
       </div>
     </div>
 
-    <div class="flex items-center gap-4 text-sm text-zinc-400">
-      <span>
-        <UIcon name="i-lucide-banknote" class="text-emerald-400 align-middle" />
-        ₢{{ formatNumber(state.credits) }}
-      </span>
-      <span class="hidden sm:inline text-xs text-zinc-500">{{ formatNumber(creditsPerSecond) }}/s</span>
-    </div>
   </header>
 
   <!-- Mobile slide-over menu -->
@@ -115,13 +107,8 @@ function selectTab(key: string) {
         </nav>
 
         <!-- Stats at bottom -->
-        <div class="mt-auto pt-6 border-t border-white/10 text-sm text-zinc-400 space-y-2">
+        <div v-if="state.prestigeCount > 0" class="mt-auto pt-6 border-t border-white/10 text-sm text-zinc-400">
           <div>
-            <UIcon name="i-lucide-banknote" class="text-emerald-400 align-middle" />
-            ₢{{ formatNumber(state.credits) }}
-            <span class="text-xs text-zinc-500 ml-1">{{ formatNumber(creditsPerSecond) }}/s</span>
-          </div>
-          <div v-if="state.prestigeCount > 0">
             <UIcon name="i-lucide-star" class="text-amber-400 align-middle" />
             {{ state.influence }} Influence
           </div>

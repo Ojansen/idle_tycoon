@@ -1,45 +1,73 @@
 <script setup lang="ts">
-const { state, creditsPerSecond, energyPerSecond } = useGameState()
+const { state, creditsPerSecond, energyPerSecond, cgPerSecond } = useGameState()
 const { energyDrainPerSecond, isResearching } = useResearchActions()
-const { netCreditsPerSecond, netEnergyPerSecond, totalEnergyUpkeep, totalCreditsUpkeep, creditThrottle, energyThrottle, hasUpkeep } = useUpkeep()
+const { netCreditsPerSecond, netEnergyPerSecond, totalEnergyUpkeep, effectiveCgProduction, totalCgConsumption, cgThrottle, energyThrottle, hasUpkeep } = useUpkeep()
 const { formatNumber } = useNumberFormat()
 
-const netEnergy = computed(() => netEnergyPerSecond.value - energyDrainPerSecond.value)
-const isThrottled = computed(() => creditThrottle.value < 1 || energyThrottle.value < 1)
-const efficiencyPct = computed(() => Math.round(Math.min(creditThrottle.value, energyThrottle.value) * 100))
+const totalEnergyNeed = computed(() => totalEnergyUpkeep.value + energyDrainPerSecond.value)
+const isThrottled = computed(() => cgThrottle.value < 1 || energyThrottle.value < 1)
+const efficiencyPct = computed(() => Math.round(Math.min(cgThrottle.value, energyThrottle.value) * 100))
+const cgBalance = computed(() => effectiveCgProduction.value - totalCgConsumption.value)
+const hasCgBuildings = computed(() => cgPerSecond.value > 0 || totalCgConsumption.value > 0)
+
+const energyStatus = computed(() => {
+  if (energyThrottle.value < 1) return 'deficit'
+  if (totalEnergyNeed.value > 0 && energyPerSecond.value < totalEnergyNeed.value * 1.25) return 'tight'
+  return 'healthy'
+})
+
+const cgStatus = computed(() => {
+  if (cgThrottle.value < 1) return 'deficit'
+  if (totalCgConsumption.value > 0 && effectiveCgProduction.value < totalCgConsumption.value * 1.25) return 'tight'
+  return 'healthy'
+})
+
+const statusColor: Record<string, string> = {
+  healthy: 'text-emerald-400',
+  tight: 'text-amber-400',
+  deficit: 'text-red-400',
+}
 </script>
 
 <template>
-  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-    <div class="rounded-lg bg-white/5 px-3 py-2 text-center">
-      <div class="text-lg font-bold text-white">₢{{ formatNumber(state.credits) }}</div>
-      <div class="text-xs text-zinc-400">Credits</div>
-    </div>
-    <div class="rounded-lg bg-white/5 px-3 py-2 text-center">
-      <div class="text-lg font-bold" :class="hasUpkeep && netCreditsPerSecond < creditsPerSecond ? 'text-violet-300' : 'text-violet-400'">
-        {{ formatNumber(hasUpkeep ? netCreditsPerSecond : creditsPerSecond) }}/s
+  <div class="bg-zinc-950/95 backdrop-blur-sm border-b border-white/10 px-4 py-1.5">
+    <div class="max-w-6xl mx-auto flex items-center gap-4 sm:gap-6 text-xs">
+      <!-- Credits -->
+      <div class="flex items-center gap-1.5 shrink-0">
+        <UIcon name="i-lucide-banknote" class="text-emerald-400 text-sm" />
+        <span class="text-white font-semibold">₢{{ formatNumber(state.credits) }}</span>
+        <span class="text-zinc-500">
+          {{ formatNumber(hasUpkeep ? netCreditsPerSecond : creditsPerSecond) }}/s
+        </span>
       </div>
-      <div class="text-xs text-zinc-400">
-        Credits/sec
-        <span v-if="totalCreditsUpkeep > 0" class="text-zinc-500 ml-0.5">(upkeep: {{ formatNumber(totalCreditsUpkeep) }})</span>
+
+      <!-- Energy -->
+      <div class="flex items-center gap-1.5 shrink-0">
+        <UIcon name="i-lucide-zap" class="text-amber-400 text-sm" />
+        <span class="text-white font-semibold">{{ formatNumber(state.energy) }} TW</span>
+        <span class="font-semibold" :class="statusColor[energyStatus]">
+          {{ formatNumber(netEnergyPerSecond) }}/s
+        </span>
+        <span class="text-zinc-500 hidden sm:inline">
+          {{ formatNumber(energyPerSecond) }}<span v-if="totalEnergyNeed > 0" class="text-zinc-600">/{{ formatNumber(totalEnergyNeed) }}</span>
+        </span>
       </div>
-    </div>
-    <div class="rounded-lg bg-white/5 px-3 py-2 text-center">
-      <div class="text-lg font-bold text-amber-400">{{ formatNumber(state.energy) }} TW</div>
-      <div class="text-xs text-zinc-400">Energy</div>
-    </div>
-    <div class="rounded-lg bg-white/5 px-3 py-2 text-center">
-      <div class="text-lg font-bold" :class="(isResearching && netEnergy < 0) || isThrottled ? 'text-red-400' : hasUpkeep && netEnergyPerSecond < energyPerSecond ? 'text-amber-300' : 'text-amber-300'">
-        {{ formatNumber(hasUpkeep ? netEnergyPerSecond : energyPerSecond) }} TW/s
+
+      <!-- Consumer Goods -->
+      <div v-if="hasCgBuildings" class="flex items-center gap-1.5 shrink-0">
+        <UIcon name="i-lucide-package" class="text-amber-600 text-sm" />
+        <span class="font-semibold" :class="statusColor[cgStatus]">
+          {{ formatNumber(cgBalance) }}/s
+        </span>
+        <span class="text-zinc-500 hidden sm:inline">
+          {{ formatNumber(effectiveCgProduction) }}<span v-if="totalCgConsumption > 0" class="text-zinc-600">/{{ formatNumber(totalCgConsumption) }}</span>
+        </span>
       </div>
-      <div class="text-xs text-zinc-400">
-        Energy/sec
-        <span v-if="totalEnergyUpkeep > 0" class="text-zinc-500 ml-0.5">(upkeep: {{ formatNumber(totalEnergyUpkeep) }})</span>
-        <span v-if="isResearching" class="text-zinc-500 ml-0.5">(net: {{ formatNumber(netEnergy) }})</span>
-      </div>
-      <div v-if="isThrottled" class="mt-0.5">
+
+      <!-- Efficiency badge -->
+      <div v-if="isThrottled" class="ml-auto shrink-0">
         <UBadge size="xs" :color="efficiencyPct >= 75 ? 'warning' : 'error'" variant="subtle">
-          {{ efficiencyPct }}% efficiency
+          {{ efficiencyPct }}%
         </UBadge>
       </div>
     </div>

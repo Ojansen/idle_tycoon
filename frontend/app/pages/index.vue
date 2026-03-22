@@ -1,15 +1,13 @@
 <script setup lang="ts">
 const { state, tick } = useGameState()
 const { loadGame, startAutoSave } = useGamePersistence()
-const { simulatePrices } = useStockMarket()
 const { tickExchange } = useResourceExchange()
 const { checkAchievements, suppressExistingToasts } = useAchievements()
 const { sample: sampleHistory } = useProductionHistory()
 
-// Game tick - 100ms (includes price simulation + exchange decay)
+// Game tick - 100ms (includes exchange decay)
 useIntervalFn(() => {
   tick()
-  simulatePrices()
   tickExchange(0.1)
 }, 100)
 
@@ -69,11 +67,12 @@ function onSetupComplete() {
 
     <!-- Game -->
     <template v-else-if="loaded">
-      <GameHeader v-model:tab="activeTab" />
+      <div class="sticky top-0 z-50">
+        <GameHeader v-model:tab="activeTab" />
+        <GameStatsBar />
+      </div>
 
       <div class="flex-1 max-w-6xl mx-auto w-full px-4 py-4 space-y-4">
-        <!-- Stats (always visible) -->
-        <GameStatsBar />
 
         <!-- Kardashev Scale (always visible) -->
         <GameKardashevDisplay />
