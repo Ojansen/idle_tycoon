@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { CurveType } from '@unovis/ts'
+
 const { creditsPerSecond, energyPerSecond, state, getBuildingMultiplier, getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
 const { totalEnergyUpkeep, totalCreditsUpkeep, creditThrottle, energyThrottle, netCreditsPerSecond, netEnergyPerSecond, hasUpkeep, getFullUpkeepReduction } = useUpkeep()
 const { energyChartData, creditsChartData } = useProductionHistory()
@@ -16,13 +18,13 @@ const upkeepReduction = computed(() => {
 })
 
 const energyCategories = {
-  production: { color: '#4ade80', label: 'Production' },
-  upkeep: { color: '#f87171', label: 'Upkeep' }
+  production: { name: 'Production', color: '#4ade80', label: 'Production' },
+  upkeep: { name: 'Upkeep', color: '#f87171', label: 'Upkeep' }
 }
 
 const creditsCategories = {
-  production: { color: '#a78bfa', label: 'Production' },
-  upkeep: { color: '#f87171', label: 'Upkeep' }
+  production: { name: 'Production', color: '#a78bfa', label: 'Production' },
+  upkeep: { name: 'Upkeep', color: '#f87171', label: 'Upkeep' }
 }
 
 // Per-building upkeep breakdown
@@ -130,7 +132,7 @@ const buildingUpkeepBreakdown = computed(() => {
           :duration="0"
           :height="128"
           :line-width="2"
-          curve-type="monotoneX"
+          :curve-type="CurveType.MonotoneX"
         />
       </div>
       <div v-else class="h-32 flex items-center justify-center text-xs text-zinc-600">
@@ -177,7 +179,7 @@ const buildingUpkeepBreakdown = computed(() => {
           :duration="0"
           :height="128"
           :line-width="2"
-          curve-type="monotoneX"
+          :curve-type="CurveType.MonotoneX"
         />
       </div>
       <div v-else class="h-32 flex items-center justify-center text-xs text-zinc-600">

@@ -77,6 +77,8 @@ export function useGameActions() {
       completedResearch: [],
       activeResearch: null,
       megastructures: {},
+      victoryAchieved: state.value.victoryAchieved,
+      repeatableResearch: {},
       totalPlayTime: state.value.totalPlayTime,
       runPlayTime: 0,
       allTimeClicks: state.value.allTimeClicks,

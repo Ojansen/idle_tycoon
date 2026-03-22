@@ -35,14 +35,14 @@ function simulatePrices() {
   if (tickCounter % 10 !== 0) return
 
   for (const c of companies) {
-    prevPrices[c.id] = prices[c.id]
+    prevPrices[c.id] = prices[c.id]!
     const change = c.basePrice * c.volatility * 0.45 * (Math.random() - 0.48)
-    const newPrice = Math.max(c.basePrice * 0.3, Math.min(c.basePrice * 3.0, prices[c.id] + change))
+    const newPrice = Math.max(c.basePrice * 0.3, Math.min(c.basePrice * 3.0, prices[c.id]! + change))
     prices[c.id] = Math.floor(newPrice * 100) / 100
 
     // Keep last 60 data points (~5 minutes of history)
-    const history = priceHistory[c.id]
-    history.push(prices[c.id])
+    const history = priceHistory[c.id]!
+    history.push(prices[c.id]!)
     if (history.length > 60) history.shift()
   }
 }
@@ -59,7 +59,7 @@ export function useStockMarket() {
     const qty = Math.min(quantity, maxBuyable)
     if (qty <= 0) return false
 
-    const cost = Math.floor(prices[companyId] * qty)
+    const cost = Math.floor((prices[companyId] ?? company.basePrice) * qty)
     if (state.value.credits < cost) return false
 
     state.value.credits -= cost
@@ -72,7 +72,7 @@ export function useStockMarket() {
     const qty = Math.min(quantity, owned)
     if (qty <= 0) return false
 
-    const revenue = Math.floor(prices[companyId] * qty)
+    const revenue = Math.floor((prices[companyId] ?? 0) * qty)
     state.value.credits += revenue
     state.value.stocks[companyId] = owned - qty
     return true
@@ -82,7 +82,7 @@ export function useStockMarket() {
     let total = 0
     for (const c of companies) {
       const shares = state.value.stocks[c.id] || 0
-      total += shares * prices[c.id]
+      total += shares * (prices[c.id] ?? c.basePrice)
     }
     return total
   })

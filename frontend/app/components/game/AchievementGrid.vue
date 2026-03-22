@@ -6,7 +6,7 @@ const categories = computed(() => {
   const cats: Record<string, typeof allAchievements[number][]> = {}
   for (const a of allAchievements) {
     if (!cats[a.category]) cats[a.category] = []
-    cats[a.category].push(a)
+    cats[a.category]!.push(a)
   }
   return cats
 })

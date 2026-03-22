@@ -12,10 +12,6 @@ export default defineNuxtConfig({
     'nuxt-charts'
   ],
 
-  buildModules: [
-    '@nuxtjs/pwa',
-  ],
-
   devtools: {
     enabled: true
   },

@@ -29,7 +29,7 @@ const { formatNumber } = useNumberFormat()
         :company="company"
         :price="prices[company.id] || company.basePrice"
         :prev-price="prevPrices[company.id] || company.basePrice"
-        :history="priceHistory[company.id] || [company.basePrice]"
+        :history="[...(priceHistory[company.id] || [company.basePrice])]"
         :owned="state.stocks[company.id] || 0"
       />
     </div>

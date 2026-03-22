@@ -9,8 +9,8 @@ export function useGamePersistence() {
   if (import.meta.client && !playerId.value) {
     const arr = new Uint8Array(16)
     crypto.getRandomValues(arr)
-    arr[6] = (arr[6] & 0x0f) | 0x40
-    arr[8] = (arr[8] & 0x3f) | 0x80
+    arr[6] = (arr[6]! & 0x0f) | 0x40
+    arr[8] = (arr[8]! & 0x3f) | 0x80
     const hex = [...arr].map(b => b.toString(16).padStart(2, '0')).join('')
     playerId.value = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
   }
@@ -29,7 +29,7 @@ export function useGamePersistence() {
 
   async function loadGame(): Promise<{ offlineCredits: number; offlineEnergy: number; offlineSeconds: number }> {
     try {
-      const { state: saved } = await $fetch('/api/game/load')
+      const { state: saved } = await $fetch('/api/game/load') as { state?: string }
       if (!saved) return { offlineCredits: 0, offlineEnergy: 0, offlineSeconds: 0 }
 
       loadState(saved as any)

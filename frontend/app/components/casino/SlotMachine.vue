@@ -23,10 +23,10 @@ function randomSymbol(): string {
   const total = weights.reduce((a, b) => a + b, 0)
   let r = Math.random() * total
   for (let i = 0; i < symbols.length; i++) {
-    r -= weights[i]
-    if (r <= 0) return symbols[i]
+    r -= weights[i]!
+    if (r <= 0) return symbols[i]!
   }
-  return symbols[0]
+  return symbols[0]!
 }
 
 async function play() {
@@ -44,22 +44,22 @@ async function play() {
   // Rapid visual cycling during spin
   const intervals = spinning.value.map((_, i) => {
     return setInterval(() => {
-      reels.value[i] = symbols[Math.floor(Math.random() * symbols.length)]
+      reels.value[i] = symbols[Math.floor(Math.random() * symbols.length)]!
     }, 80)
   })
 
   for (let i = 0; i < 3; i++) {
     await new Promise(r => setTimeout(r, i === 0 ? 600 : 400))
     clearInterval(intervals[i])
-    reels.value[i] = finalReels[i]
+    reels.value[i] = finalReels[i]!
     spinning.value[i] = false
   }
 
   // Calculate payout
-  const [a, b, c] = finalReels
+  const [a, b, c] = finalReels as [string, string, string]
   let multiplier = 0
   if (a === b && b === c) {
-    multiplier = payouts[a] || 5
+    multiplier = payouts[a] ?? 5
   } else if (a === b || b === c || a === c) {
     multiplier = 1.5
   }

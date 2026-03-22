@@ -9,8 +9,8 @@ const showConfirm = ref(false)
 const currentInfluenceGain = computed(() => getPrestigeInfluenceGain())
 
 const prestigeTiers = computed(() => {
-  const tiers: { level: number; name: string; unlocked: boolean; upgrades: typeof prestigeUpgrades.value[] }[] = []
-  const tierMap = new Map<number, typeof prestigeUpgrades.value[]>()
+  const tiers: { level: number; name: string; unlocked: boolean; upgrades: (typeof prestigeUpgrades)[number][] }[] = []
+  const tierMap = new Map<number, (typeof prestigeUpgrades)[number][]>()
 
   for (const upgrade of prestigeUpgrades) {
     const k = upgrade.requiredKardashev ?? 0

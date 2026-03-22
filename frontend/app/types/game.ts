@@ -105,8 +105,8 @@ export interface ResearchDefinition {
   tier: number
   energyCost: number
   researchTime: number
-  prerequisites: string[]
-  effects: ResearchEffect[]
+  prerequisites: readonly string[]
+  effects: readonly ResearchEffect[]
   unlockKardashev: number
 }
 
@@ -132,9 +132,9 @@ export interface MegastructureDefinition {
   creditsCostPerStage: number
   energyCostPerStage: number
   buildTimePerStage: number
-  requiredResearch: string[]
+  requiredResearch: readonly string[]
   unlockKardashev: number
-  effects: ResearchEffect[]
+  effects: readonly ResearchEffect[]
   energyUpkeepPerSecond?: number
   creditsUpkeepPerSecond?: number
 }

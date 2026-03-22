@@ -13,7 +13,8 @@ const {
 const eta = computed(() => {
   if (!isResearching.value || !activeResearchDef.value) return 0
   const active = state.value.activeResearch!
-  const remaining = activeResearchDef.value.researchTime - active.elapsed
+  const def = activeResearchDef.value
+  const remaining = ('researchTime' in def ? def.researchTime : def.baseResearchTime) - active.elapsed
   return Math.max(0, remaining / getResearchSpeedMultiplier())
 })
 
@@ -44,7 +45,7 @@ function formatTime(seconds: number): string {
         <div class="min-w-0">
           <div class="flex items-center gap-2">
             <span class="text-sm font-bold text-white">{{ activeResearchDef.name }}</span>
-            <UBadge color="violet" variant="subtle" size="xs" class="animate-pulse">Active</UBadge>
+            <UBadge color="secondary" variant="subtle" size="xs" class="animate-pulse">Active</UBadge>
           </div>
           <p class="text-xs text-zinc-400 truncate">{{ activeResearchDef.description }}</p>
         </div>
@@ -64,7 +65,7 @@ function formatTime(seconds: number): string {
 
     <!-- Progress bar -->
     <div class="mt-3 space-y-1.5">
-      <UProgress :value="researchProgress * 100" size="xs" color="violet" />
+      <UProgress :value="researchProgress * 100" size="xs" color="secondary" />
       <div class="flex justify-between text-xs text-zinc-400">
         <span>
           <UIcon name="i-lucide-zap" class="align-middle text-amber-400" />

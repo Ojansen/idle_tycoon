@@ -30,7 +30,8 @@ const missingPrereqs = computed(() =>
 const eta = computed(() => {
   if (!isActive.value || !activeResearchDef.value) return 0
   const active = state.value.activeResearch!
-  const remaining = activeResearchDef.value.researchTime - active.elapsed
+  const def = activeResearchDef.value
+  const remaining = ('researchTime' in def ? def.researchTime : def.baseResearchTime) - active.elapsed
   return Math.max(0, remaining / getResearchSpeedMultiplier())
 })
 
@@ -85,7 +86,7 @@ function effectLabel(effect: ResearchDefinition['effects'][number]): string {
             {{ tech.name }}
           </span>
           <UBadge v-if="isComplete" color="success" variant="subtle" size="xs">Complete</UBadge>
-          <UBadge v-else-if="isActive" color="violet" variant="subtle" size="xs">Researching</UBadge>
+          <UBadge v-else-if="isActive" color="secondary" variant="subtle" size="xs">Researching</UBadge>
           <UBadge v-else-if="!isAvailable" color="neutral" variant="subtle" size="xs">
             <UIcon name="i-lucide-lock" class="mr-0.5" />Locked
           </UBadge>
@@ -97,7 +98,7 @@ function effectLabel(effect: ResearchDefinition['effects'][number]): string {
     <!-- Active: progress bar + drain info -->
     <template v-if="isActive">
       <div class="mt-3 space-y-1.5">
-        <UProgress :value="researchProgress * 100" size="xs" color="violet" />
+        <UProgress :value="researchProgress * 100" size="xs" color="secondary" />
         <div class="flex justify-between text-xs text-zinc-400">
           <span class="text-violet-300">-{{ formatNumber(energyDrainPerSecond) }} TW/s</span>
           <span>ETA {{ formatTime(eta) }}</span>
