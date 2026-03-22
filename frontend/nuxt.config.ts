@@ -8,7 +8,8 @@ export default defineNuxtConfig({
     '@nuxt/test-utils',
     '@vueuse/nuxt',
     '@nuxthub/core',
-    'nuxt-toast'
+    'nuxt-toast',
+    'nuxt-charts'
   ],
 
   buildModules: [
