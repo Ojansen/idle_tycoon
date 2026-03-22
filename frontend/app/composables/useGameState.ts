@@ -34,7 +34,8 @@ function createDefaultState(): GameState {
     lastSaveTimestamp: now,
     createdAt: now,
     victoryAchieved: false,
-    repeatableResearch: {}
+    repeatableResearch: {},
+    productionHistory: []
   }
 }
 
@@ -251,6 +252,7 @@ export function useGameState() {
     saved.allTimeClicks ??= 0
     saved.victoryAchieved ??= false
     saved.repeatableResearch ??= {}
+    saved.productionHistory ??= []
     state.value = saved
   }
 

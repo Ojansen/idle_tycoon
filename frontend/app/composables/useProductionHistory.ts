@@ -1,25 +1,25 @@
 const MAX_POINTS = 60
-// Use a shared singleton so all components see the same history
+
+// Ephemeral rolling window for production/upkeep rate charts
 const creditsProductionHistory = ref<number[]>([])
 const creditsUpkeepHistory = ref<number[]>([])
 const energyProductionHistory = ref<number[]>([])
 const energyUpkeepHistory = ref<number[]>([])
 
-// All-time cumulative growth tracking
-const totalCreditsHistory = ref<number[]>([])
-const totalEnergyHistory = ref<number[]>([])
+// Counter for throttled all-time sampling (every 10s)
+let growthSampleCounter = 0
 
 export function useProductionHistory() {
   const { creditsPerSecond, energyPerSecond, state } = useGameState()
   const { totalEnergyUpkeep, totalCreditsUpkeep } = useUpkeep()
 
   function sample() {
+    // Rolling window for production/upkeep charts (1s interval, 60 points)
     creditsProductionHistory.value.push(creditsPerSecond.value)
     creditsUpkeepHistory.value.push(totalCreditsUpkeep.value)
     energyProductionHistory.value.push(energyPerSecond.value)
     energyUpkeepHistory.value.push(totalEnergyUpkeep.value)
 
-    // Trim to max points
     if (creditsProductionHistory.value.length > MAX_POINTS) {
       creditsProductionHistory.value.shift()
       creditsUpkeepHistory.value.shift()
@@ -27,9 +27,15 @@ export function useProductionHistory() {
       energyUpkeepHistory.value.shift()
     }
 
-    // Sample production rates for all-time growth chart
-    totalCreditsHistory.value.push(creditsPerSecond.value)
-    totalEnergyHistory.value.push(energyPerSecond.value)
+    // All-time growth: sample every 10 calls (10s) into persisted state
+    growthSampleCounter++
+    if (growthSampleCounter >= 10) {
+      growthSampleCounter = 0
+      state.value.productionHistory.push({
+        credits: creditsPerSecond.value,
+        energy: energyPerSecond.value
+      })
+    }
   }
 
   // Build data arrays for nuxt-charts AreaChart component
@@ -50,10 +56,10 @@ export function useProductionHistory() {
   })
 
   const growthChartData = computed(() => {
-    return totalCreditsHistory.value.map((credits, i) => ({
+    return state.value.productionHistory.map((point, i) => ({
       t: i,
-      credits,
-      energy: totalEnergyHistory.value[i] ?? 0
+      credits: point.credits,
+      energy: point.energy
     }))
   })
 

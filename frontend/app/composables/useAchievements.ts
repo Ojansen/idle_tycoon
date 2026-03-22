@@ -154,7 +154,7 @@ const achievements: AchievementDefinition[] = [
     description: 'Buy all one-time prestige upgrades',
     icon: 'i-lucide-star',
     category: 'Prestige',
-    check: (s) => s.prestigeUpgradesBought.length >= 10
+    check: (s) => s.prestigeUpgradesBought.length >= 16
   },
 
   // Influence milestone

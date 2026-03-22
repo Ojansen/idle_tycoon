@@ -183,4 +183,5 @@ export interface GameState {
   createdAt: number
   victoryAchieved: boolean
   repeatableResearch: Record<string, number>
+  productionHistory: { credits: number; energy: number }[]
 }
