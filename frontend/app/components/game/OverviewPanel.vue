@@ -3,7 +3,7 @@ import { CurveType } from '@unovis/ts'
 
 const { creditsPerSecond, energyPerSecond, state, getBuildingMultiplier, getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
 const { totalEnergyUpkeep, totalCreditsUpkeep, creditThrottle, energyThrottle, netCreditsPerSecond, netEnergyPerSecond, hasUpkeep, getFullUpkeepReduction } = useUpkeep()
-const { energyChartData, creditsChartData } = useProductionHistory()
+const { energyChartData, creditsChartData, growthChartData } = useProductionHistory()
 const { buildings } = useGameConfig()
 const { megastructures } = useResearchConfig()
 const { getAscensionMultiplier } = useAscensionPerks()
@@ -25,6 +25,11 @@ const energyCategories = {
 const creditsCategories = {
   production: { name: 'Production', color: '#a78bfa', label: 'Production' },
   upkeep: { name: 'Upkeep', color: '#f87171', label: 'Upkeep' }
+}
+
+const growthCategories = {
+  energy: { name: 'Energy/s', color: '#fbbf24', label: 'Energy/s' },
+  credits: { name: 'Credits/s', color: '#a78bfa', label: 'Credits/s' }
 }
 
 // Per-building upkeep breakdown
@@ -93,6 +98,44 @@ const buildingUpkeepBreakdown = computed(() => {
 
 <template>
   <div class="space-y-4">
+    <!-- All-Time Growth -->
+    <div class="rounded-lg bg-white/[0.03] border border-white/10 p-4">
+      <div class="flex items-center gap-2 mb-3">
+        <UIcon name="i-lucide-trending-up" class="text-lg text-emerald-400" />
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider">All-Time Growth</h3>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-3 text-center">
+        <div>
+          <div class="text-sm font-bold text-amber-300">{{ formatNumber(energyPerSecond) }} TW/s</div>
+          <div class="text-xs text-zinc-500">Energy Production</div>
+        </div>
+        <div>
+          <div class="text-sm font-bold text-violet-300">₢{{ formatNumber(creditsPerSecond) }}/s</div>
+          <div class="text-xs text-zinc-500">Credits Production</div>
+        </div>
+      </div>
+
+      <div v-if="growthChartData.length >= 2" class="h-40 w-full">
+        <AreaChart
+          :data="growthChartData"
+          :categories="growthCategories"
+          x-label=""
+          y-label=""
+          :hide-x-axis="true"
+          :hide-legend="false"
+          :hide-tooltip="true"
+          :duration="0"
+          :height="160"
+          :line-width="2"
+          :curve-type="CurveType.MonotoneX"
+        />
+      </div>
+      <div v-else class="h-40 flex items-center justify-center text-xs text-zinc-600">
+        Collecting data...
+      </div>
+    </div>
+
     <!-- Energy Balance -->
     <div class="rounded-lg bg-white/[0.03] border border-white/10 p-4">
       <div class="flex items-center gap-2 mb-3">

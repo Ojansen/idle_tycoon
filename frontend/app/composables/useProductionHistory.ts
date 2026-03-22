@@ -1,21 +1,16 @@
 const MAX_POINTS = 60
-
-interface HistoryPoint {
-  t: number // seconds ago (0 = now, 59 = oldest)
-  creditsProduction: number
-  creditsUpkeep: number
-  energyProduction: number
-  energyUpkeep: number
-}
-
 // Use a shared singleton so all components see the same history
 const creditsProductionHistory = ref<number[]>([])
 const creditsUpkeepHistory = ref<number[]>([])
 const energyProductionHistory = ref<number[]>([])
 const energyUpkeepHistory = ref<number[]>([])
 
+// All-time cumulative growth tracking
+const totalCreditsHistory = ref<number[]>([])
+const totalEnergyHistory = ref<number[]>([])
+
 export function useProductionHistory() {
-  const { creditsPerSecond, energyPerSecond } = useGameState()
+  const { creditsPerSecond, energyPerSecond, state } = useGameState()
   const { totalEnergyUpkeep, totalCreditsUpkeep } = useUpkeep()
 
   function sample() {
@@ -31,6 +26,10 @@ export function useProductionHistory() {
       energyProductionHistory.value.shift()
       energyUpkeepHistory.value.shift()
     }
+
+    // Sample production rates for all-time growth chart
+    totalCreditsHistory.value.push(creditsPerSecond.value)
+    totalEnergyHistory.value.push(energyPerSecond.value)
   }
 
   // Build data arrays for nuxt-charts AreaChart component
@@ -50,6 +49,14 @@ export function useProductionHistory() {
     }))
   })
 
+  const growthChartData = computed(() => {
+    return totalCreditsHistory.value.map((credits, i) => ({
+      t: i,
+      credits,
+      energy: totalEnergyHistory.value[i] ?? 0
+    }))
+  })
+
   return {
     creditsProductionHistory: readonly(creditsProductionHistory),
     creditsUpkeepHistory: readonly(creditsUpkeepHistory),
@@ -57,6 +64,7 @@ export function useProductionHistory() {
     energyUpkeepHistory: readonly(energyUpkeepHistory),
     energyChartData,
     creditsChartData,
+    growthChartData,
     sample
   }
 }
