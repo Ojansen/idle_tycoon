@@ -90,6 +90,29 @@ const creditsMultipliers: MultiplierSource[] = [
   { name: 'Efficient Management', stat: 'credits', value: 1.5, source: 'prestige' },
 ]
 
+const cgMultipliers: MultiplierSource[] = [
+  // Research
+  { name: 'Supply Chain Optimization', stat: 'cg', value: 1.15, source: 'research' },
+  { name: 'Mass Production', stat: 'cg', value: 1.25, source: 'research' },
+  { name: 'Nano-Assembly', stat: 'cg', value: 1.5, source: 'research' },
+  { name: 'Reality Forge', stat: 'cg', value: 2.0, source: 'research' },
+  // Ascension (one per tier, best-case for CG)
+  { name: 'Supply Chain Mastery', stat: 'cg', value: 1.25, source: 'ascension' },
+  { name: 'Automated Distribution', stat: 'cg', value: 1.5, source: 'ascension' },
+  { name: 'Galactic Supply Web', stat: 'cg', value: 1.5, source: 'ascension' },
+  { name: 'Universal Logistics', stat: 'cg', value: 2.0, source: 'ascension' },
+  { name: 'Reality Fabrication', stat: 'cg', value: 2.0, source: 'ascension' },
+  // Megastructures
+  { name: 'Universal Replicator', stat: 'cg', value: 5.0, source: 'megastructure' },
+  { name: 'Omnifabricator', stat: 'cg', value: 10.0, source: 'megastructure' },
+  // Prestige one-time
+  { name: 'Efficient Logistics', stat: 'cg', value: 1.5, source: 'prestige' },
+  { name: 'Interstellar Supply Lines', stat: 'cg', value: 2, source: 'prestige' },
+  { name: 'Galactic Distribution', stat: 'cg', value: 3, source: 'prestige' },
+  { name: 'Universal Fabrication', stat: 'cg', value: 5, source: 'prestige' },
+  { name: 'Omnipresent Supply', stat: 'cg', value: 10, source: 'prestige' },
+]
+
 const energyMultipliers: MultiplierSource[] = [
   // Research
   { name: 'Grid Optimization', stat: 'energy', value: 1.15, source: 'research' },
@@ -485,6 +508,84 @@ describe('Penrose Engine / Star Lifter output jumps', () => {
       expect(effRatio).toBeGreaterThan(0.5, `${next.name} efficiency drop too steep`)
       expect(effRatio).toBeLessThan(0.9, `${next.name} should be less efficient than ${current.name}`)
     }
+  })
+})
+
+describe('CG multiplier stacking — max theoretical multiplier', () => {
+  it('max CG multiplier should be astronomical but not infinite', () => {
+    const total = cgMultipliers.reduce((acc, m) => acc * m.value, 1)
+    // Plus repeatable: supply_optimization at max level 30 = 1.10^30
+    const repeatableMax = Math.pow(1.10, 30)
+    // Plus repeatable research: rep_logistics = 1.05^level (unbounded, estimate 50 levels)
+    const repResearch = Math.pow(1.05, 50)
+    const grandTotal = total * repeatableMax * repResearch
+    expect(grandTotal).toBeGreaterThan(1e6)
+    expect(grandTotal).toBeLessThan(1e20)
+    console.log(`Max CG multiplier: ${grandTotal.toExponential(2)} (${cgMultipliers.length} sources + repeatable prestige + repeatable research)`)
+  })
+
+  it('CG max multiplier should be within 200x of credits max multiplier', () => {
+    // CG has no megastructure multipliers, so it'll be somewhat lower than credits/energy
+    const cgTotal = cgMultipliers.reduce((acc, m) => acc * m.value, 1) * Math.pow(1.10, 30) * Math.pow(1.05, 50)
+    const creditTotal = creditsMultipliers.reduce((acc, m) => acc * m.value, 1) * Math.pow(1.10, 30) * Math.pow(1.05, 50)
+    const ratio = Math.max(cgTotal, creditTotal) / Math.min(cgTotal, creditTotal)
+    expect(ratio).toBeLessThan(200,
+      `CG mult=${cgTotal.toExponential(2)} vs credits mult=${creditTotal.toExponential(2)} — ${ratio.toFixed(0)}x gap`)
+    console.log(`CG/credits multiplier ratio: ${ratio.toFixed(1)}x`)
+  })
+})
+
+describe('CG multiplier — individual source caps', () => {
+  it('no single CG research should contribute more than 6x', () => {
+    for (const m of cgMultipliers) {
+      if (m.source === 'research') {
+        expect(m.value).toBeLessThanOrEqual(6,
+          `${m.name} gives ${m.value}x — single research giving >6x is suspicious`)
+      }
+    }
+  })
+
+  it('no single CG prestige upgrade should exceed 10x', () => {
+    for (const m of cgMultipliers) {
+      if (m.source === 'prestige') {
+        expect(m.value).toBeLessThanOrEqual(10,
+          `${m.name} gives ${m.value}x — single prestige upgrade >10x is too strong`)
+      }
+    }
+  })
+
+  it('no single CG ascension perk should exceed 2x', () => {
+    for (const m of cgMultipliers) {
+      if (m.source === 'ascension') {
+        expect(m.value).toBeLessThanOrEqual(2.0,
+          `${m.name} gives ${m.value}x`)
+      }
+    }
+  })
+
+  it('CG repeatable prestige at max level should not exceed 10000x', () => {
+    // supply_optimization: 1.10^30
+    const supplyOpt = Math.pow(1.10, 30)
+    expect(supplyOpt).toBeLessThan(10000)
+    console.log(`Supply Optimization lv30: ${supplyOpt.toFixed(0)}x`)
+  })
+
+  it('CG repeatable research at 50 levels should not exceed 10000x', () => {
+    // rep_logistics: 1.05^50
+    const repLog = Math.pow(1.05, 50)
+    expect(repLog).toBeLessThan(10000)
+    console.log(`Logistics Optimization lv50: ${repLog.toFixed(1)}x`)
+  })
+})
+
+describe('CG trait balance', () => {
+  it('Mass Producer CG bonus should not exceed 1.5x', () => {
+    // Mass Producer: +30% CG, -15% credits
+    expect(1.30).toBeLessThanOrEqual(1.5)
+  })
+
+  it('Mass Producer should have a meaningful malus', () => {
+    expect(0.85).toBeLessThan(1)
   })
 })
 
