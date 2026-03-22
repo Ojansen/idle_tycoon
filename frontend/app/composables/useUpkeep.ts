@@ -1,5 +1,5 @@
 export function useUpkeep() {
-  const { state, creditsPerSecond, energyPerSecond, getBuildingMultiplier, getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
+  const { state, creditsPerSecond, energyPerSecond, cgPerSecond, getBuildingMultiplier, getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
   const { buildings } = useGameConfig()
   const { megastructures } = useResearchConfig()
   const { getAscensionMultiplier } = useAscensionPerks()
@@ -29,7 +29,6 @@ export function useUpkeep() {
   }
 
   // Get the full production multiplier stack for a given stat
-  // This makes upkeep scale with production so the ratio stays constant
   function getProductionMultiplierStack(stat: 'energyMultiplier' | 'creditsMultiplier'): number {
     return getPrestigeMultiplier(stat)
       * getTraitMultiplier(stat)
@@ -38,17 +37,19 @@ export function useUpkeep() {
       * getResearchMultiplier(stat)
   }
 
+  // Step 1: Energy upkeep — only CG buildings consume energy
   const totalEnergyUpkeep = computed(() => {
     let upkeep = 0
 
     for (const b of buildings) {
+      if (b.resource !== 'consumer_goods') continue
       if (!b.energyUpkeep) continue
       const owned = state.value.buildings[b.id] || 0
       if (owned === 0) continue
       upkeep += owned * b.energyUpkeep * getBuildingMultiplier(b.id)
     }
 
-    // Megastructure upkeep (completed only)
+    // Megastructure energy upkeep (completed only)
     for (const [megaId, progress] of Object.entries(state.value.megastructures)) {
       if (!progress.completed) continue
       const def = megastructures.find(m => m.id === megaId)
@@ -64,16 +65,58 @@ export function useUpkeep() {
     return upkeep
   })
 
-  const totalCreditsUpkeep = computed(() => {
-    let upkeep = 0
+  // Step 2: Energy throttle — if energy production < energy upkeep, CG production is throttled
+  const energyThrottle = computed(() => {
+    const gross = energyPerSecond.value
+    if (gross <= 0) return 1
+    const balance = gross - totalEnergyUpkeep.value
+    if (balance >= 0) return 1
+    return Math.max(0.25, (gross + balance) / gross)
+  })
 
+  // Step 3: CG production (after energy throttle)
+  const effectiveCgProduction = computed(() => {
+    return cgPerSecond.value * energyThrottle.value
+  })
+
+  // Step 4: CG consumption — all non-CG buildings + megastructures consume consumer goods
+  const totalCgConsumption = computed(() => {
+    let consumption = 0
     for (const b of buildings) {
-      if (!b.creditsUpkeep) continue
+      if (b.resource === 'consumer_goods') continue
+      if (!b.cgUpkeep) continue
       const owned = state.value.buildings[b.id] || 0
       if (owned === 0) continue
-      upkeep += owned * b.creditsUpkeep * getBuildingMultiplier(b.id)
+      consumption += owned * b.cgUpkeep * getBuildingMultiplier(b.id)
     }
 
+    // Megastructure CG upkeep (completed only)
+    for (const [megaId, progress] of Object.entries(state.value.megastructures)) {
+      if (!progress.completed) continue
+      const def = megastructures.find(m => m.id === megaId)
+      if (def?.cgUpkeepPerSecond) {
+        consumption += def.cgUpkeepPerSecond
+      }
+    }
+
+    // Apply upkeep reduction
+    consumption *= getFullUpkeepReduction()
+    return consumption
+  })
+
+  // Step 5: CG throttle — if CG production < CG consumption, credits/pops get throttled
+  // Energy is EXEMPT from CG throttle to prevent death spiral
+  const cgThrottle = computed(() => {
+    const production = effectiveCgProduction.value
+    const consumption = totalCgConsumption.value
+    if (consumption <= 0) return 1
+    if (production >= consumption) return 1
+    return Math.max(0.25, production / consumption)
+  })
+
+  // Megastructure credits upkeep (separate from CG system)
+  const megaCreditsUpkeep = computed(() => {
+    let upkeep = 0
     for (const [megaId, progress] of Object.entries(state.value.megastructures)) {
       if (!progress.completed) continue
       const def = megastructures.find(m => m.id === megaId)
@@ -81,48 +124,30 @@ export function useUpkeep() {
         upkeep += def.creditsUpkeepPerSecond
       }
     }
-
-    // Scale with credits production multipliers so upkeep stays proportional
     upkeep *= getProductionMultiplierStack('creditsMultiplier')
-    // Then apply upkeep reduction (research + repeatable)
     upkeep *= getFullUpkeepReduction()
     return upkeep
   })
 
-  // Energy deficit throttles credit production, credit deficit throttles energy production
-  const creditThrottle = computed(() => {
-    const gross = energyPerSecond.value
-    if (gross <= 0) return 1
-    const balance = gross - totalEnergyUpkeep.value
-    if (balance >= 0) return 1
-    return Math.max(0.5, (gross + balance) / gross)
-  })
-
-  const energyThrottle = computed(() => {
-    const gross = creditsPerSecond.value
-    if (gross <= 0) return 1
-    const balance = gross - totalCreditsUpkeep.value
-    if (balance >= 0) return 1
-    return Math.max(0.5, (gross + balance) / gross)
-  })
-
+  // Net production values
   const netCreditsPerSecond = computed(() => {
-    return Math.max(0, creditsPerSecond.value * creditThrottle.value - totalCreditsUpkeep.value)
+    return Math.max(0, creditsPerSecond.value * cgThrottle.value - megaCreditsUpkeep.value)
   })
 
   const netEnergyPerSecond = computed(() => {
-    return Math.max(0, energyPerSecond.value * energyThrottle.value - totalEnergyUpkeep.value)
+    return Math.max(0, energyPerSecond.value - totalEnergyUpkeep.value)
   })
 
   const hasUpkeep = computed(() => {
-    return totalEnergyUpkeep.value > 0 || totalCreditsUpkeep.value > 0
+    return totalEnergyUpkeep.value > 0 || totalCgConsumption.value > 0
   })
 
   return {
     totalEnergyUpkeep,
-    totalCreditsUpkeep,
-    creditThrottle,
+    effectiveCgProduction,
+    totalCgConsumption,
     energyThrottle,
+    cgThrottle,
     netCreditsPerSecond,
     netEnergyPerSecond,
     hasUpkeep,

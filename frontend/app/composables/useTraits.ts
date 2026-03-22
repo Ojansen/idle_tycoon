@@ -64,7 +64,23 @@ const traits: TraitDefinition[] = [
     icon: 'i-lucide-microscope',
     bonus: { stat: 'energyMultiplier', value: 1.30, label: '+30% Energy/s' },
     malus: { stat: 'popMultiplier', value: 0.80, label: '-20% Pop output' }
-  }
+  },
+  {
+    id: 'isolationist',
+    name: 'Isolationist',
+    description: 'Your corporation operates in total isolation. No outside investments.',
+    icon: 'i-lucide-lock',
+    bonus: { stat: 'allProductionMultiplier', value: 1.15, label: '+15% All production' },
+    malus: { stat: 'marketDisabled', value: 1, label: 'Market disabled' }
+  },
+  {
+    id: 'mass_producer',
+    name: 'Mass Producer',
+    description: 'Your megacorp dominates consumer goods manufacturing.',
+    icon: 'i-lucide-package',
+    bonus: { stat: 'cgMultiplier', value: 1.30, label: '+30% Consumer Goods/s' },
+    malus: { stat: 'creditsMultiplier', value: 0.85, label: '-15% Credits/s' }
+  },
 ]
 
 export function useTraits() {

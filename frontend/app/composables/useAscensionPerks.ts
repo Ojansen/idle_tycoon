@@ -35,6 +35,14 @@ const ascensionPerkPools: Record<number, AscensionPerk[]> = {
       icon: 'i-lucide-users',
       kardashevLevel: 1,
       effect: { stat: 'popMultiplier', value: 1.5 }
+    },
+    {
+      id: 'supply_chain_mastery',
+      name: 'Supply Chain Mastery',
+      description: '+25% Consumer Goods production',
+      icon: 'i-lucide-package',
+      kardashevLevel: 1,
+      effect: { stat: 'cgMultiplier', value: 1.25 }
     }
   ],
 
@@ -63,6 +71,14 @@ const ascensionPerkPools: Record<number, AscensionPerk[]> = {
       icon: 'i-lucide-trophy',
       kardashevLevel: 2,
       effect: { stat: 'casinoMultiplier', value: 1.5 }
+    },
+    {
+      id: 'automated_distribution',
+      name: 'Automated Distribution',
+      description: '+50% Consumer Goods production',
+      icon: 'i-lucide-package',
+      kardashevLevel: 2,
+      effect: { stat: 'cgMultiplier', value: 1.5 }
     }
   ],
 
@@ -91,6 +107,14 @@ const ascensionPerkPools: Record<number, AscensionPerk[]> = {
       icon: 'i-lucide-timer',
       kardashevLevel: 3,
       effect: { stat: 'creditsMultiplier', value: 1.5 }
+    },
+    {
+      id: 'galactic_supply_web',
+      name: 'Galactic Supply Web',
+      description: '+50% Consumer Goods production',
+      icon: 'i-lucide-package',
+      kardashevLevel: 3,
+      effect: { stat: 'cgMultiplier', value: 1.5 }
     }
   ],
 
@@ -119,6 +143,14 @@ const ascensionPerkPools: Record<number, AscensionPerk[]> = {
       icon: 'i-lucide-users',
       kardashevLevel: 4,
       effect: { stat: 'popMultiplier', value: 2.0 }
+    },
+    {
+      id: 'universal_logistics',
+      name: 'Universal Logistics',
+      description: '2x Consumer Goods production',
+      icon: 'i-lucide-package',
+      kardashevLevel: 4,
+      effect: { stat: 'cgMultiplier', value: 2.0 }
     }
   ],
 
@@ -147,6 +179,14 @@ const ascensionPerkPools: Record<number, AscensionPerk[]> = {
       icon: 'i-lucide-star',
       kardashevLevel: 5,
       effect: { stat: 'clickMultiplier', value: 2.0 }
+    },
+    {
+      id: 'reality_fabrication',
+      name: 'Reality Fabrication',
+      description: '2x Consumer Goods production',
+      icon: 'i-lucide-package',
+      kardashevLevel: 5,
+      effect: { stat: 'cgMultiplier', value: 2.0 }
     }
   ]
 }

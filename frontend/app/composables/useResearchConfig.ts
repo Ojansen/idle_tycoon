@@ -18,6 +18,19 @@ const researchTree: ResearchDefinition[] = [
     unlockKardashev: 0
   },
   {
+    id: 'ind_supply_chains',
+    name: 'Supply Chain Optimization',
+    description: 'Streamlined logistics boost consumer goods output.',
+    icon: 'i-lucide-package-check',
+    branch: 'industry',
+    tier: 0,
+    energyCost: 500,
+    researchTime: 30,
+    prerequisites: [],
+    effects: [{ type: 'multiplier', stat: 'cgMultiplier', value: 1.15 }],
+    unlockKardashev: 0
+  },
+  {
     id: 'ind_logistics',
     name: 'Interstellar Logistics',
     description: 'Coordinate supply chains across star systems for massive throughput gains.',
@@ -28,6 +41,19 @@ const researchTree: ResearchDefinition[] = [
     researchTime: 60,
     prerequisites: ['ind_automation'],
     effects: [{ type: 'multiplier', stat: 'creditsMultiplier', value: 1.25 }],
+    unlockKardashev: 1
+  },
+  {
+    id: 'ind_mass_production',
+    name: 'Mass Production',
+    description: 'Assembly line automation doubles throughput.',
+    icon: 'i-lucide-factory',
+    branch: 'industry',
+    tier: 1,
+    energyCost: 5e4,
+    researchTime: 120,
+    prerequisites: ['ind_supply_chains'],
+    effects: [{ type: 'multiplier', stat: 'cgMultiplier', value: 1.25 }],
     unlockKardashev: 1
   },
   {
@@ -60,6 +86,22 @@ const researchTree: ResearchDefinition[] = [
     unlockKardashev: 2
   },
   {
+    id: 'ind_nano_assembly',
+    name: 'Nano-Assembly',
+    description: 'Molecular-scale manufacturing with zero waste. Unlocks the Universal Replicator megastructure.',
+    icon: 'i-lucide-microscope',
+    branch: 'industry',
+    tier: 3,
+    energyCost: 5e13,
+    researchTime: 600,
+    prerequisites: ['ind_mass_production'],
+    effects: [
+      { type: 'multiplier', stat: 'cgMultiplier', value: 1.5 },
+      { type: 'unlockMegastructure', megastructureId: 'universal_replicator' }
+    ],
+    unlockKardashev: 3
+  },
+  {
     id: 'ind_matter_prog',
     name: 'Programmable Matter',
     description: 'Matter that reconfigures itself on demand. Building costs plummet; possibilities become limitless.',
@@ -90,6 +132,23 @@ const researchTree: ResearchDefinition[] = [
       { type: 'unlockMegastructure', megastructureId: 'genesis_engine' }
     ],
     unlockKardashev: 4
+  },
+
+  {
+    id: 'ind_reality_forge',
+    name: 'Reality Forge',
+    description: 'Fabricate consumer goods from raw spacetime. Unlocks the Omnifabricator megastructure.',
+    icon: 'i-lucide-wand-sparkles',
+    branch: 'industry',
+    tier: 5,
+    energyCost: 5e29,
+    researchTime: 1800,
+    prerequisites: ['ind_nano_assembly'],
+    effects: [
+      { type: 'multiplier', stat: 'cgMultiplier', value: 2.0 },
+      { type: 'unlockMegastructure', megastructureId: 'omnifabricator' }
+    ],
+    unlockKardashev: 5
   },
 
   // =============================================
@@ -440,7 +499,8 @@ const megastructures: MegastructureDefinition[] = [
       { type: 'multiplier', stat: 'buildingCostMultiplier', value: 0.8 }
     ],
     energyUpkeepPerSecond: 5e9,
-    creditsUpkeepPerSecond: 2e9
+    creditsUpkeepPerSecond: 2e9,
+    cgUpkeepPerSecond: 1e6
   },
   {
     id: 'dyson_brain',
@@ -458,7 +518,8 @@ const megastructures: MegastructureDefinition[] = [
       { type: 'multiplier', stat: 'popMultiplier', value: 1.5 }
     ],
     energyUpkeepPerSecond: 2e10,
-    creditsUpkeepPerSecond: 5e9
+    creditsUpkeepPerSecond: 5e9,
+    cgUpkeepPerSecond: 2e6
   },
   {
     id: 'nidavellir_forge',
@@ -476,7 +537,8 @@ const megastructures: MegastructureDefinition[] = [
       { type: 'multiplier', stat: 'energyMultiplier', value: 2.0 }
     ],
     energyUpkeepPerSecond: 5e17,
-    creditsUpkeepPerSecond: 5e16
+    creditsUpkeepPerSecond: 5e16,
+    cgUpkeepPerSecond: 5e12
   },
   {
     id: 'matrioshka_brain',
@@ -495,7 +557,8 @@ const megastructures: MegastructureDefinition[] = [
       { type: 'researchSpeed', value: 2.0 }
     ],
     energyUpkeepPerSecond: 2e18,
-    creditsUpkeepPerSecond: 2e17
+    creditsUpkeepPerSecond: 2e17,
+    cgUpkeepPerSecond: 1e13
   },
   {
     id: 'genesis_engine',
@@ -513,7 +576,8 @@ const megastructures: MegastructureDefinition[] = [
       { type: 'multiplier', stat: 'energyMultiplier', value: 2.0 }
     ],
     energyUpkeepPerSecond: 5e23,
-    creditsUpkeepPerSecond: 5e22
+    creditsUpkeepPerSecond: 5e22,
+    cgUpkeepPerSecond: 5e19
   },
   {
     id: 'cosmic_engine',
@@ -531,7 +595,8 @@ const megastructures: MegastructureDefinition[] = [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 2.0 }
     ],
     energyUpkeepPerSecond: 2e26,
-    creditsUpkeepPerSecond: 5e24
+    creditsUpkeepPerSecond: 5e24,
+    cgUpkeepPerSecond: 2e20
   },
   {
     id: 'reality_engine',
@@ -550,7 +615,8 @@ const megastructures: MegastructureDefinition[] = [
       { type: 'multiplier', stat: 'clickMultiplier', value: 3.0 }
     ],
     energyUpkeepPerSecond: 5e34,
-    creditsUpkeepPerSecond: 5e33
+    creditsUpkeepPerSecond: 5e33,
+    cgUpkeepPerSecond: 5e27
   },
   {
     id: 'omega_structure',
@@ -569,7 +635,46 @@ const megastructures: MegastructureDefinition[] = [
       { type: 'multiplier', stat: 'popMultiplier', value: 5.0 }
     ],
     energyUpkeepPerSecond: 1e40,
-    creditsUpkeepPerSecond: 1e38
+    creditsUpkeepPerSecond: 1e38,
+    cgUpkeepPerSecond: 1e29
+  },
+  {
+    id: 'universal_replicator',
+    name: 'Universal Replicator',
+    description: 'A megastructure that replicates any consumer good at molecular precision. Supplies entire civilizations from a single station.',
+    icon: 'i-lucide-copy',
+    stages: 5,
+    creditsCostPerStage: 1e27,
+    energyCostPerStage: 5e28,
+    buildTimePerStage: 480,
+    requiredResearch: ['ind_nano_assembly'],
+    unlockKardashev: 4,
+    effects: [
+      { type: 'multiplier', stat: 'cgMultiplier', value: 5.0 },
+      { type: 'upkeepReduction', value: 0.7 }
+    ],
+    energyUpkeepPerSecond: 1e27,
+    creditsUpkeepPerSecond: 5e25,
+    cgUpkeepPerSecond: 5e19
+  },
+  {
+    id: 'omnifabricator',
+    name: 'Omnifabricator',
+    description: 'Weaves consumer goods from the quantum foam of spacetime. Demand is a concept that no longer applies.',
+    icon: 'i-lucide-sparkles',
+    stages: 8,
+    creditsCostPerStage: 1e36,
+    energyCostPerStage: 1e38,
+    buildTimePerStage: 900,
+    requiredResearch: ['ind_reality_forge'],
+    unlockKardashev: 5,
+    effects: [
+      { type: 'multiplier', stat: 'cgMultiplier', value: 10.0 },
+      { type: 'upkeepReduction', value: 0.5 }
+    ],
+    energyUpkeepPerSecond: 5e37,
+    creditsUpkeepPerSecond: 5e35,
+    cgUpkeepPerSecond: 5e28
   },
   {
     id: 'infinity_forge',
@@ -588,7 +693,8 @@ const megastructures: MegastructureDefinition[] = [
       { type: 'upkeepReduction', value: 0.8 }
     ],
     energyUpkeepPerSecond: 1e42,
-    creditsUpkeepPerSecond: 1e40
+    creditsUpkeepPerSecond: 1e40,
+    cgUpkeepPerSecond: 1e37
   },
   {
     id: 'chronosphere',
@@ -607,7 +713,8 @@ const megastructures: MegastructureDefinition[] = [
       { type: 'multiplier', stat: 'energyMultiplier', value: 2.0 }
     ],
     energyUpkeepPerSecond: 5e43,
-    creditsUpkeepPerSecond: 5e41
+    creditsUpkeepPerSecond: 5e41,
+    cgUpkeepPerSecond: 5e37
   }
 ]
 
@@ -623,6 +730,18 @@ const repeatableResearch: RepeatableResearchDefinition[] = [
     baseResearchTime: 120,
     timeScale: 1.2,
     effect: { stat: 'creditsMultiplier', valuePerLevel: 1.05 }
+  },
+  {
+    id: 'rep_logistics',
+    name: 'Logistics Optimization',
+    description: '+5% Consumer Goods/s per level',
+    icon: 'i-lucide-package',
+    branch: 'industry' as const,
+    baseEnergyCost: 1e4,
+    costScale: 2.0,
+    baseResearchTime: 60,
+    timeScale: 1.3,
+    effect: { stat: 'cgMultiplier' as const, valuePerLevel: 1.05 }
   },
   {
     id: 'rep_energy',

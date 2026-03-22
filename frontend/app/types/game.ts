@@ -6,10 +6,10 @@ export interface BuildingDefinition {
   baseCost: number
   costMultiplier: number
   baseOutput: number
-  resource: 'credits' | 'energy' | 'autoclick'
+  resource: 'credits' | 'energy' | 'autoclick' | 'consumer_goods'
   unlockKardashev: number
-  energyUpkeep?: number    // energy/s consumed per building (credit & pop buildings)
-  creditsUpkeep?: number   // credits/s consumed per building (energy & pop buildings)
+  energyUpkeep?: number    // energy/s consumed per building (CG buildings only)
+  cgUpkeep?: number        // consumer goods/s consumed per building (all non-CG buildings)
 }
 
 export interface PrestigeUpgradeDefinition {
@@ -27,6 +27,7 @@ export type PrestigeEffect =
   | { type: 'clickMultiplier'; value: number }
   | { type: 'popMultiplier'; value: number }
   | { type: 'buildingCostMultiplier'; value: number }
+  | { type: 'cgMultiplier'; value: number }
   | { type: 'quickStart'; buildings: Record<string, number> }
   | { type: 'unlockKardashev'; level: number }
 
@@ -54,7 +55,7 @@ export interface KardashevLevel {
   energyPerSecond: number
 }
 
-export type TraitStat = 'creditsMultiplier' | 'energyMultiplier' | 'clickMultiplier' | 'popMultiplier' | 'buildingCostMultiplier' | 'casinoMultiplier' | 'casinoDisabled' | 'upkeepReduction'
+export type TraitStat = 'creditsMultiplier' | 'energyMultiplier' | 'clickMultiplier' | 'popMultiplier' | 'buildingCostMultiplier' | 'casinoMultiplier' | 'casinoDisabled' | 'upkeepReduction' | 'allProductionMultiplier' | 'marketDisabled' | 'cgMultiplier'
 
 export interface TraitEffect {
   stat: TraitStat
@@ -137,6 +138,7 @@ export interface MegastructureDefinition {
   effects: readonly ResearchEffect[]
   energyUpkeepPerSecond?: number
   creditsUpkeepPerSecond?: number
+  cgUpkeepPerSecond?: number
 }
 
 export interface ResearchProgress {
@@ -169,7 +171,6 @@ export interface GameState {
   prestigeUpgradesBought: string[]
   prestigeRepeatables: Record<string, number>
   kardashevHighWaterMark: number
-  stocks: Record<string, number>
   casinoStats: CasinoStats
   ascensionPerks: string[]
   achievements: string[]

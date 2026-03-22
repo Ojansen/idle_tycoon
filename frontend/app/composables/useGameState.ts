@@ -21,7 +21,6 @@ function createDefaultState(): GameState {
     prestigeUpgradesBought: [],
     prestigeRepeatables: {},
     kardashevHighWaterMark: 0,
-    stocks: {},
     casinoStats: { totalWagered: 0, totalWon: 0, gamesPlayed: 0 },
     ascensionPerks: [],
     achievements: [],
@@ -43,7 +42,7 @@ export function useGameState() {
   const state = useState<GameState>('gameState', createDefaultState)
   const { buildings, kardashevLevels, prestigeUpgrades, repeatablePrestigeUpgrades } = useGameConfig()
 
-  function getPrestigeMultiplier(type: 'creditsMultiplier' | 'energyMultiplier' | 'clickMultiplier' | 'popMultiplier' | 'buildingCostMultiplier'): number {
+  function getPrestigeMultiplier(type: 'creditsMultiplier' | 'energyMultiplier' | 'clickMultiplier' | 'popMultiplier' | 'buildingCostMultiplier' | 'cgMultiplier'): number {
     let multiplier = 1
     for (const upgradeId of state.value.prestigeUpgradesBought) {
       const upgrade = prestigeUpgrades.find(u => u.id === upgradeId)
@@ -115,20 +114,26 @@ export function useGameState() {
     const ascension = getAscensionMultiplier('clickMultiplier')
     const repeatable = getRepeatableMultiplier('clickMultiplier')
     const research = getResearchMult('clickMultiplier')
-    const baseClick = (state.value.clickPower ?? 1) * prestige * trait * ascension * repeatable * research
+    const milestone = calcBuildingMultiplier(state.value.clickUpgradeLevel)
+    const baseClick = (state.value.clickPower ?? 1) * milestone * prestige * trait * ascension * repeatable * research
     return calcClickPower(baseClick, autoclickPerSecond.value)
   })
 
-  // Dividends only from fully owned subsidiaries (100% shares)
-  const dividendIncome = computed(() => {
-    const { companies } = useStockMarket()
-    let income = 0
-    for (const company of companies) {
-      const shares = state.value.stocks[company.id] || 0
-      if (shares < company.totalShares) continue
-      income += company.dividendRate * company.totalShares
+  // Consumer goods production (before energy throttle)
+  const cgPerSecond = computed(() => {
+    let base = 0
+    for (const b of buildings) {
+      if (b.resource !== 'consumer_goods') continue
+      const owned = state.value.buildings[b.id] || 0
+      base += owned * b.baseOutput * getBuildingMultiplier(b.id)
     }
-    return income
+    const prestige = getPrestigeMultiplier('cgMultiplier')
+    const trait = getTraitMultiplier('cgMultiplier')
+    const ascension = getAscensionMultiplier('cgMultiplier')
+    const repeatable = getRepeatableMultiplier('cgMultiplier')
+    const research = getResearchMult('cgMultiplier')
+    const allProd = getTraitMultiplier('allProductionMultiplier')
+    return base * prestige * trait * ascension * repeatable * research * allProd
   })
 
   const creditsPerSecond = computed(() => {
@@ -140,14 +145,13 @@ export function useGameState() {
     }
     // Pops generate passive credits at their flat rate
     base += autoclickPerSecond.value
-    // Add stock dividend income
-    base += dividendIncome.value
     const prestige = getPrestigeMultiplier('creditsMultiplier')
     const trait = getTraitMultiplier('creditsMultiplier')
     const ascension = getAscensionMultiplier('creditsMultiplier')
     const repeatable = getRepeatableMultiplier('creditsMultiplier')
     const research = getResearchMult('creditsMultiplier')
-    return base * prestige * trait * ascension * repeatable * research
+    const allProd = getTraitMultiplier('allProductionMultiplier')
+    return base * prestige * trait * ascension * repeatable * research * allProd
   })
 
   const energyPerSecond = computed(() => {
@@ -162,7 +166,8 @@ export function useGameState() {
     const ascension = getAscensionMultiplier('energyMultiplier')
     const repeatable = getRepeatableMultiplier('energyMultiplier')
     const research = getResearchMult('energyMultiplier')
-    return base * prestige * trait * ascension * repeatable * research
+    const allProd = getTraitMultiplier('allProductionMultiplier')
+    return base * prestige * trait * ascension * repeatable * research * allProd
   })
 
   const kardashevLevel = computed(() => {
@@ -236,7 +241,6 @@ export function useGameState() {
     saved.clickPower ??= 1
     saved.prestigeUpgradesBought ??= []
     saved.prestigeRepeatables ??= {}
-    saved.stocks ??= {}
     saved.casinoStats ??= { totalWagered: 0, totalWon: 0, gamesPlayed: 0 }
     saved.setupComplete ??= false
     saved.companyName ??= ''
@@ -261,7 +265,7 @@ export function useGameState() {
     creditsPerSecond,
     energyPerSecond,
     autoclickPerSecond,
-    dividendIncome,
+    cgPerSecond,
     kardashevLevel,
     nextKardashevLevel,
     effectiveClickPower,

@@ -64,7 +64,6 @@ export function useGameActions() {
       clickPower: 1,
       buildings: {},
       clickUpgradeLevel: 0,
-      stocks: {},
       // Kept
       influence: state.value.influence + influenceGain,
       prestigeCount: state.value.prestigeCount + 1,

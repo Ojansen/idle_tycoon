@@ -11,7 +11,6 @@ export interface AchievementDefinition {
 
 interface AchievementContext {
   energyPerSecond: number
-  portfolioValue: number
 }
 
 const achievements: AchievementDefinition[] = [
@@ -50,22 +49,6 @@ const achievements: AchievementDefinition[] = [
   // Casino
   { id: 'casino_win_big', name: 'High Roller', description: 'Win 100K+ in a single casino game', icon: 'i-lucide-dice-5', category: 'Casino', check: s => s.casinoStats.totalWon >= 100000 },
   { id: 'casino_100_games', name: 'Gambling Addiction', description: 'Play 100 casino games', icon: 'i-lucide-dice-5', category: 'Casino', check: s => s.casinoStats.gamesPlayed >= 100 },
-
-  // Market
-  {
-    id: 'first_subsidiary',
-    name: 'Hostile Takeover',
-    description: 'Fully acquire a company',
-    icon: 'i-lucide-briefcase',
-    category: 'Market',
-    check: (s) => {
-      for (const shares of Object.values(s.stocks)) {
-        if (shares >= 100) return true
-      }
-      return false
-    }
-  },
-  { id: 'portfolio_1m', name: 'Investor', description: 'Portfolio value exceeds 1M', icon: 'i-lucide-trending-up', category: 'Market', check: (_s, ctx) => ctx.portfolioValue >= 1e6 },
 
   // Buildings
   {
@@ -163,7 +146,6 @@ const achievements: AchievementDefinition[] = [
 
 export function useAchievements() {
   const { state, energyPerSecond } = useGameState()
-  const { portfolioValue } = useStockMarket()
   const toast = useToast()
 
   // Track which achievements we've already toasted this session to avoid re-toasting on load
@@ -171,8 +153,7 @@ export function useAchievements() {
 
   function checkAchievements() {
     const ctx: AchievementContext = {
-      energyPerSecond: energyPerSecond.value,
-      portfolioValue: portfolioValue.value
+      energyPerSecond: energyPerSecond.value
     }
 
     for (const achievement of achievements) {
