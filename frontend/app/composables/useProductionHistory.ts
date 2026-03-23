@@ -10,13 +10,13 @@ const cgConsumptionHistory = ref<number[]>([])
 let growthSampleCounter = 0
 
 export function useProductionHistory() {
-  const { creditsPerSecond, energyPerSecond, state } = useGameState()
-  const { totalEnergyUpkeep, effectiveCgProduction, totalCgConsumption } = useUpkeep()
+  const { creditsPerSecond, state } = useGameState()
+  const { effectiveCgProduction, totalCgConsumption } = useUpkeep()
 
   function sample() {
     // Rolling window for production/upkeep charts (1s interval, 60 points)
-    energyProductionHistory.value.push(energyPerSecond.value)
-    energyUpkeepHistory.value.push(totalEnergyUpkeep.value)
+    energyProductionHistory.value.push(0)
+    energyUpkeepHistory.value.push(0)
     cgProductionHistory.value.push(effectiveCgProduction.value)
     cgConsumptionHistory.value.push(totalCgConsumption.value)
 
@@ -32,8 +32,7 @@ export function useProductionHistory() {
     if (growthSampleCounter >= 10) {
       growthSampleCounter = 0
       state.value.productionHistory.push({
-        credits: creditsPerSecond.value,
-        energy: energyPerSecond.value
+        credits: creditsPerSecond.value
       })
     }
   }
@@ -58,8 +57,7 @@ export function useProductionHistory() {
   const growthChartData = computed(() => {
     return state.value.productionHistory.map((point, i) => ({
       t: i,
-      credits: point.credits,
-      energy: point.energy
+      credits: point.credits
     }))
   })
 

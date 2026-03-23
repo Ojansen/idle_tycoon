@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calcBuildingMultiplier, calcBuildingCost, calcClickPower } from '../../app/utils/gameMath'
+import { calcBuildingMultiplier, calcBuildingCost } from '../../app/utils/gameMath'
 
 // ── Raw building data (copied from useGameConfig) ──
 
@@ -361,31 +361,6 @@ describe('building cost curve sanity', () => {
   })
 })
 
-describe('pop (autoclick) building balance', () => {
-  it('corporate drone should not be clearly better than buying credit buildings early', () => {
-    // A corporate drone costs 50, gives 1 click/s
-    // With base click power of 1, that's 1 credit/s for 50 cost = 0.02 eff
-    // Mining drone costs 10, gives 0.5 credits/s = 0.05 eff
-    // So mining drone should be the better early investment
-    const drone = buildings.find(b => b.id === 'corporate_drone')!
-    const miner = buildings.find(b => b.id === 'mining_drone')!
-
-    const droneEff = (drone.baseOutput * 1) / drone.baseCost // 1 click/s * 1 clickPower
-    const minerEff = miner.baseOutput / miner.baseCost
-
-    expect(minerEff).toBeGreaterThan(droneEff,
-      'Mining drones should be more efficient than corporate drones at base click power')
-  })
-
-  it('pops should scale better than credit buildings with click upgrades', () => {
-    // With all click upgrades (1+5+25+100+1000+50000 = 51131 click power)
-    // plus sqrt pop boost, pops become very strong late-game
-    const totalClickPower = 1 + 1 + 5 + 25 + 100 + 1000 + 50000
-    const popOutput = calcClickPower(totalClickPower, 100) // 100 pops
-    // This should be significant — that's the whole point of pops
-    expect(popOutput).toBeGreaterThan(totalClickPower)
-  })
-})
 
 describe('trait balance', () => {
   interface Trait {

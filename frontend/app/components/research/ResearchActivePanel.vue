@@ -5,7 +5,7 @@ const {
   isResearching,
   activeResearchDef,
   researchProgress,
-  energyDrainPerSecond,
+  creditsDrainPerSecond,
   getResearchSpeedMultiplier,
   cancelResearch
 } = useResearchActions()
@@ -68,8 +68,8 @@ function formatTime(seconds: number): string {
       <UProgress :value="researchProgress * 100" size="xs" color="secondary" />
       <div class="flex justify-between text-xs text-zinc-400">
         <span>
-          <UIcon name="i-lucide-zap" class="align-middle text-amber-400" />
-          Draining {{ formatNumber(energyDrainPerSecond) }} TW/s
+          <UIcon name="i-lucide-banknote" class="align-middle text-amber-400" />
+          Draining ₢{{ formatNumber(creditsDrainPerSecond) }}/s
         </span>
         <span>
           {{ Math.round(researchProgress * 100) }}% — ETA

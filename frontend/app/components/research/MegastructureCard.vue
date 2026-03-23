@@ -42,7 +42,7 @@ function effectLabel(effect: ResearchEffect): string {
   return ''
 }
 
-const hasMegaUpkeep = computed(() => (props.mega.energyUpkeepPerSecond ?? 0) > 0 || (props.mega.creditsUpkeepPerSecond ?? 0) > 0 || (props.mega.cgUpkeepPerSecond ?? 0) > 0)
+const hasMegaUpkeep = computed(() => (props.mega.creditsUpkeepPerSecond ?? 0) > 0 || (props.mega.cgUpkeepPerSecond ?? 0) > 0)
 
 function formatTime(seconds: number): string {
   if (seconds < 60) return `${Math.ceil(seconds)}s`
@@ -57,8 +57,7 @@ function formatTime(seconds: number): string {
 }
 
 const canAfford = computed(() =>
-  state.value.credits >= props.mega.creditsCostPerStage &&
-  state.value.energy >= props.mega.energyCostPerStage
+  state.value.credits >= props.mega.creditsCostPerStage
 )
 </script>
 
@@ -130,10 +129,8 @@ const canAfford = computed(() =>
       </div>
       <div v-if="hasMegaUpkeep" class="mt-2 text-xs text-red-400/70">
         Ongoing:
-        <span v-if="mega.energyUpkeepPerSecond">{{ formatNumber(mega.energyUpkeepPerSecond) }} TW/s</span>
-        <span v-if="mega.energyUpkeepPerSecond && mega.creditsUpkeepPerSecond"> + </span>
         <span v-if="mega.creditsUpkeepPerSecond">₢{{ formatNumber(mega.creditsUpkeepPerSecond) }}/s</span>
-        <span v-if="mega.cgUpkeepPerSecond && (mega.energyUpkeepPerSecond || mega.creditsUpkeepPerSecond)"> + </span>
+        <span v-if="mega.cgUpkeepPerSecond && mega.creditsUpkeepPerSecond"> + </span>
         <span v-if="mega.cgUpkeepPerSecond">{{ formatNumber(mega.cgUpkeepPerSecond) }} CG/s</span>
       </div>
     </template>
@@ -158,7 +155,6 @@ const canAfford = computed(() =>
         <div class="flex items-center justify-between gap-2">
           <div class="text-xs text-zinc-400 space-x-2">
             <span><UIcon name="i-lucide-coins" class="align-middle text-amber-400" /> ₢{{ formatNumber(mega.creditsCostPerStage) }}</span>
-            <span><UIcon name="i-lucide-zap" class="align-middle text-amber-300" /> {{ formatNumber(mega.energyCostPerStage) }} TW</span>
           </div>
           <UButton
             size="xs"
@@ -181,7 +177,6 @@ const canAfford = computed(() =>
         <div class="flex items-center justify-between gap-2">
           <div class="text-xs text-zinc-400 space-x-2">
             <span><UIcon name="i-lucide-coins" class="align-middle text-amber-400" /> ₢{{ formatNumber(mega.creditsCostPerStage) }}/stage</span>
-            <span><UIcon name="i-lucide-zap" class="align-middle text-amber-300" /> {{ formatNumber(mega.energyCostPerStage) }} TW/stage</span>
           </div>
           <UButton
             size="xs"

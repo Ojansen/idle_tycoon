@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { state } = useGameState()
+const { totalPops, totalDivisionLevels } = usePlanets()
 const { formatNumber } = useNumberFormat()
 
 function formatTime(seconds: number): string {
@@ -24,20 +25,8 @@ function formatTime(seconds: number): string {
     <div class="rounded-lg bg-white/[0.03] border border-white/10 p-5">
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
         <div>
-          <div class="text-zinc-500">Run Clicks</div>
-          <div class="text-white font-medium">{{ formatNumber(state.totalClicks) }}</div>
-        </div>
-        <div>
-          <div class="text-zinc-500">All-Time Clicks</div>
-          <div class="text-white font-medium">{{ formatNumber(state.allTimeClicks) }}</div>
-        </div>
-        <div>
           <div class="text-zinc-500">Total Credits Earned</div>
           <div class="text-white font-medium">₢{{ formatNumber(state.totalCreditsEarned) }}</div>
-        </div>
-        <div>
-          <div class="text-zinc-500">Total Energy Earned</div>
-          <div class="text-white font-medium">{{ formatNumber(state.totalEnergyEarned) }} TW</div>
         </div>
         <div>
           <div class="text-zinc-500">Prestige Count</div>
@@ -52,8 +41,16 @@ function formatTime(seconds: number): string {
           <div class="text-white font-medium">Type {{ state.kardashevHighWaterMark }}</div>
         </div>
         <div>
-          <div class="text-zinc-500">Casino Games</div>
-          <div class="text-white font-medium">{{ state.casinoStats.gamesPlayed }}</div>
+          <div class="text-zinc-500">Total Planets</div>
+          <div class="text-white font-medium">{{ state.planets.length }}</div>
+        </div>
+        <div>
+          <div class="text-zinc-500">Total Pops</div>
+          <div class="text-white font-medium">{{ formatNumber(totalPops) }}</div>
+        </div>
+        <div>
+          <div class="text-zinc-500">Total Division Levels</div>
+          <div class="text-white font-medium">{{ formatNumber(totalDivisionLevels) }}</div>
         </div>
         <div>
           <div class="text-zinc-500">Run Time</div>
@@ -62,12 +59,6 @@ function formatTime(seconds: number): string {
         <div>
           <div class="text-zinc-500">Total Play Time</div>
           <div class="text-white font-medium">{{ formatTime(state.totalPlayTime) }}</div>
-        </div>
-        <div>
-          <div class="text-zinc-500">Casino P/L</div>
-          <div :class="state.casinoStats.totalWon >= state.casinoStats.totalWagered ? 'text-green-400' : 'text-red-400'" class="font-medium">
-            ₢{{ formatNumber(state.casinoStats.totalWon - state.casinoStats.totalWagered) }}
-          </div>
         </div>
       </div>
     </div>

@@ -1,15 +1,20 @@
 <script setup lang="ts">
+import type { PlanetType } from '~/types/planet'
+
 const emit = defineEmits<{
   complete: []
 }>()
 
 const { state } = useGameState()
 const { traits } = useTraits()
+const { planetTypes } = usePlanetConfig()
 const { saveGame } = useGamePersistence()
 
 const companyName = ref('')
 const companyDescription = ref('')
 const selectedTraits = ref<string[]>([])
+const selectedPlanetType = ref<PlanetType>('garden')
+const planetName = ref('')
 const showAccountId = ref(false)
 const restoreMode = ref(false)
 const restoreId = ref('')
@@ -17,7 +22,9 @@ const restoreId = ref('')
 const playerId = useCookie('megacorp-player-id')
 
 const canSubmit = computed(() =>
-  companyName.value.trim().length > 0 && selectedTraits.value.length === 3
+  companyName.value.trim().length > 0
+  && selectedTraits.value.length === 3
+  && selectedPlanetType.value
 )
 
 function toggleTrait(traitId: string) {
@@ -29,13 +36,66 @@ function toggleTrait(traitId: string) {
   }
 }
 
+const selectedTypeInfo = computed(() => planetTypes.find(t => t.type === selectedPlanetType.value))
+
+// Bonus display for planet types
+function formatBonus(value: number): string {
+  if (value === 1) return ''
+  const pct = Math.round((value - 1) * 100)
+  return pct > 0 ? `+${pct}%` : `${pct}%`
+}
+
+const orbColorMap: Record<string, string> = {
+  emerald: 'bg-emerald-500 shadow-emerald-500/50',
+  red: 'bg-red-500 shadow-red-500/50',
+  blue: 'bg-blue-500 shadow-blue-500/50',
+  amber: 'bg-amber-500 shadow-amber-500/50',
+  cyan: 'bg-cyan-500 shadow-cyan-500/50',
+  zinc: 'bg-zinc-500 shadow-zinc-500/50',
+  yellow: 'bg-yellow-500 shadow-yellow-500/50',
+}
+
+const borderColorMap: Record<string, string> = {
+  emerald: 'border-emerald-500',
+  red: 'border-red-500',
+  blue: 'border-blue-500',
+  amber: 'border-amber-500',
+  cyan: 'border-cyan-500',
+  zinc: 'border-zinc-500',
+  yellow: 'border-yellow-500',
+}
+
+const textColorMap: Record<string, string> = {
+  emerald: 'text-emerald-400',
+  red: 'text-red-400',
+  blue: 'text-blue-400',
+  amber: 'text-amber-400',
+  cyan: 'text-cyan-400',
+  zinc: 'text-zinc-400',
+  yellow: 'text-yellow-400',
+}
+
+const defaultNames: Record<string, string> = {
+  garden: 'New Eden',
+  volcanic: 'Ignis Prime',
+  ocean: 'Oceanus',
+  desert: 'Arrakis',
+  ice: 'Cryos',
+  barren: 'Desolation',
+  gaia: 'Elysium',
+}
+
 async function establish() {
   if (!canSubmit.value) return
 
-  // Set company info but don't mark setup complete yet (show account ID first)
   state.value.companyName = companyName.value.trim()
   state.value.companyDescription = companyDescription.value.trim()
   state.value.companyTraits = [...selectedTraits.value]
+  state.value.homeworldType = selectedPlanetType.value
+
+  // Set homeworld name
+  const name = planetName.value.trim() || defaultNames[selectedPlanetType.value] || 'Homeworld'
+  if (state.value.planets[0]) state.value.planets[0].name = name
 
   showAccountId.value = true
 }
@@ -156,6 +216,55 @@ function copyAccountId() {
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Homeworld Selection -->
+      <div class="space-y-3">
+        <label class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Homeworld</label>
+
+        <!-- Planet type grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div
+            v-for="pt in planetTypes"
+            :key="pt.type"
+            class="rounded-lg border p-3 cursor-pointer transition-all text-center"
+            :class="selectedPlanetType === pt.type
+              ? (borderColorMap[pt.color] || 'border-white') + ' bg-white/5'
+              : 'border-zinc-700 bg-white/[0.02] hover:border-zinc-500'"
+            @click="selectedPlanetType = pt.type as PlanetType"
+          >
+            <!-- Orb -->
+            <div class="mx-auto w-10 h-10 rounded-full shadow-lg mb-2"
+              :class="orbColorMap[pt.color]"
+            />
+            <div class="text-xs font-medium" :class="selectedPlanetType === pt.type ? textColorMap[pt.color] : 'text-zinc-300'">
+              {{ pt.name }}
+            </div>
+            <!-- Bonuses -->
+            <div class="mt-1 space-y-0.5">
+              <div v-if="pt.bonuses.credits !== 1" class="text-[10px]" :class="pt.bonuses.credits > 1 ? 'text-emerald-400' : 'text-red-400'">
+                {{ formatBonus(pt.bonuses.credits) }} ₢
+              </div>
+              <div v-if="pt.bonuses.cg !== 1" class="text-[10px]" :class="pt.bonuses.cg > 1 ? 'text-emerald-400' : 'text-red-400'">
+                {{ formatBonus(pt.bonuses.cg) }} CG
+              </div>
+              <div v-if="pt.bonuses.popGrowth !== 1" class="text-[10px]" :class="pt.bonuses.popGrowth > 1 ? 'text-emerald-400' : 'text-red-400'">
+                {{ formatBonus(pt.bonuses.popGrowth) }} Growth
+              </div>
+              <div v-if="pt.maintenanceModifier !== 1" class="text-[10px]" :class="pt.maintenanceModifier < 1 ? 'text-emerald-400' : 'text-red-400'">
+                {{ pt.maintenanceModifier < 1 ? '-' + Math.round((1 - pt.maintenanceModifier) * 100) + '%' : '+' + Math.round((pt.maintenanceModifier - 1) * 100) + '%' }} Maintenance
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Planet name -->
+        <UInput
+          v-model="planetName"
+          :placeholder="defaultNames[selectedPlanetType] || 'Name your homeworld'"
+          size="lg"
+          :maxlength="20"
+        />
       </div>
 
       <!-- Submit -->

@@ -29,12 +29,12 @@ const playTimeFormatted = computed(() => {
             <div class="text-xs text-zinc-500">Play Time</div>
           </div>
           <div>
-            <div class="text-lg font-bold text-emerald-400">{{ formatNumber(state.totalCreditsEarned) }}</div>
+            <div class="text-lg font-bold text-emerald-400">₢{{ formatNumber(state.totalCreditsEarned) }}</div>
             <div class="text-xs text-zinc-500">Total Credits Earned</div>
           </div>
           <div>
-            <div class="text-lg font-bold text-cyan-400">{{ state.allTimeClicks }}</div>
-            <div class="text-xs text-zinc-500">All-Time Clicks</div>
+            <div class="text-lg font-bold text-cyan-400">{{ state.influence }}</div>
+            <div class="text-xs text-zinc-500">Influence Earned</div>
           </div>
         </div>
 

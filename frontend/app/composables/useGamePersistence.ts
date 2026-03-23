@@ -27,10 +27,10 @@ export function useGamePersistence() {
     }
   }
 
-  async function loadGame(): Promise<{ offlineCredits: number; offlineEnergy: number; offlineSeconds: number }> {
+  async function loadGame(): Promise<{ offlineCredits: number; offlineSeconds: number }> {
     try {
       const { state: saved } = await $fetch('/api/game/load') as { state?: string }
-      if (!saved) return { offlineCredits: 0, offlineEnergy: 0, offlineSeconds: 0 }
+      if (!saved) return { offlineCredits: 0, offlineSeconds: 0 }
 
       loadState(saved as any)
 
@@ -41,24 +41,21 @@ export function useGamePersistence() {
       const cappedElapsed = Math.min(elapsed, maxOffline)
 
       if (cappedElapsed > 10) {
-        const { netCreditsPerSecond, netEnergyPerSecond } = useUpkeep()
+        const { netCreditsPerSecond } = useUpkeep()
         const offlineCredits = Math.max(0, cappedElapsed * netCreditsPerSecond.value)
-        const offlineEnergy = Math.max(0, cappedElapsed * netEnergyPerSecond.value)
 
         state.value.credits += offlineCredits
         state.value.totalCreditsEarned += offlineCredits
-        state.value.energy += offlineEnergy
-        state.value.totalEnergyEarned += offlineEnergy
         state.value.lastSaveTimestamp = now
 
-        return { offlineCredits, offlineEnergy, offlineSeconds: cappedElapsed }
+        return { offlineCredits, offlineSeconds: cappedElapsed }
       }
 
       state.value.lastSaveTimestamp = now
-      return { offlineCredits: 0, offlineEnergy: 0, offlineSeconds: 0 }
+      return { offlineCredits: 0, offlineSeconds: 0 }
     } catch (e) {
       console.warn('Failed to load game:', e)
-      return { offlineCredits: 0, offlineEnergy: 0, offlineSeconds: 0 }
+      return { offlineCredits: 0, offlineSeconds: 0 }
     }
   }
 
@@ -69,10 +66,10 @@ export function useGamePersistence() {
     // Periodic save every 30s
     const { pause } = useIntervalFn(saveGame, 30000)
 
-    // Watch for building/upgrade purchases and save shortly after
+    // Watch for planet/division changes and prestige events, save shortly after
     watch(() => [
-      Object.keys(state.value.buildings).length + Object.values(state.value.buildings).reduce((a, b) => a + b, 0),
-      state.value.clickUpgradeLevel,
+      state.value.planets.length,
+      state.value.planets.reduce((sum, p) => sum + p.divisions.filter(d => d !== null).length, 0),
       state.value.prestigeUpgradesBought.length,
       state.value.prestigeCount
     ], () => {

@@ -62,14 +62,14 @@ function handlePrestige() {
         <UIcon name="i-lucide-refresh-cw" class="text-4xl text-amber-400 mb-3" />
         <h3 class="text-lg font-bold text-white mb-2">Restructure</h3>
         <p class="text-sm text-zinc-400 mb-4">
-          Reset your Credits, Energy, buildings, and click upgrades.
+          Reset your Credits, buildings, and research.
         </p>
         <p class="text-sm text-zinc-300 mb-2">
           You will gain
           <span class="text-amber-300 font-bold text-lg">{{ formatNumber(currentInfluenceGain) }} Influence</span>
         </p>
         <p class="text-xs text-zinc-500 mb-4">
-          Total energy earned: {{ formatNumber(state.totalEnergyEarned) }} TW
+          Total credits earned: ₢{{ formatNumber(state.totalCreditsEarned) }}
         </p>
 
         <UButton
@@ -81,7 +81,7 @@ function handlePrestige() {
           Restructure Empire
         </UButton>
         <p v-if="!canPrestige()" class="text-xs text-zinc-500 mt-3">
-          Earn more Energy to gain at least 1 Influence
+          Earn more Credits to gain at least 1 Influence
         </p>
       </div>
 
@@ -171,10 +171,7 @@ function handlePrestige() {
         <h4 class="text-xs font-semibold uppercase tracking-wider text-red-400 mb-2">Reset on Restructure</h4>
         <ul class="text-xs text-zinc-400 space-y-1">
           <li>• Credits (₢{{ formatNumber(state.credits) }})</li>
-          <li>• Energy ({{ formatNumber(state.energy) }} TW)</li>
-          <li>• All buildings</li>
-          <li>• Click upgrades (click power resets to 1)</li>
-          <li>• Stock portfolio</li>
+          <li>• All planets &amp; pops</li>
           <li>• Ascension perks</li>
           <li>• Research &amp; megastructures</li>
         </ul>
@@ -186,7 +183,6 @@ function handlePrestige() {
           <li>• Prestige shop purchases</li>
           <li>• Achievements</li>
           <li>• Kardashev high-water mark (Type {{ state.kardashevHighWaterMark }})</li>
-          <li>• Casino stats</li>
         </ul>
       </div>
     </div>
@@ -198,7 +194,7 @@ function handlePrestige() {
           <UIcon name="i-lucide-alert-triangle" class="text-4xl text-amber-400 mb-3" />
           <h3 class="text-lg font-bold text-white mb-2">Corporate Restructuring</h3>
           <p class="text-sm text-zinc-400 mb-4">
-            This will reset all your Credits, Energy, and buildings.
+            This will reset your Credits, planets, and research.
             You will gain <span class="text-amber-300 font-bold">{{ getPrestigeInfluenceGain() }} Influence</span>.
           </p>
           <div class="flex gap-3 justify-center">

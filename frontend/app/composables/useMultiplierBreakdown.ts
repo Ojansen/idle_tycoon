@@ -15,14 +15,11 @@ interface MultiplierBreakdown {
 
 const statMeta: { stat: TraitStat; label: string; icon: string; hasPrestige: boolean }[] = [
   { stat: 'creditsMultiplier', label: 'Credits/s', icon: 'i-lucide-banknote', hasPrestige: true },
-  { stat: 'energyMultiplier', label: 'Energy/s', icon: 'i-lucide-zap', hasPrestige: true },
-  { stat: 'clickMultiplier', label: 'Click Power', icon: 'i-lucide-mouse-pointer-click', hasPrestige: true },
-  { stat: 'popMultiplier', label: 'Pop Output', icon: 'i-lucide-users', hasPrestige: true },
+  { stat: 'workerOutputMultiplier', label: 'Worker Output', icon: 'i-lucide-users', hasPrestige: true },
   { stat: 'cgMultiplier', label: 'Consumer Goods/s', icon: 'i-lucide-package', hasPrestige: true },
-  { stat: 'buildingCostMultiplier', label: 'Building Costs', icon: 'i-lucide-tags', hasPrestige: true },
+  { stat: 'divisionCostMultiplier', label: 'Division Costs', icon: 'i-lucide-tags', hasPrestige: true },
   { stat: 'tradeMultiplier', label: 'Trade Capacity', icon: 'i-lucide-handshake', hasPrestige: true },
-  { stat: 'casinoMultiplier', label: 'Casino Winnings', icon: 'i-lucide-dices', hasPrestige: false },
-  { stat: 'upkeepReduction', label: 'Upkeep Costs', icon: 'i-lucide-trending-down', hasPrestige: false }
+  { stat: 'maintenanceReduction', label: 'Maintenance Costs', icon: 'i-lucide-trending-down', hasPrestige: false }
 ]
 
 export function useMultiplierBreakdown() {
@@ -41,7 +38,7 @@ export function useMultiplierBreakdown() {
       if (trait !== 1) sources.push({ label: 'Traits', value: trait })
 
       if (meta.hasPrestige) {
-        const prestige = getPrestigeMultiplier(meta.stat as 'creditsMultiplier' | 'energyMultiplier' | 'clickMultiplier' | 'popMultiplier' | 'buildingCostMultiplier' | 'cgMultiplier' | 'tradeMultiplier')
+        const prestige = getPrestigeMultiplier(meta.stat as 'creditsMultiplier' | 'workerOutputMultiplier' | 'divisionCostMultiplier' | 'cgMultiplier' | 'tradeMultiplier')
         if (prestige !== 1) sources.push({ label: 'Prestige', value: prestige })
       }
 
@@ -51,8 +48,8 @@ export function useMultiplierBreakdown() {
       const repeatable = getRepeatableMultiplier(meta.stat)
       if (repeatable !== 1) sources.push({ label: 'Repeatable', value: repeatable })
 
-      if (meta.stat === 'upkeepReduction') {
-        // upkeepReduction uses a custom research effect type, not the standard multiplier
+      if (meta.stat === 'maintenanceReduction') {
+        // maintenanceReduction uses a custom research effect type, not the standard multiplier
         const reduction = getFullUpkeepReduction()
         if (reduction !== 1) sources.push({ label: 'Combined', value: reduction })
       } else {

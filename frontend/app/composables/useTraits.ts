@@ -4,82 +4,26 @@ const traits: TraitDefinition[] = [
   {
     id: 'ruthless_exploiters',
     name: 'Ruthless Exploiters',
-    description: 'Maximize profit at any environmental cost.',
+    description: 'Maximize profit at any cost to your population.',
     icon: 'i-lucide-skull',
     bonus: { stat: 'creditsMultiplier', value: 1.25, label: '+25% Credits/s' },
-    malus: { stat: 'energyMultiplier', value: 0.85, label: '-15% Energy/s' }
-  },
-  {
-    id: 'green_energy',
-    name: 'Green Energy Initiative',
-    description: 'Sustainable power generation across all operations.',
-    icon: 'i-lucide-leaf',
-    bonus: { stat: 'energyMultiplier', value: 1.25, label: '+25% Energy/s' },
-    malus: { stat: 'creditsMultiplier', value: 0.85, label: '-15% Credits/s' }
-  },
-  {
-    id: 'worker_drones',
-    name: 'Worker Drones',
-    description: 'Automated workforce handles everything. Management optional.',
-    icon: 'i-lucide-bot',
-    bonus: { stat: 'popMultiplier', value: 1.30, label: '+30% Pop output' },
-    malus: { stat: 'clickMultiplier', value: 0.80, label: '-20% Click power' }
-  },
-  {
-    id: 'hands_on_ceo',
-    name: 'Hands-On CEO',
-    description: 'The boss clicks personally. Every. Single. Time.',
-    icon: 'i-lucide-hand',
-    bonus: { stat: 'clickMultiplier', value: 1.50, label: '+50% Click power' },
-    malus: { stat: 'popMultiplier', value: 0.80, label: '-20% Pop output' }
-  },
-  {
-    id: 'high_rollers',
-    name: 'High Rollers',
-    description: 'Fortune favors the bold. The casino is your second office.',
-    icon: 'i-lucide-dice-5',
-    bonus: { stat: 'casinoMultiplier', value: 1.20, label: '+20% Casino winnings' },
-    malus: { stat: 'creditsMultiplier', value: 0.90, label: '-10% Credits/s' }
-  },
-  {
-    id: 'risk_averse',
-    name: 'Risk Averse',
-    description: 'Steady growth. No gambling. Ever.',
-    icon: 'i-lucide-shield',
-    bonus: { stat: 'creditsMultiplier', value: 1.15, label: '+15% All production' },
-    malus: { stat: 'casinoDisabled', value: 1, label: 'Casino disabled' }
+    malus: { stat: 'cgMultiplier', value: 0.85, label: '-15% Consumer Goods/s' }
   },
   {
     id: 'rapid_expansion',
     name: 'Rapid Expansion',
-    description: 'Build fast, build cheap, worry about quality later.',
+    description: 'Build fast, build cheap, worry about upkeep later.',
     icon: 'i-lucide-rocket',
-    bonus: { stat: 'buildingCostMultiplier', value: 0.85, label: '-15% Building costs' },
-    malus: { stat: 'energyMultiplier', value: 0.90, label: '-10% Energy/s' }
-  },
-  {
-    id: 'research_focus',
-    name: 'Research Focus',
-    description: 'Knowledge is power. Literally — in terawatts.',
-    icon: 'i-lucide-microscope',
-    bonus: { stat: 'energyMultiplier', value: 1.30, label: '+30% Energy/s' },
-    malus: { stat: 'popMultiplier', value: 0.80, label: '-20% Pop output' }
-  },
-  {
-    id: 'isolationist',
-    name: 'Isolationist',
-    description: 'Your corporation operates in total isolation. No outside trade.',
-    icon: 'i-lucide-lock',
-    bonus: { stat: 'allProductionMultiplier', value: 1.20, label: '+20% All production' },
-    malus: { stat: 'tradeDisabled', value: 1, label: 'Trade disabled' }
+    bonus: { stat: 'divisionCostMultiplier', value: 0.85, label: '-15% Division costs' },
+    malus: { stat: 'maintenanceReduction', value: 1.15, label: '+15% Maintenance' }
   },
   {
     id: 'trade_magnate',
     name: 'Trade Magnate',
-    description: 'Your megacorp dominates interstellar commerce at the cost of energy infrastructure.',
+    description: 'Your megacorp dominates interstellar commerce, but sprawling trade routes strain your maintenance budget.',
     icon: 'i-lucide-handshake',
     bonus: { stat: 'tradeMultiplier', value: 1.30, label: '+30% Trade capacity' },
-    malus: { stat: 'energyMultiplier', value: 0.85, label: '-15% Energy/s' }
+    malus: { stat: 'maintenanceReduction', value: 1.15, label: '+15% Maintenance' }
   },
   {
     id: 'mass_producer',
@@ -88,6 +32,30 @@ const traits: TraitDefinition[] = [
     icon: 'i-lucide-package',
     bonus: { stat: 'cgMultiplier', value: 1.30, label: '+30% Consumer Goods/s' },
     malus: { stat: 'creditsMultiplier', value: 0.85, label: '-15% Credits/s' }
+  },
+  {
+    id: 'colonial_pioneers',
+    name: 'Colonial Pioneers',
+    description: 'Your colonists breed fast but spend lavishly.',
+    icon: 'i-lucide-users',
+    bonus: { stat: 'popGrowthMultiplier', value: 1.30, label: '+30% Pop growth' },
+    malus: { stat: 'creditsMultiplier', value: 0.85, label: '-15% Credits/s' }
+  },
+  {
+    id: 'efficient_governors',
+    name: 'Efficient Governors',
+    description: 'Lean operations, but your bureaucracy slows population growth.',
+    icon: 'i-lucide-clipboard-check',
+    bonus: { stat: 'divisionCostMultiplier', value: 0.85, label: '-15% Division costs' },
+    malus: { stat: 'popGrowthMultiplier', value: 0.85, label: '-15% Pop growth' }
+  },
+  {
+    id: 'expansionist',
+    name: 'Expansionist',
+    description: 'Your empire runs lean, but consumer goods production suffers.',
+    icon: 'i-lucide-globe',
+    bonus: { stat: 'maintenanceReduction', value: 0.80, label: '-20% Maintenance' },
+    malus: { stat: 'cgMultiplier', value: 0.90, label: '-10% Consumer Goods/s' }
   },
 ]
 

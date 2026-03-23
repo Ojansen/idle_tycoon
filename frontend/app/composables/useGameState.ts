@@ -1,5 +1,21 @@
 import type { GameState, TraitStat, TradePolicy } from '~/types/game'
-import { calcBuildingMultiplier, calcUpkeepMultiplier, calcClickPower, calcBuildingCost as calcBuildingCostPure, calcMaxBuyable, KARDASHEV_MILESTONE_GRANTS } from '~/utils/gameMath'
+import type { PlanetState } from '~/types/planet'
+import { KARDASHEV_MILESTONE_GRANTS } from '~/utils/gameMath'
+
+function createDefaultHomeworld(): PlanetState {
+  return {
+    definitionId: 'homeworld',
+    name: 'Terra Nova',
+    pops: 2,
+    divisions: [
+      { type: 'mining', level: 1 },
+      { type: 'industrial', level: 1 },
+      { type: 'administrative', level: 1 },
+      null, // empty 4th slot
+    ],
+    policy: 'balanced',
+  }
+}
 
 function createDefaultState(): GameState {
   const now = Date.now()
@@ -8,20 +24,15 @@ function createDefaultState(): GameState {
     companyName: '',
     companyDescription: '',
     companyTraits: [],
+    homeworldType: 'garden',
     credits: 0,
-    energy: 0,
     totalCreditsEarned: 0,
-    totalEnergyEarned: 0,
-    totalClicks: 0,
-    clickPower: 1,
-    buildings: {},
-    clickUpgradeLevel: 0,
     influence: 0,
+    planets: [createDefaultHomeworld()],
     prestigeCount: 0,
     prestigeUpgradesBought: [],
     prestigeRepeatables: {},
     kardashevHighWaterMark: 0,
-    casinoStats: { totalWagered: 0, totalWon: 0, gamesPlayed: 0 },
     ascensionPerks: [],
     achievements: [],
     completedResearch: [],
@@ -29,7 +40,6 @@ function createDefaultState(): GameState {
     megastructures: {},
     totalPlayTime: 0,
     runPlayTime: 0,
-    allTimeClicks: 0,
     lastSaveTimestamp: now,
     createdAt: now,
     victoryAchieved: false,
@@ -41,9 +51,9 @@ function createDefaultState(): GameState {
 
 export function useGameState() {
   const state = useState<GameState>('gameState', createDefaultState)
-  const { buildings, kardashevLevels, prestigeUpgrades, repeatablePrestigeUpgrades } = useGameConfig()
+  const { kardashevLevels, prestigeUpgrades, repeatablePrestigeUpgrades } = useGameConfig()
 
-  function getPrestigeMultiplier(type: 'creditsMultiplier' | 'energyMultiplier' | 'clickMultiplier' | 'popMultiplier' | 'buildingCostMultiplier' | 'cgMultiplier' | 'tradeMultiplier'): number {
+  function getPrestigeMultiplier(type: 'creditsMultiplier' | 'workerOutputMultiplier' | 'cgMultiplier' | 'tradeMultiplier' | 'popGrowthMultiplier' | 'divisionCostMultiplier' | 'maintenanceReduction'): number {
     let multiplier = 1
     for (const upgradeId of state.value.prestigeUpgradesBought) {
       const upgrade = prestigeUpgrades.find(u => u.id === upgradeId)
@@ -88,100 +98,23 @@ export function useGameState() {
     return getResearchMultiplier(stat)
   }
 
-  function getBuildingMultiplier(buildingId: string): number {
-    const owned = state.value.buildings[buildingId] || 0
-    return calcBuildingMultiplier(owned)
-  }
-
-  function getUpkeepMultiplier(buildingId: string): number {
-    const owned = state.value.buildings[buildingId] || 0
-    return calcUpkeepMultiplier(owned)
-  }
-
-  // Raw pop clicks/sec (before trait multiplier, used for click boost)
-  const rawPopClicks = computed(() => {
-    let clicks = 0
-    for (const b of buildings) {
-      if (b.resource !== 'autoclick') continue
-      const owned = state.value.buildings[b.id] || 0
-      clicks += owned * b.baseOutput * getBuildingMultiplier(b.id)
-    }
-    return clicks
+  // Production from planets (via usePlanets composable)
+  const creditsPerSecond: ComputedRef<number> = computed(() => {
+    const { grossCreditsPerSecond } = usePlanets()
+    return grossCreditsPerSecond.value
   })
 
-  const autoclickPerSecond = computed(() => {
-    return rawPopClicks.value * getPrestigeMultiplier('popMultiplier') * getTraitMultiplier('popMultiplier') * getAscensionMultiplier('popMultiplier') * getRepeatableMultiplier('popMultiplier') * getResearchMult('popMultiplier')
+  const cgPerSecond: ComputedRef<number> = computed(() => {
+    const { grossCgPerSecond } = usePlanets()
+    return grossCgPerSecond.value
   })
 
-  const effectiveClickPower = computed(() => {
-    if (!state.value) return 1
-    const prestige = getPrestigeMultiplier('clickMultiplier')
-    const trait = getTraitMultiplier('clickMultiplier')
-    const ascension = getAscensionMultiplier('clickMultiplier')
-    const repeatable = getRepeatableMultiplier('clickMultiplier')
-    const research = getResearchMult('clickMultiplier')
-    const milestone = calcBuildingMultiplier(state.value.clickUpgradeLevel)
-    const baseClick = (state.value.clickPower ?? 1) * milestone * prestige * trait * ascension * repeatable * research
-    return calcClickPower(baseClick, autoclickPerSecond.value)
-  })
-
-  // Consumer goods production (before energy throttle)
-  // Uses dampened multiplier so CG production scales at the same rate as CG consumption
-  const cgPerSecond = computed(() => {
-    let base = 0
-    for (const b of buildings) {
-      if (b.resource !== 'consumer_goods') continue
-      const owned = state.value.buildings[b.id] || 0
-      base += owned * b.baseOutput * getUpkeepMultiplier(b.id)
-    }
-    const prestige = getPrestigeMultiplier('cgMultiplier')
-    const trait = getTraitMultiplier('cgMultiplier')
-    const ascension = getAscensionMultiplier('cgMultiplier')
-    const repeatable = getRepeatableMultiplier('cgMultiplier')
-    const research = getResearchMult('cgMultiplier')
-    const allProd = getTraitMultiplier('allProductionMultiplier')
-    return base * prestige * trait * ascension * repeatable * research * allProd
-  })
-
-  const creditsPerSecond = computed(() => {
-    let base = 0
-    for (const b of buildings) {
-      if (b.resource !== 'credits') continue
-      const owned = state.value.buildings[b.id] || 0
-      base += owned * b.baseOutput * getBuildingMultiplier(b.id)
-    }
-    // Pops generate passive credits at their flat rate
-    base += autoclickPerSecond.value
-    const prestige = getPrestigeMultiplier('creditsMultiplier')
-    const trait = getTraitMultiplier('creditsMultiplier')
-    const ascension = getAscensionMultiplier('creditsMultiplier')
-    const repeatable = getRepeatableMultiplier('creditsMultiplier')
-    const research = getResearchMult('creditsMultiplier')
-    const allProd = getTraitMultiplier('allProductionMultiplier')
-    return base * prestige * trait * ascension * repeatable * research * allProd
-  })
-
-  const energyPerSecond = computed(() => {
-    let base = 0
-    for (const b of buildings) {
-      if (b.resource !== 'energy') continue
-      const owned = state.value.buildings[b.id] || 0
-      base += owned * b.baseOutput * getBuildingMultiplier(b.id)
-    }
-    const prestige = getPrestigeMultiplier('energyMultiplier')
-    const trait = getTraitMultiplier('energyMultiplier')
-    const ascension = getAscensionMultiplier('energyMultiplier')
-    const repeatable = getRepeatableMultiplier('energyMultiplier')
-    const research = getResearchMult('energyMultiplier')
-    const allProd = getTraitMultiplier('allProductionMultiplier')
-    return base * prestige * trait * ascension * repeatable * research * allProd
-  })
-
+  // Kardashev now tracks gross ₢/s production rate
   const kardashevLevel = computed(() => {
-    const eps = energyPerSecond.value
+    const cps = creditsPerSecond.value
     let level = 0
     for (const k of kardashevLevels) {
-      if (eps >= k.energyPerSecond) level = k.level
+      if (cps >= k.creditsPerSecond) level = k.level
     }
     return level
   })
@@ -191,42 +124,20 @@ export function useGameState() {
     return kardashevLevels.find(k => k.level === current + 1) ?? null
   })
 
-  function getBuildingCost(buildingId: string, quantity = 1): number {
-    const def = buildings.find(b => b.id === buildingId)
-    if (!def) return Infinity
-    const owned = state.value.buildings[buildingId] || 0
-    const combinedMult = getPrestigeMultiplier('buildingCostMultiplier')
-      * getTraitMultiplier('buildingCostMultiplier')
-      * getAscensionMultiplier('buildingCostMultiplier')
-      * getRepeatableMultiplier('buildingCostMultiplier')
-      * getResearchMult('buildingCostMultiplier')
-    return calcBuildingCostPure(def.baseCost, def.costMultiplier, owned, quantity, combinedMult)
-  }
-
-  function getMaxBuyableCount(buildingId: string): number {
-    const def = buildings.find(b => b.id === buildingId)
-    if (!def) return 0
-    const owned = state.value.buildings[buildingId] || 0
-    const combinedMult = getPrestigeMultiplier('buildingCostMultiplier')
-      * getTraitMultiplier('buildingCostMultiplier')
-      * getAscensionMultiplier('buildingCostMultiplier')
-      * getRepeatableMultiplier('buildingCostMultiplier')
-      * getResearchMult('buildingCostMultiplier')
-    return calcMaxBuyable(def.baseCost, def.costMultiplier, owned, state.value.credits, combinedMult)
-  }
-
   function tick() {
     const dt = 0.1
-    const { netCreditsPerSecond, netEnergyPerSecond } = useUpkeep()
+    const { netCreditsPerSecond, cgThrottle } = useUpkeep()
+    const { tickPopGrowth } = usePlanets()
     const creditGain = netCreditsPerSecond.value * dt
-    const energyGain = netEnergyPerSecond.value * dt
 
     state.value.credits = Math.max(0, state.value.credits + creditGain)
-    state.value.energy = Math.max(0, state.value.energy + energyGain)
     if (creditGain > 0) state.value.totalCreditsEarned += creditGain
-    if (energyGain > 0) state.value.totalEnergyEarned += energyGain
     state.value.totalPlayTime += dt
     state.value.runPlayTime += dt
+
+    // Pop growth (throttled by CG availability)
+    const cgAvailability = Math.min(1, cgThrottle.value)
+    tickPopGrowth(dt, cgAvailability)
 
     // Research & megastructure progress
     const { tickResearch, tickMegastructures } = useResearchActions()
@@ -234,7 +145,6 @@ export function useGameState() {
     tickMegastructures(dt)
 
     if (kardashevLevel.value > state.value.kardashevHighWaterMark) {
-      // Grant one-time milestone influence for each new Kardashev level reached
       for (let lvl = state.value.kardashevHighWaterMark + 1; lvl <= kardashevLevel.value; lvl++) {
         const grant = KARDASHEV_MILESTONE_GRANTS[lvl]
         if (grant) state.value.influence += grant
@@ -244,15 +154,36 @@ export function useGameState() {
   }
 
   function loadState(saved: GameState) {
-    saved.clickUpgradeLevel ??= 0
-    saved.clickPower ??= 1
+    // Migration: detect old save format (has buildings but no planets)
+    if ((saved as any).buildings && !saved.planets) {
+      // Old save — reset to new system
+      const fresh = createDefaultState()
+      fresh.setupComplete = saved.setupComplete ?? false
+      fresh.companyName = saved.companyName ?? ''
+      fresh.companyDescription = saved.companyDescription ?? ''
+      fresh.companyTraits = saved.companyTraits ?? []
+      fresh.influence = saved.influence ?? 0
+      fresh.prestigeCount = saved.prestigeCount ?? 0
+      fresh.prestigeUpgradesBought = saved.prestigeUpgradesBought ?? []
+      fresh.prestigeRepeatables = saved.prestigeRepeatables ?? {}
+      fresh.kardashevHighWaterMark = saved.kardashevHighWaterMark ?? 0
+      fresh.achievements = saved.achievements ?? []
+      fresh.totalPlayTime = saved.totalPlayTime ?? 0
+      fresh.createdAt = saved.createdAt ?? Date.now()
+      fresh.victoryAchieved = saved.victoryAchieved ?? false
+      state.value = fresh
+      return
+    }
+
+    // New format — apply defaults for any missing fields
+    saved.planets ??= [createDefaultHomeworld()]
     saved.prestigeUpgradesBought ??= []
     saved.prestigeRepeatables ??= {}
-    saved.casinoStats ??= { totalWagered: 0, totalWon: 0, gamesPlayed: 0 }
     saved.setupComplete ??= false
     saved.companyName ??= ''
     saved.companyDescription ??= ''
     saved.companyTraits ??= []
+    saved.homeworldType ??= 'garden'
     saved.ascensionPerks ??= []
     saved.achievements ??= []
     saved.completedResearch ??= []
@@ -260,7 +191,6 @@ export function useGameState() {
     saved.megastructures ??= {}
     saved.totalPlayTime ??= 0
     saved.runPlayTime ??= 0
-    saved.allTimeClicks ??= 0
     saved.victoryAchieved ??= false
     saved.repeatableResearch ??= {}
     saved.productionHistory ??= []
@@ -271,19 +201,13 @@ export function useGameState() {
   return {
     state,
     creditsPerSecond,
-    energyPerSecond,
-    autoclickPerSecond,
     cgPerSecond,
     kardashevLevel,
     nextKardashevLevel,
-    effectiveClickPower,
     getPrestigeMultiplier,
     getTraitMultiplier,
     getRepeatableMultiplier,
-    getBuildingMultiplier,
-    getUpkeepMultiplier,
-    getBuildingCost,
-    getMaxBuyableCount,
+    getResearchMult,
     tick,
     loadState
   }

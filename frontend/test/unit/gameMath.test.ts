@@ -7,17 +7,15 @@ import {
   calcUpkeepMultiplier,
   calcBuildingCost,
   calcMaxBuyable,
-  calcClickPower,
-  calcCreditsReceived,
-  calcEnergyReceived,
-  calcExchangeRate,
-  calcMarketHealth,
-  calcPressureDecay,
-  calcCrashPoint,
-  BASE_RATE,
-  ENERGY_PRESSURE_K,
-  CREDITS_PRESSURE_K,
-  PRESSURE_DECAY_RATE
+  calcHousingCap,
+  calcOvercrowdingEfficiency,
+  calcPopGrowth,
+  calcDivisionOutput,
+  calcDivisionUpgradeCost,
+  calcPopDistribution,
+  calcTransferCost,
+  calcCgPerJob,
+  calcJobCount,
 } from '../../app/utils/gameMath'
 
 // ── formatNumber ──
@@ -260,210 +258,6 @@ describe('calcRepeatableCost', () => {
   })
 })
 
-// ── calcClickPower ──
-
-describe('calcClickPower', () => {
-  it('returns baseClick with 0 autoclick', () => {
-    expect(calcClickPower(10, 0)).toBe(10) // 10 * (1 + 0) = 10
-  })
-
-  it('applies sqrt pop boost', () => {
-    // baseClick=10, autoclick=100 → 10 * (1 + 10) = 110
-    expect(calcClickPower(10, 100)).toBe(110)
-  })
-
-  it('floors the result', () => {
-    // baseClick=10, autoclick=2 → 10 * (1 + 1.414) = 24.14 → 24
-    expect(calcClickPower(10, 2)).toBe(24)
-  })
-
-  it('never returns less than 1', () => {
-    // With click-reducing trait: baseClick=0.8, autoclick=0 → floor(0.8) = 0 → clamped to 1
-    expect(calcClickPower(0.8, 0)).toBe(1)
-    expect(calcClickPower(0, 0)).toBe(1)
-    expect(calcClickPower(0.1, 0)).toBe(1)
-  })
-
-  it('handles large autoclick values with diminishing returns', () => {
-    // sqrt(10000) = 100, so boost is 101x. Much less than 10000x linear would be.
-    expect(calcClickPower(1, 10000)).toBe(101)
-  })
-})
-
-// ── calcCreditsReceived (exchange) ──
-
-describe('calcCreditsReceived', () => {
-  const PROD = 1000 // test production rate
-
-  it('returns 0 for 0 amount', () => {
-    expect(calcCreditsReceived(0, 0, PROD)).toBe(0)
-  })
-
-  it('returns 0 for negative amount', () => {
-    expect(calcCreditsReceived(-10, 0, PROD)).toBe(0)
-  })
-
-  it('returns 0 for 0 production rate', () => {
-    expect(calcCreditsReceived(100, 0, 0)).toBe(0)
-  })
-
-  it('approximates BASE_RATE for small amounts with 0 pressure', () => {
-    // For very small amounts relative to production, integral ≈ BASE_RATE * amount
-    const result = calcCreditsReceived(1, 0, PROD)
-    expect(result).toBeCloseTo(BASE_RATE * 1, 1)
-  })
-
-  it('gives diminishing returns for large amounts relative to production', () => {
-    const small = calcCreditsReceived(100, 0, PROD)
-    const large = calcCreditsReceived(10000, 0, PROD)
-    const smallAvg = small / 100
-    const largeAvg = large / 10000
-    expect(largeAvg).toBeLessThan(smallAvg)
-  })
-
-  it('gives worse rate with existing pressure', () => {
-    const noPressure = calcCreditsReceived(1000, 0, PROD)
-    const withPressure = calcCreditsReceived(1000, 5000, PROD)
-    expect(withPressure).toBeLessThan(noPressure)
-  })
-
-  it('scales proportionally with production rate', () => {
-    // Selling 10% of production should give similar % return regardless of scale
-    const smallProd = 100
-    const largeProd = 1e24
-    const smallResult = calcCreditsReceived(smallProd * 0.1, 0, smallProd)
-    const largeResult = calcCreditsReceived(largeProd * 0.1, 0, largeProd)
-    // Both should yield ~10% of production * BASE_RATE
-    const smallPct = smallResult / (smallProd * 0.1 * BASE_RATE)
-    const largePct = largeResult / (largeProd * 0.1 * BASE_RATE)
-    expect(Math.abs(smallPct - largePct)).toBeLessThan(0.01)
-  })
-})
-
-// ── calcEnergyReceived (exchange) ──
-
-describe('calcEnergyReceived', () => {
-  const PROD = 1000
-
-  it('returns 0 for 0 amount', () => {
-    expect(calcEnergyReceived(0, 0, PROD)).toBe(0)
-  })
-
-  it('approximates amount/BASE_RATE for small amounts', () => {
-    // 10 credits at base rate of 1 credit/energy ≈ 10 energy
-    const result = calcEnergyReceived(10, 0, PROD)
-    expect(result).toBeCloseTo(10 / BASE_RATE, 1)
-  })
-
-  it('gives diminishing returns for large amounts relative to production', () => {
-    const small = calcEnergyReceived(1000, 0, PROD)
-    const large = calcEnergyReceived(100000, 0, PROD)
-    const smallAvg = 1000 / small
-    const largeAvg = 100000 / large
-    expect(largeAvg).toBeGreaterThan(smallAvg)
-  })
-
-  it('selling energy then buying back costs more (no arbitrage)', () => {
-    const energySold = 1000
-    const creditsGained = calcCreditsReceived(energySold, 0, PROD)
-    const energyBought = calcEnergyReceived(creditsGained, 0, PROD)
-    expect(energyBought).toBeLessThan(energySold)
-  })
-
-  it('scales proportionally with production rate', () => {
-    const smallProd = 100
-    const largeProd = 1e24
-    const smallResult = calcEnergyReceived(smallProd * 0.1, 0, smallProd)
-    const largeResult = calcEnergyReceived(largeProd * 0.1, 0, largeProd)
-    const smallPct = smallResult / (smallProd * 0.1 / BASE_RATE)
-    const largePct = largeResult / (largeProd * 0.1 / BASE_RATE)
-    expect(Math.abs(smallPct - largePct)).toBeLessThan(0.01)
-  })
-})
-
-// ── calcPressureDecay ──
-
-describe('calcPressureDecay', () => {
-  it('returns unchanged pressure for dt=0', () => {
-    expect(calcPressureDecay(1000, PRESSURE_DECAY_RATE, 0)).toBe(1000)
-  })
-
-  it('recovers ~95% after 300s (5 minutes)', () => {
-    const initial = 1000
-    const after300s = calcPressureDecay(initial, PRESSURE_DECAY_RATE, 300)
-    const recovered = 1 - after300s / initial
-    // Should recover approximately 95% (ln(20)/300 ≈ 0.01)
-    expect(recovered).toBeGreaterThan(0.9)
-    expect(recovered).toBeLessThan(1.0)
-  })
-
-  it('decays exponentially', () => {
-    const p1 = calcPressureDecay(1000, PRESSURE_DECAY_RATE, 100)
-    const p2 = calcPressureDecay(1000, PRESSURE_DECAY_RATE, 200)
-    // p2 should be p1^2 / 1000 (exponential property)
-    expect(p2).toBeCloseTo(calcPressureDecay(p1, PRESSURE_DECAY_RATE, 100), 5)
-  })
-})
-
-// ── calcExchangeRate ──
-
-describe('calcExchangeRate', () => {
-  it('returns base rate with 0 pressure', () => {
-    expect(calcExchangeRate(BASE_RATE, ENERGY_PRESSURE_K, 0)).toBe(BASE_RATE)
-  })
-
-  it('decreases with increasing pressure', () => {
-    const rate0 = calcExchangeRate(BASE_RATE, ENERGY_PRESSURE_K, 0)
-    const rate1000 = calcExchangeRate(BASE_RATE, ENERGY_PRESSURE_K, 1000)
-    expect(rate1000).toBeLessThan(rate0)
-  })
-})
-
-// ── calcMarketHealth ──
-
-describe('calcMarketHealth', () => {
-  it('returns 100% with 0 pressure', () => {
-    expect(calcMarketHealth(ENERGY_PRESSURE_K, 0)).toBe(100)
-  })
-
-  it('decreases with pressure', () => {
-    const health = calcMarketHealth(ENERGY_PRESSURE_K, 5000)
-    expect(health).toBeLessThan(100)
-    expect(health).toBeGreaterThan(0)
-  })
-
-  it('never exceeds 100%', () => {
-    expect(calcMarketHealth(ENERGY_PRESSURE_K, -100)).toBeGreaterThanOrEqual(100)
-  })
-})
-
-// ── calcCrashPoint ──
-
-describe('calcCrashPoint', () => {
-  it('returns 1.0 for random=0', () => {
-    expect(calcCrashPoint(0)).toBeCloseTo(1.0, 1)
-  })
-
-  it('returns ~1.94 for random=0.5', () => {
-    expect(calcCrashPoint(0.5)).toBeCloseTo(1.94, 2)
-  })
-
-  it('returns 97 for random=0.99', () => {
-    expect(calcCrashPoint(0.99)).toBeCloseTo(97, 0)
-  })
-
-  it('always returns >= 1.0', () => {
-    for (let i = 0; i < 100; i++) {
-      expect(calcCrashPoint(Math.random())).toBeGreaterThanOrEqual(1.0)
-    }
-  })
-
-  it('produces higher values for random closer to 1', () => {
-    expect(calcCrashPoint(0.9)).toBeGreaterThan(calcCrashPoint(0.5))
-    expect(calcCrashPoint(0.99)).toBeGreaterThan(calcCrashPoint(0.9))
-  })
-})
-
 // ── Game progression scenario ──
 
 describe('game progression', () => {
@@ -491,15 +285,6 @@ describe('game progression', () => {
     const inf2 = calcPrestigeInfluence(2e6)
     expect(inf2).toBeLessThan(inf1 * 2)
     expect(inf2).toBeGreaterThan(inf1)
-  })
-
-  it('exchange flooding prevents dump-and-convert exploits', () => {
-    // Selling 10000x your production rate should get significantly degraded
-    const prodRate = 1000
-    const bigSell = calcCreditsReceived(prodRate * 10000, 0, prodRate)
-    const idealCredits = prodRate * 10000 * BASE_RATE
-    // Should get significantly less — at least 30% degradation for a massive dump
-    expect(bigSell).toBeLessThan(idealCredits * 0.7)
   })
 })
 
@@ -554,5 +339,330 @@ describe('calcMaxBuyable', () => {
 
   it('returns 0 when even 1 building is too expensive', () => {
     expect(calcMaxBuyable(1000, 1.05, 0, 500)).toBe(0)
+  })
+})
+
+// ── calcHousingCap ──
+
+describe('calcHousingCap', () => {
+  it('returns base housing when admin level is 0', () => {
+    expect(calcHousingCap(10, 0, 5)).toBe(10)
+  })
+
+  it('adds housing per admin level', () => {
+    // base=10, adminLevels=3, housingPerLevel=5 → 10 + 15 = 25
+    expect(calcHousingCap(10, 3, 5)).toBe(25)
+  })
+
+  it('scales linearly with admin levels', () => {
+    expect(calcHousingCap(0, 4, 10)).toBe(40)
+    expect(calcHousingCap(0, 8, 10)).toBe(80)
+  })
+
+  it('works with zero base housing', () => {
+    expect(calcHousingCap(0, 5, 3)).toBe(15)
+  })
+
+  it('works with zero housing per level', () => {
+    expect(calcHousingCap(20, 10, 0)).toBe(20)
+  })
+})
+
+// ── calcOvercrowdingEfficiency ──
+
+describe('calcOvercrowdingEfficiency', () => {
+  it('returns 1.0 when pops are under housing cap', () => {
+    expect(calcOvercrowdingEfficiency(8, 10)).toBe(1.0)
+  })
+
+  it('returns 1.0 when pops exactly equal housing cap', () => {
+    expect(calcOvercrowdingEfficiency(10, 10)).toBe(1.0)
+  })
+
+  it('drops linearly when pops exceed cap', () => {
+    // pops=20, cap=10 → 10/20 = 0.5
+    expect(calcOvercrowdingEfficiency(20, 10)).toBe(0.5)
+    // pops=40, cap=10 → 10/40 = 0.25
+    expect(calcOvercrowdingEfficiency(40, 10)).toBe(0.25)
+  })
+
+  it('clamps to minimum of 0.25', () => {
+    // pops=100, cap=10 → 10/100 = 0.1, but clamped to 0.25
+    expect(calcOvercrowdingEfficiency(100, 10)).toBe(0.25)
+    expect(calcOvercrowdingEfficiency(10000, 10)).toBe(0.25)
+  })
+
+  it('returns 0.25 for any pops when cap is 0', () => {
+    expect(calcOvercrowdingEfficiency(5, 0)).toBe(0.25)
+  })
+
+  it('returns 1.0 for 0 pops when cap is 0', () => {
+    expect(calcOvercrowdingEfficiency(0, 0)).toBe(1.0)
+  })
+})
+
+// ── calcPopGrowth ──
+
+describe('calcPopGrowth', () => {
+  it('returns 0 when pops equal housing cap (logistic stops at cap)', () => {
+    expect(calcPopGrowth(1, 10, 10, 1, 1)).toBe(0)
+  })
+
+  it('returns 0 when housing cap is 0', () => {
+    expect(calcPopGrowth(1, 5, 0, 1, 1)).toBe(0)
+  })
+
+  it('returns full base growth when pops are 0 and all modifiers are 1', () => {
+    expect(calcPopGrowth(2, 0, 10, 1, 1)).toBe(2)
+  })
+
+  it('linear growth — constant rate regardless of current pops (until cap)', () => {
+    const cap = 100
+    const growthAtEmpty = calcPopGrowth(1, 0, cap, 1, 1)
+    const growthAtHalf = calcPopGrowth(1, 50, cap, 1, 1)
+    const growthAt90 = calcPopGrowth(1, 90, cap, 1, 1)
+    expect(growthAtEmpty).toBe(1)
+    expect(growthAtHalf).toBe(1)
+    expect(growthAt90).toBe(1)
+  })
+
+  it('stops at housing cap', () => {
+    expect(calcPopGrowth(1, 100, 100, 1, 1)).toBe(0)
+    expect(calcPopGrowth(5, 98, 100, 1, 1)).toBe(2) // clamped to remaining space
+  })
+
+  it('applies planetGrowthMod multiplicatively', () => {
+    const base = calcPopGrowth(1, 0, 10, 1, 1)
+    const withMod = calcPopGrowth(1, 0, 10, 2, 1)
+    expect(withMod).toBe(base * 2)
+  })
+
+  it('applies cgAvailability multiplicatively', () => {
+    const full = calcPopGrowth(1, 0, 10, 1, 1)
+    const half = calcPopGrowth(1, 0, 10, 1, 0.5)
+    expect(half).toBe(full * 0.5)
+  })
+
+  it('returns 0 when cgAvailability is 0', () => {
+    expect(calcPopGrowth(1, 5, 10, 1, 0)).toBe(0)
+  })
+
+  it('applies extraMultiplier', () => {
+    const base = calcPopGrowth(1, 0, 10, 1, 1)
+    const boosted = calcPopGrowth(1, 0, 10, 1, 1, 3)
+    expect(boosted).toBe(base * 3)
+  })
+
+  it('growth is exactly 0 when pops exceed cap (clamped by max(0, ...))', () => {
+    // pops > cap: logisticFactor = max(0, 1 - pops/cap) = 0
+    expect(calcPopGrowth(10, 15, 10, 1, 1)).toBe(0)
+  })
+})
+
+// ── calcDivisionOutput ──
+
+describe('calcDivisionOutput', () => {
+  it('returns 0 when baseProd, filledJobs, bonus, or efficiency is 0', () => {
+    expect(calcDivisionOutput(0, 1, 10, 1.0, 1.0)).toBe(0)
+    expect(calcDivisionOutput(5, 1, 0, 1.0, 1.0)).toBe(0)
+    expect(calcDivisionOutput(5, 1, 10, 0, 1.0)).toBe(0)
+    expect(calcDivisionOutput(5, 1, 10, 1.0, 0)).toBe(0)
+  })
+
+  it('output = baseProd * filledJobs * bonus * efficiency (level ignored)', () => {
+    // 2 * 10 * 1.5 * 0.8 = 24 (level 3 is ignored)
+    expect(calcDivisionOutput(2, 3, 10, 1.5, 0.8)).toBe(24)
+  })
+
+  it('scales linearly with filledJobs', () => {
+    const j5 = calcDivisionOutput(5, 1, 5, 1.0, 1.0)
+    const j10 = calcDivisionOutput(5, 1, 10, 1.0, 1.0)
+    expect(j10).toBe(j5 * 2)
+  })
+
+  it('level does not affect output (only determines job count)', () => {
+    const lv1 = calcDivisionOutput(5, 1, 10, 1.0, 1.0)
+    const lv10 = calcDivisionOutput(5, 10, 10, 1.0, 1.0)
+    expect(lv1).toBe(lv10) // same output, level irrelevant
+  })
+
+  it('applies planet type bonus', () => {
+    const base = calcDivisionOutput(5, 1, 10, 1.0, 1.0)
+    const boosted = calcDivisionOutput(5, 1, 10, 1.5, 1.0)
+    expect(boosted).toBeCloseTo(base * 1.5)
+  })
+
+  it('applies efficiency modifier', () => {
+    const full = calcDivisionOutput(5, 1, 10, 1.0, 1.0)
+    const partial = calcDivisionOutput(5, 1, 10, 1.0, 0.25)
+    expect(partial).toBeCloseTo(full * 0.25)
+  })
+})
+
+// ── calcDivisionUpgradeCost ──
+
+describe('calcDivisionUpgradeCost', () => {
+  it('returns baseCost at level 0', () => {
+    expect(calcDivisionUpgradeCost(100, 1.5, 0)).toBe(100)
+  })
+
+  it('scales geometrically with level', () => {
+    // baseCost=100, mult=1.5, level=2 → floor(100 * 1.5^2) = floor(225) = 225
+    expect(calcDivisionUpgradeCost(100, 1.5, 2)).toBe(225)
+  })
+
+  it('floors the result', () => {
+    // 10 * 1.3^1 = 13.0 → 13
+    expect(calcDivisionUpgradeCost(10, 1.3, 1)).toBe(13)
+    // 10 * 1.3^2 = 16.9 → 16
+    expect(calcDivisionUpgradeCost(10, 1.3, 2)).toBe(16)
+  })
+
+  it('each subsequent level costs more than the previous', () => {
+    const costs = [0, 1, 2, 3, 4, 5].map(l => calcDivisionUpgradeCost(50, 1.4, l))
+    for (let i = 1; i < costs.length; i++) {
+      expect(costs[i]).toBeGreaterThan(costs[i - 1])
+    }
+  })
+})
+
+// ── calcPopDistribution ──
+
+// Helper to create division slot objects for tests
+function div(type: string | null, level: number = 5) {
+  return { type, level }
+}
+
+describe('calcPopDistribution', () => {
+  it('returns all zeros when all slots are empty', () => {
+    const result = calcPopDistribution(10, [div(null), div(null), div(null)], 'balanced')
+    expect(result).toEqual([0, 0, 0])
+  })
+
+  it('returns all zeros when only administrative divisions exist', () => {
+    const result = calcPopDistribution(10, [div('administrative', 3), div('administrative', 2)], 'balanced')
+    expect(result).toEqual([0, 0])
+  })
+
+  it('balanced policy round-robins pops across jobs', () => {
+    // 3 divisions each with 5 jobs = 15 total jobs, 9 pops → 3 each
+    const result = calcPopDistribution(9, [div('mining', 5), div('industrial', 5), div('commerce', 5)], 'balanced')
+    expect(result).toEqual([3, 3, 3])
+  })
+
+  it('pops capped at job count per division', () => {
+    // Mining has 2 jobs, Industrial has 2 jobs, 10 pops → 2+2=4 filled, 6 unemployed
+    const result = calcPopDistribution(10, [div('mining', 2), div('industrial', 2)], 'balanced')
+    expect(result).toEqual([2, 2])
+  })
+
+  it('skips null and administrative slots', () => {
+    const result = calcPopDistribution(6, [div('mining', 5), div(null), div('administrative', 3), div('commerce', 5)], 'balanced')
+    expect(result[1]).toBe(0)
+    expect(result[2]).toBe(0)
+    expect(result[0] + result[3]).toBe(6)
+  })
+
+  it('prioritize_production fills mining first', () => {
+    // Mining has 5 jobs, Industrial has 5 jobs, 7 pops → mining gets 5, industrial gets 2
+    const result = calcPopDistribution(7, [div('mining', 5), div('industrial', 5)], 'prioritize_production')
+    expect(result[0]).toBe(5) // mining filled first
+    expect(result[1]).toBe(2) // remainder
+  })
+
+  it('prioritize_cg fills industrial first', () => {
+    const result = calcPopDistribution(7, [div('mining', 5), div('industrial', 5)], 'prioritize_cg')
+    expect(result[0]).toBe(2)
+    expect(result[1]).toBe(5)
+  })
+
+  it('prioritize_trade fills commerce first', () => {
+    const result = calcPopDistribution(7, [div('mining', 5), div('commerce', 5)], 'prioritize_trade')
+    expect(result[0]).toBe(2)
+    expect(result[1]).toBe(5)
+  })
+
+  it('falls back to balanced when priority type is not present', () => {
+    const result = calcPopDistribution(6, [div('mining', 5), div('industrial', 5)], 'prioritize_trade')
+    expect(result[0]).toBe(3)
+    expect(result[1]).toBe(3)
+  })
+
+  it('total filled never exceeds totalPops', () => {
+    const result = calcPopDistribution(3, [div('mining', 10), div('industrial', 10), div('commerce', 10)], 'balanced')
+    const sum = result.reduce((a, b) => a + b, 0)
+    expect(sum).toBe(3)
+  })
+
+  it('total filled never exceeds total jobs', () => {
+    const result = calcPopDistribution(100, [div('mining', 2), div('industrial', 3)], 'balanced')
+    const sum = result.reduce((a, b) => a + b, 0)
+    expect(sum).toBe(5) // only 5 jobs available
+  })
+})
+
+// ── calcJobCount ──
+
+describe('calcJobCount', () => {
+  it('returns level as job count', () => {
+    expect(calcJobCount(1)).toBe(1)
+    expect(calcJobCount(5)).toBe(5)
+    expect(calcJobCount(10)).toBe(10)
+  })
+})
+
+// ── calcCgPerJob ──
+
+describe('calcCgPerJob', () => {
+  it('scales with level: cgPerPop * (1 + 0.5 * level)', () => {
+    expect(calcCgPerJob(0.25, 1)).toBeCloseTo(0.375)  // 0.25 * 1.5
+    expect(calcCgPerJob(0.25, 5)).toBeCloseTo(0.875)  // 0.25 * 3.5
+    expect(calcCgPerJob(0.25, 10)).toBeCloseTo(1.5)   // 0.25 * 6.0
+  })
+
+  it('higher levels consume more CG', () => {
+    expect(calcCgPerJob(0.25, 10)).toBeGreaterThan(calcCgPerJob(0.25, 5))
+    expect(calcCgPerJob(0.25, 5)).toBeGreaterThan(calcCgPerJob(0.25, 1))
+  })
+})
+
+// ── calcTransferCost ──
+
+describe('calcTransferCost', () => {
+  it('returns baseCost * popCount for same tier (tierDiff=0)', () => {
+    // floor(5 * 10 * 1.5^0) = 50
+    expect(calcTransferCost(5, 10, 1.5, 0)).toBe(50)
+  })
+
+  it('scales with pop count', () => {
+    const cost1 = calcTransferCost(1, 10, 1.5, 1)
+    const cost5 = calcTransferCost(5, 10, 1.5, 1)
+    expect(cost5).toBe(cost1 * 5)
+  })
+
+  it('scales geometrically with tier difference', () => {
+    // floor(1 * 100 * 2^1) = 200
+    expect(calcTransferCost(1, 100, 2, 1)).toBe(200)
+    // floor(1 * 100 * 2^2) = 400
+    expect(calcTransferCost(1, 100, 2, 2)).toBe(400)
+    // floor(1 * 100 * 2^3) = 800
+    expect(calcTransferCost(1, 100, 2, 3)).toBe(800)
+  })
+
+  it('floors the result', () => {
+    // floor(3 * 7 * 1.3^1) = floor(27.3) = 27
+    expect(calcTransferCost(3, 7, 1.3, 1)).toBe(27)
+  })
+
+  it('transferring more pops always costs more', () => {
+    const small = calcTransferCost(2, 50, 1.5, 1)
+    const large = calcTransferCost(10, 50, 1.5, 1)
+    expect(large).toBeGreaterThan(small)
+  })
+
+  it('higher tier difference always costs more', () => {
+    const nearby = calcTransferCost(1, 50, 1.5, 1)
+    const distant = calcTransferCost(1, 50, 1.5, 3)
+    expect(distant).toBeGreaterThan(nearby)
   })
 })

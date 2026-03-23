@@ -1,9 +1,3 @@
-// ── Exchange constants ──
-export const BASE_RATE = 1
-export const ENERGY_PRESSURE_K = 0.001
-export const CREDITS_PRESSURE_K = 0.0001
-export const PRESSURE_DECAY_RATE = 0.01
-
 // ── Number formatting ──
 const suffixes = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc']
 
@@ -117,52 +111,139 @@ export function calcMaxBuyable(
   return lo
 }
 
-// ── Click power with pop boost ──
-export function calcClickPower(baseClick: number, autoclickPerSecond: number): number {
-  const popBoost = 1 + Math.sqrt(autoclickPerSecond)
-  return Math.max(1, Math.floor(baseClick * popBoost))
+// ── Planet System ──
+
+// Housing capacity: base from planet size + Admin division levels
+export function calcHousingCap(baseHousing: number, adminLevels: number, housingPerLevel: number): number {
+  return baseHousing + adminLevels * housingPerLevel
 }
 
-// ── Resource exchange: sell energy → credits ──
-// productionRate normalizes the trade so market impact is relative to economy size
-export function calcCreditsReceived(amount: number, pressure: number, productionRate: number = 1): number {
-  if (amount <= 0 || productionRate <= 0) return 0
-  const k = ENERGY_PRESSURE_K
-  const norm = productionRate
-  const normAmount = amount / norm
-  const normPressure = pressure / norm
-  const normResult = (BASE_RATE / k) * Math.log((1 + k * (normPressure + normAmount)) / (1 + k * normPressure))
-  return normResult * norm
+// Overcrowding efficiency: 1.0 when pops <= cap, drops linearly when over
+export function calcOvercrowdingEfficiency(pops: number, housingCap: number): number {
+  if (housingCap <= 0) return pops > 0 ? 0.25 : 1.0
+  if (pops <= housingCap) return 1.0
+  return Math.max(0.25, housingCap / pops)
 }
 
-// ── Resource exchange: sell credits → energy ──
-// productionRate normalizes the trade so market impact is relative to economy size
-export function calcEnergyReceived(amount: number, pressure: number, productionRate: number = 1): number {
-  if (amount <= 0 || productionRate <= 0) return 0
-  const k = CREDITS_PRESSURE_K
-  const norm = productionRate
-  const normAmount = amount / norm
-  const normPressure = pressure / norm
-  const normResult = (1 / (BASE_RATE * k)) * Math.log((1 + k * (normPressure + normAmount)) / (1 + k * normPressure))
-  return normResult * norm
+// Pop growth: linear rate, hard capped at housing cap
+export function calcPopGrowth(
+  baseGrowth: number,
+  pops: number,
+  housingCap: number,
+  planetGrowthMod: number,
+  cgAvailability: number, // 0-1, how much CG is available vs needed
+  extraMultiplier: number = 1
+): number {
+  if (housingCap <= 0 || pops >= housingCap) return 0
+  const growth = baseGrowth * planetGrowthMod * cgAvailability * extraMultiplier
+  // Don't grow past housing cap
+  return Math.min(growth, housingCap - pops)
 }
 
-// ── Exchange spot rate ──
-export function calcExchangeRate(baseRate: number, pressureK: number, pressure: number): number {
-  return baseRate / (1 + pressureK * pressure)
+// Division output: baseProd × filledJobs × planetTypeBonus × efficiency
+// Level determines job count (more jobs = more pops can work = more output)
+// Output per job is flat — the "upgrade" is about capacity, not power per worker
+export function calcDivisionOutput(
+  baseProd: number,
+  _level: number,
+  filledJobs: number,
+  planetTypeBonus: number,
+  efficiency: number
+): number {
+  return baseProd * filledJobs * planetTypeBonus * efficiency
 }
 
-// ── Market health percentage ──
-export function calcMarketHealth(pressureK: number, pressure: number): number {
-  return Math.round((1 / (1 + pressureK * pressure)) * 100)
+// Division upgrade cost: geometric scaling
+export function calcDivisionUpgradeCost(baseCost: number, costMultiplier: number, currentLevel: number): number {
+  return Math.floor(baseCost * Math.pow(costMultiplier, currentLevel))
 }
 
-// ── Pressure exponential decay ──
-export function calcPressureDecay(pressure: number, decayRate: number, dt: number): number {
-  return pressure * Math.exp(-decayRate * dt)
+// Colony cost (direct from definition, but can be modified by multipliers)
+export function calcColonyCost(baseCost: number, costMultiplier: number = 1): number {
+  return Math.floor(baseCost * costMultiplier)
 }
 
-// ── Casino crash point ──
-export function calcCrashPoint(random: number): number {
-  return Math.max(1.0, 0.97 / (1 - random))
+// Planet maintenance (base × planet type modifier × trait modifiers)
+export function calcPlanetMaintenance(baseMaintenance: number, typeModifier: number, traitModifier: number = 1): number {
+  return baseMaintenance * typeModifier * traitModifier
+}
+
+// ── Jobs system ──
+
+// Jobs created by a division at a given level (Admin creates 0 jobs)
+export function calcJobCount(level: number): number {
+  return level
+}
+
+// CG consumed per filled job at a given division level
+// Higher-tech divisions need more supplies: CG_PER_POP × (1 + 0.5 × level)
+export function calcCgPerJob(cgPerPop: number, level: number): number {
+  return cgPerPop * (1 + 0.5 * level)
+}
+
+// Pop-to-job assignment: distributes pops across division jobs based on policy
+// Each division has a job cap (= its level). Pops fill jobs; excess pops are unemployed.
+// Returns array of filled jobs per slot (not fractional pops — integer jobs filled).
+export function calcPopDistribution(
+  totalPops: number,
+  divisions: { type: string | null; level: number }[], // null for empty slots
+  policy: string
+): number[] {
+  const result = new Array(divisions.length).fill(0)
+  const jobSlots = divisions.map((d, i) => ({
+    index: i,
+    type: d.type,
+    jobs: (d.type && d.type !== 'administrative') ? d.level : 0,
+  }))
+
+  const activeSlots = jobSlots.filter(s => s.jobs > 0)
+  if (activeSlots.length === 0) return result
+
+  let remaining = Math.floor(totalPops)
+
+  // Determine priority type
+  let priorityType: string | null = null
+  if (policy === 'prioritize_production') priorityType = 'mining'
+  else if (policy === 'prioritize_cg') priorityType = 'industrial'
+  else if (policy === 'prioritize_trade') priorityType = 'commerce'
+
+  if (priorityType && activeSlots.some(s => s.type === priorityType)) {
+    // Fill priority divisions first
+    const priority = activeSlots.filter(s => s.type === priorityType)
+    const others = activeSlots.filter(s => s.type !== priorityType)
+
+    // Fill priority jobs
+    for (const s of priority) {
+      const fill = Math.min(s.jobs, remaining)
+      result[s.index] = fill
+      remaining -= fill
+    }
+    // Then fill the rest
+    for (const s of others) {
+      const fill = Math.min(s.jobs, remaining)
+      result[s.index] = fill
+      remaining -= fill
+    }
+  } else {
+    // Balanced: round-robin fill, 1 job at a time across divisions
+    let filled = true
+    while (remaining > 0 && filled) {
+      filled = false
+      for (const s of activeSlots) {
+        if (remaining <= 0) break
+        if (result[s.index] < s.jobs) {
+          result[s.index]++
+          remaining--
+          filled = true
+        }
+      }
+    }
+  }
+
+  return result
+}
+
+// Pop transfer cost
+export function calcTransferCost(popCount: number, baseCost: number, tierScale: number, tierDiff: number): number {
+  return Math.floor(popCount * baseCost * Math.pow(tierScale, tierDiff))
 }

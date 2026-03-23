@@ -1,23 +1,16 @@
 <script setup lang="ts">
-const { state, creditsPerSecond, energyPerSecond, cgPerSecond } = useGameState()
-const { energyDrainPerSecond, isResearching } = useResearchActions()
-const { netCreditsPerSecond, netEnergyPerSecond, totalEnergyUpkeep, effectiveCgProduction, totalCgConsumption, cgThrottle, energyThrottle, hasUpkeep } = useUpkeep()
-const { convertedTradeValue, isTradeDisabled } = useTrade()
+const { state, creditsPerSecond, cgPerSecond } = useGameState()
+const { netCreditsPerSecond, effectiveCgProduction, totalCgConsumption, cgThrottle, hasUpkeep } = useUpkeep()
+const { convertedTradeValue } = useTrade()
+const { totalPops } = usePlanets()
 const { formatNumber } = useNumberFormat()
 
-const hasTradeValue = computed(() => !isTradeDisabled.value && convertedTradeValue.value > 0)
+const hasTradeValue = computed(() => convertedTradeValue.value > 0)
 
-const totalEnergyNeed = computed(() => totalEnergyUpkeep.value + energyDrainPerSecond.value)
-const isThrottled = computed(() => cgThrottle.value < 1 || energyThrottle.value < 1)
-const efficiencyPct = computed(() => Math.round(Math.min(cgThrottle.value, energyThrottle.value) * 100))
+const isThrottled = computed(() => cgThrottle.value < 1)
+const efficiencyPct = computed(() => Math.round(cgThrottle.value * 100))
 const cgBalance = computed(() => effectiveCgProduction.value - totalCgConsumption.value)
 const hasCgBuildings = computed(() => cgPerSecond.value > 0 || totalCgConsumption.value > 0)
-
-const energyStatus = computed(() => {
-  if (energyThrottle.value < 1) return 'deficit'
-  if (totalEnergyNeed.value > 0 && energyPerSecond.value < totalEnergyNeed.value * 1.25) return 'tight'
-  return 'healthy'
-})
 
 const cgStatus = computed(() => {
   if (cgThrottle.value < 1) return 'deficit'
@@ -44,18 +37,6 @@ const statusColor: Record<string, string> = {
         </span>
       </div>
 
-      <!-- Energy -->
-      <div class="flex items-center gap-1.5 shrink-0">
-        <UIcon name="i-lucide-zap" class="text-amber-400 text-sm" />
-        <span class="text-white font-semibold">{{ formatNumber(state.energy) }} TW</span>
-        <span class="font-semibold" :class="statusColor[energyStatus]">
-          {{ formatNumber(netEnergyPerSecond) }}/s
-        </span>
-        <span class="text-zinc-500 hidden sm:inline">
-          {{ formatNumber(energyPerSecond) }}<span v-if="totalEnergyNeed > 0" class="text-zinc-600">/{{ formatNumber(totalEnergyNeed) }}</span>
-        </span>
-      </div>
-
       <!-- Consumer Goods -->
       <div v-if="hasCgBuildings" class="flex items-center gap-1.5 shrink-0">
         <UIcon name="i-lucide-package" class="text-amber-600 text-sm" />
@@ -71,6 +52,16 @@ const statusColor: Record<string, string> = {
       <div v-if="hasTradeValue" class="flex items-center gap-1.5 shrink-0">
         <UIcon name="i-lucide-handshake" class="text-violet-400 text-sm" />
         <span class="text-violet-300 font-semibold">{{ formatNumber(convertedTradeValue) }}/s</span>
+      </div>
+
+      <!-- Pops & Planets -->
+      <div class="flex items-center gap-1.5 shrink-0">
+        <UIcon name="i-lucide-users" class="text-cyan-400 text-sm" />
+        <span class="text-white font-semibold">{{ formatNumber(totalPops) }}</span>
+        <span class="text-zinc-500 hidden sm:inline">pops</span>
+        <span class="text-zinc-600 hidden sm:inline">·</span>
+        <span class="text-white font-semibold hidden sm:inline">{{ state.planets.length }}</span>
+        <span class="text-zinc-500 hidden sm:inline">planets</span>
       </div>
 
       <!-- Efficiency badge -->

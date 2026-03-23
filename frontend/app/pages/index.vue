@@ -18,13 +18,13 @@ useIntervalFn(() => {
 }, 1000)
 
 // Tab state
-const activeTab = ref('empire')
+const activeTab = ref('planets')
 
 // Loading state
 const loaded = ref(false)
 
 // Offline earnings modal
-const offlineData = ref<{ credits: number; energy: number; seconds: number } | null>(null)
+const offlineData = ref<{ credits: number; seconds: number } | null>(null)
 const showOfflineModal = ref(false)
 
 // Victory modal
@@ -41,10 +41,10 @@ watch(
 )
 
 onMounted(async () => {
-  const { offlineCredits, offlineEnergy, offlineSeconds } = await loadGame()
+  const { offlineCredits, offlineSeconds } = await loadGame()
   suppressExistingToasts()
-  if (offlineCredits > 0 || offlineEnergy > 0) {
-    offlineData.value = { credits: offlineCredits, energy: offlineEnergy, seconds: offlineSeconds }
+  if (offlineCredits > 0) {
+    offlineData.value = { credits: offlineCredits, seconds: offlineSeconds }
     showOfflineModal.value = true
   }
   startAutoSave()
@@ -75,25 +75,9 @@ function onSetupComplete() {
         <!-- Kardashev Scale (always visible) -->
         <GameKardashevDisplay />
 
-        <!-- Empire tab -->
-        <div v-if="activeTab === 'empire'">
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <!-- Click area + upgrades -->
-            <div class="space-y-4">
-              <GameClickArea />
-              <div class="rounded-lg bg-white/[0.03] border border-white/10 p-4">
-                <GameClickUpgrades />
-              </div>
-            </div>
-
-            <!-- Buildings -->
-            <div class="lg:col-span-2">
-              <div class="rounded-lg bg-white/[0.03] border border-white/10 p-4">
-                <h2 class="text-sm font-bold text-white uppercase tracking-wider mb-3">Buildings</h2>
-                <GameBuildingList />
-              </div>
-            </div>
-          </div>
+        <!-- Planets tab -->
+        <div v-if="activeTab === 'planets'">
+          <PlanetList />
         </div>
 
         <!-- Overview tab -->
@@ -116,11 +100,6 @@ function onSetupComplete() {
           <GameTradePanel />
         </div>
 
-        <!-- Casino tab -->
-        <div v-else-if="activeTab === 'casino'">
-          <CasinoView />
-        </div>
-
         <!-- Stats tab -->
         <div v-else-if="activeTab === 'stats'">
           <GameStatsPanel />
@@ -137,7 +116,6 @@ function onSetupComplete() {
         v-if="offlineData"
         v-model:open="showOfflineModal"
         :credits="offlineData.credits"
-        :energy="offlineData.energy"
         :seconds="offlineData.seconds"
       />
 

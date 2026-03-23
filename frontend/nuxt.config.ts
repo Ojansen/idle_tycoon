@@ -27,7 +27,14 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    '/': { ssr: false }
+    '/': { ssr: false },
+    '/debug': { ssr: false }
+  },
+
+  vite: {
+    server: {
+      allowedHosts: true
+    }
   },
 
   compatibilityDate: '2025-01-15',

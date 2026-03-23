@@ -1,16 +1,4 @@
-export interface BuildingDefinition {
-  id: string
-  name: string
-  description: string
-  icon: string
-  baseCost: number
-  costMultiplier: number
-  baseOutput: number
-  resource: 'credits' | 'energy' | 'autoclick' | 'consumer_goods'
-  unlockKardashev: number
-  energyUpkeep?: number    // energy/s consumed per building (CG buildings only)
-  cgUpkeep?: number        // consumer goods/s consumed per building (all non-CG buildings)
-}
+import type { PlanetState, PlanetType } from '~/types/planet'
 
 export interface PrestigeUpgradeDefinition {
   id: string
@@ -23,13 +11,14 @@ export interface PrestigeUpgradeDefinition {
 
 export type PrestigeEffect =
   | { type: 'creditsMultiplier'; value: number }
-  | { type: 'energyMultiplier'; value: number }
-  | { type: 'clickMultiplier'; value: number }
-  | { type: 'popMultiplier'; value: number }
-  | { type: 'buildingCostMultiplier'; value: number }
   | { type: 'cgMultiplier'; value: number }
+  | { type: 'workerOutputMultiplier'; value: number }
+  | { type: 'divisionCostMultiplier'; value: number }
+  | { type: 'maintenanceReduction'; value: number }
+  | { type: 'popGrowthMultiplier'; value: number }
   | { type: 'tradeMultiplier'; value: number }
-  | { type: 'quickStart'; buildings: Record<string, number> }
+  | { type: 'allProductionMultiplier'; value: number }
+  | { type: 'quickStart'; divisionLevels: number }
   | { type: 'unlockKardashev'; level: number }
 
 export interface RepeatablePrestigeUpgrade {
@@ -43,22 +32,16 @@ export interface RepeatablePrestigeUpgrade {
   effect: { type: TraitStat; valuePerLevel: number }
 }
 
-export interface ClickUpgradeConfig {
-  baseCost: number
-  costMultiplier: number
-  clickPowerAdd: number
-}
-
 export interface KardashevLevel {
   level: number
   name: string
   description: string
-  energyPerSecond: number
+  creditsPerSecond: number
 }
 
-export type TraitStat = 'creditsMultiplier' | 'energyMultiplier' | 'clickMultiplier' | 'popMultiplier' | 'buildingCostMultiplier' | 'casinoMultiplier' | 'casinoDisabled' | 'upkeepReduction' | 'allProductionMultiplier' | 'tradeDisabled' | 'cgMultiplier' | 'tradeMultiplier'
+export type TraitStat = 'creditsMultiplier' | 'cgMultiplier' | 'workerOutputMultiplier' | 'divisionCostMultiplier' | 'maintenanceReduction' | 'popGrowthMultiplier' | 'tradeMultiplier' | 'allProductionMultiplier'
 
-export type TradePolicy = 'wealth_creation' | 'consumer_benefits' | 'energy_subsidies' | 'balanced_economy'
+export type TradePolicy = 'wealth_creation' | 'consumer_benefits'
 
 export interface TraitEffect {
   stat: TraitStat
@@ -75,30 +58,13 @@ export interface TraitDefinition {
   malus: TraitEffect
 }
 
-export interface StockCompany {
-  id: string
-  name: string
-  sector: string
-  icon: string
-  basePrice: number
-  volatility: number
-  dividendRate: number
-  totalShares: number
-}
-
-export interface CasinoStats {
-  totalWagered: number
-  totalWon: number
-  gamesPlayed: number
-}
-
 export type ResearchBranch = 'industry' | 'energy' | 'society' | 'exotic'
 
 export type ResearchEffect =
   | { type: 'multiplier'; stat: TraitStat; value: number }
   | { type: 'unlockMegastructure'; megastructureId: string }
   | { type: 'researchSpeed'; value: number }
-  | { type: 'upkeepReduction'; value: number }
+  | { type: 'maintenanceReduction'; value: number }
 
 export interface ResearchDefinition {
   id: string
@@ -107,7 +73,7 @@ export interface ResearchDefinition {
   icon: string
   branch: ResearchBranch
   tier: number
-  energyCost: number
+  creditsCost: number
   researchTime: number
   prerequisites: readonly string[]
   effects: readonly ResearchEffect[]
@@ -120,7 +86,7 @@ export interface RepeatableResearchDefinition {
   description: string
   icon: string
   branch: ResearchBranch
-  baseEnergyCost: number
+  baseCreditsCost: number
   costScale: number
   baseResearchTime: number
   timeScale: number
@@ -134,12 +100,10 @@ export interface MegastructureDefinition {
   icon: string
   stages: number
   creditsCostPerStage: number
-  energyCostPerStage: number
   buildTimePerStage: number
   requiredResearch: readonly string[]
   unlockKardashev: number
   effects: readonly ResearchEffect[]
-  energyUpkeepPerSecond?: number
   creditsUpkeepPerSecond?: number
   cgUpkeepPerSecond?: number
 }
@@ -147,7 +111,7 @@ export interface MegastructureDefinition {
 export interface ResearchProgress {
   techId: string
   elapsed: number
-  energySpent: number
+  creditsSpent: number
 }
 
 export interface MegastructureProgress {
@@ -161,32 +125,26 @@ export interface GameState {
   companyName: string
   companyDescription: string
   companyTraits: string[]
+  homeworldType: PlanetType
   credits: number
-  energy: number
   totalCreditsEarned: number
-  totalEnergyEarned: number
-  totalClicks: number
-  clickPower: number
-  buildings: Record<string, number>
-  clickUpgradeLevel: number
   influence: number
+  planets: PlanetState[]
   prestigeCount: number
   prestigeUpgradesBought: string[]
   prestigeRepeatables: Record<string, number>
   kardashevHighWaterMark: number
-  casinoStats: CasinoStats
-  ascensionPerks: string[]
+  ascensionPerks: { stat: TraitStat; value: number }[]
   achievements: string[]
   completedResearch: string[]
   activeResearch: ResearchProgress | null
   megastructures: Record<string, MegastructureProgress>
   totalPlayTime: number
   runPlayTime: number
-  allTimeClicks: number
   lastSaveTimestamp: number
   createdAt: number
   victoryAchieved: boolean
   repeatableResearch: Record<string, number>
-  productionHistory: { credits: number; energy: number }[]
+  productionHistory: { credits: number }[]
   tradePolicy: TradePolicy
 }

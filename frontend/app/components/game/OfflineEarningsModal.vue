@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{
   credits: number
-  energy: number
   seconds: number
 }>()
 
@@ -31,10 +30,6 @@ const timeAway = computed(() => {
           <div v-if="props.credits > 0" class="text-center">
             <div class="text-xl font-bold text-violet-400">+₢{{ formatNumber(props.credits) }}</div>
             <div class="text-xs text-zinc-400">Credits earned</div>
-          </div>
-          <div v-if="props.energy > 0" class="text-center">
-            <div class="text-xl font-bold text-amber-400">+⚡{{ formatNumber(props.energy) }}</div>
-            <div class="text-xs text-zinc-400">Energy generated</div>
           </div>
         </div>
 

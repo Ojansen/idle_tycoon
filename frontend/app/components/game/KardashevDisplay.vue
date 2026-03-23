@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { kardashevLevel, nextKardashevLevel, energyPerSecond } = useGameState()
+const { kardashevLevel, nextKardashevLevel, creditsPerSecond } = useGameState()
 const { kardashevLevels } = useGameConfig()
 const { formatNumber } = useNumberFormat()
 
@@ -11,15 +11,15 @@ const progress = computed(() => {
   const next = nextKardashevLevel.value
   if (!next) return 100
   const current = currentLevel.value
-  const eps = energyPerSecond.value
-  if (eps <= current.energyPerSecond) return 0
+  const cps = creditsPerSecond.value
+  if (cps <= current.creditsPerSecond) return 0
   // Logarithmic progress — Kardashev levels are exponential so linear bars appear stuck
-  const logCurrent = Math.log10(Math.max(1, current.energyPerSecond))
-  const logNext = Math.log10(next.energyPerSecond)
-  const logEps = Math.log10(eps)
+  const logCurrent = Math.log10(Math.max(1, current.creditsPerSecond))
+  const logNext = Math.log10(next.creditsPerSecond)
+  const logCps = Math.log10(cps)
   const range = logNext - logCurrent
   if (range <= 0) return 100
-  return Math.min(100, ((logEps - logCurrent) / range) * 100)
+  return Math.min(100, ((logCps - logCurrent) / range) * 100)
 })
 </script>
 
@@ -31,7 +31,7 @@ const progress = computed(() => {
         <span class="text-xs text-zinc-400 ml-2">{{ currentLevel.description }}</span>
       </div>
       <div v-if="nextKardashevLevel" class="text-xs text-zinc-400">
-        Next: {{ nextKardashevLevel.name }} @ {{ formatNumber(nextKardashevLevel.energyPerSecond) }} TW/s
+        Next: {{ nextKardashevLevel.name }} @ ₢{{ formatNumber(nextKardashevLevel.creditsPerSecond) }}/s
       </div>
       <span v-else class="text-xs text-amber-400 font-medium">MAX LEVEL</span>
     </div>

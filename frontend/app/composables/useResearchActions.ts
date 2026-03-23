@@ -97,9 +97,9 @@ export function useResearchActions() {
   function startResearch(techId: string): boolean {
     if (!isResearchAvailable(techId)) return false
     if (state.value.activeResearch !== null) return false
-    if (state.value.energy <= 0) return false
+    if (state.value.credits <= 0) return false
 
-    state.value.activeResearch = { techId, elapsed: 0, energySpent: 0 }
+    state.value.activeResearch = { techId, elapsed: 0, creditsSpent: 0 }
     return true
   }
 
@@ -123,7 +123,7 @@ export function useResearchActions() {
     const def = repeatableResearchDefs.find(r => r.id === repId)
     if (!def) return Infinity
     const level = getRepeatableResearchLevel(repId)
-    return Math.floor(def.baseEnergyCost * Math.pow(def.costScale, level))
+    return Math.floor(def.baseCreditsCost * Math.pow(def.costScale, level))
   }
 
   function getRepeatableResearchTime(repId: string): number {
@@ -137,9 +137,9 @@ export function useResearchActions() {
     if (state.value.activeResearch !== null) return false
     const def = repeatableResearchDefs.find(r => r.id === repId)
     if (!def) return false
-    if (state.value.energy <= 0) return false
+    if (state.value.credits <= 0) return false
 
-    state.value.activeResearch = { techId: `rep:${repId}`, elapsed: 0, energySpent: 0 }
+    state.value.activeResearch = { techId: `rep:${repId}`, elapsed: 0, creditsSpent: 0 }
     return true
   }
 
@@ -158,13 +158,13 @@ export function useResearchActions() {
       const drainRate = totalCost / totalTime
       const drain = drainRate * dt
 
-      if (state.value.energy < drain) return
+      if (state.value.credits < drain) return
 
-      state.value.energy -= drain
+      state.value.credits -= drain
 
       const speedMult = getResearchSpeedMultiplier()
       const newElapsed = active.elapsed + dt * speedMult
-      const newEnergySpent = active.energySpent + drain
+      const newCreditsSpent = active.creditsSpent + drain
 
       if (newElapsed >= totalTime) {
         state.value.repeatableResearch[repId] = (state.value.repeatableResearch[repId] || 0) + 1
@@ -174,7 +174,7 @@ export function useResearchActions() {
         state.value.activeResearch = {
           techId: active.techId,
           elapsed: newElapsed,
-          energySpent: newEnergySpent
+          creditsSpent: newCreditsSpent
         }
       }
       return
@@ -183,16 +183,16 @@ export function useResearchActions() {
     const def = researchTree.find(r => r.id === active.techId)
     if (!def) return
 
-    const drainRate = def.energyCost / def.researchTime
+    const drainRate = def.creditsCost / def.researchTime
     const drain = drainRate * dt
 
-    if (state.value.energy < drain) return
+    if (state.value.credits < drain) return
 
-    state.value.energy -= drain
+    state.value.credits -= drain
 
     const speedMult = getResearchSpeedMultiplier()
     const newElapsed = active.elapsed + dt * speedMult
-    const newEnergySpent = active.energySpent + drain
+    const newCreditsSpent = active.creditsSpent + drain
 
     if (newElapsed >= def.researchTime) {
       state.value.completedResearch.push(active.techId)
@@ -203,7 +203,7 @@ export function useResearchActions() {
       state.value.activeResearch = {
         techId: active.techId,
         elapsed: newElapsed,
-        energySpent: newEnergySpent
+        creditsSpent: newCreditsSpent
       }
     }
   }
@@ -247,10 +247,8 @@ export function useResearchActions() {
     if (!def) return false
 
     if (state.value.credits < def.creditsCostPerStage) return false
-    if (state.value.energy < def.energyCostPerStage) return false
 
     state.value.credits -= def.creditsCostPerStage
-    state.value.energy -= def.energyCostPerStage
 
     state.value.megastructures[megaId] = {
       currentStage: 0,
@@ -268,10 +266,8 @@ export function useResearchActions() {
     if (!def) return false
 
     if (state.value.credits < def.creditsCostPerStage) return false
-    if (state.value.energy < def.energyCostPerStage) return false
 
     state.value.credits -= def.creditsCostPerStage
-    state.value.energy -= def.energyCostPerStage
 
     state.value.megastructures[megaId]!.stageElapsed = 0
 
@@ -334,15 +330,15 @@ export function useResearchActions() {
     return Math.min(active.elapsed / def.researchTime, 1)
   })
 
-  const energyDrainPerSecond = computed(() => {
+  const creditsDrainPerSecond = computed(() => {
     const active = state.value.activeResearch
     if (!active || !activeResearchDef.value) return 0
     if (active.techId.startsWith('rep:')) {
       const repId = active.techId.slice(4)
       return getRepeatableResearchCost(repId) / getRepeatableResearchTime(repId)
     }
-    const def = activeResearchDef.value as { energyCost: number; researchTime: number }
-    return def.energyCost / def.researchTime
+    const def = activeResearchDef.value as { creditsCost: number; researchTime: number }
+    return def.creditsCost / def.researchTime
   })
 
   // ---------------------------------------------------------------------------
@@ -375,6 +371,6 @@ export function useResearchActions() {
     allFixedResearchComplete,
     activeResearchDef,
     researchProgress,
-    energyDrainPerSecond
+    creditsDrainPerSecond
   }
 }
