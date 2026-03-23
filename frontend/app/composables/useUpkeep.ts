@@ -5,6 +5,15 @@ export function useUpkeep() {
   const { getAscensionMultiplier } = useAscensionPerks()
   const { getResearchMultiplier } = useResearchActions()
 
+  // Total buildings owned (for empire pressure calculation)
+  const totalBuildings = computed(() => {
+    let total = 0
+    for (const count of Object.values(state.value.buildings)) {
+      total += count || 0
+    }
+    return total
+  })
+
   function getResearchUpkeepReduction(): number {
     const { researchTree } = useResearchConfig()
     let multiplier = 1
@@ -74,10 +83,14 @@ export function useUpkeep() {
     return Math.max(0.25, (gross + balance) / gross)
   })
 
-  // Step 3: CG production (after energy throttle)
+  // Step 3: CG production (after energy throttle) + trade-converted CG
   const effectiveCgProduction = computed(() => {
-    return cgPerSecond.value * energyThrottle.value
+    const { tradeConversion } = useTrade()
+    return cgPerSecond.value * energyThrottle.value + tradeConversion.value.consumerGoods
   })
+
+  // Empire pressure — large empires face increasing CG demand
+  const empirePressure = computed(() => calcEmpirePressure(totalBuildings.value))
 
   // Step 4: CG consumption — all non-CG buildings + megastructures consume consumer goods
   const totalCgConsumption = computed(() => {
@@ -99,8 +112,9 @@ export function useUpkeep() {
       }
     }
 
-    // Apply upkeep reduction
+    // Apply upkeep reduction, then empire scale pressure
     consumption *= getFullUpkeepReduction()
+    consumption *= empirePressure.value
     return consumption
   })
 
@@ -129,13 +143,15 @@ export function useUpkeep() {
     return upkeep
   })
 
-  // Net production values
+  // Net production values (includes trade conversion)
   const netCreditsPerSecond = computed(() => {
-    return Math.max(0, creditsPerSecond.value * cgThrottle.value - megaCreditsUpkeep.value)
+    const { tradeConversion } = useTrade()
+    return Math.max(0, creditsPerSecond.value * cgThrottle.value - megaCreditsUpkeep.value + tradeConversion.value.credits)
   })
 
   const netEnergyPerSecond = computed(() => {
-    return Math.max(0, energyPerSecond.value - totalEnergyUpkeep.value)
+    const { tradeConversion } = useTrade()
+    return Math.max(0, energyPerSecond.value - totalEnergyUpkeep.value + tradeConversion.value.energy)
   })
 
   const hasUpkeep = computed(() => {
@@ -151,6 +167,8 @@ export function useUpkeep() {
     netCreditsPerSecond,
     netEnergyPerSecond,
     hasUpkeep,
-    getFullUpkeepReduction
+    getFullUpkeepReduction,
+    empirePressure,
+    totalBuildings
   }
 }

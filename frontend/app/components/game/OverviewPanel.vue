@@ -2,7 +2,8 @@
 import { CurveType } from '@unovis/ts'
 
 const { creditsPerSecond, energyPerSecond, state, getUpkeepMultiplier, getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
-const { totalEnergyUpkeep, effectiveCgProduction, totalCgConsumption, energyThrottle, cgThrottle, netEnergyPerSecond, hasUpkeep, getFullUpkeepReduction } = useUpkeep()
+const { totalEnergyUpkeep, effectiveCgProduction, totalCgConsumption, energyThrottle, cgThrottle, netEnergyPerSecond, hasUpkeep, getFullUpkeepReduction, empirePressure, totalBuildings } = useUpkeep()
+const { tradeConversion, convertedTradeValue, conversionEfficiency, isTradeDisabled } = useTrade()
 const { energyChartData, cgChartData, growthChartData } = useProductionHistory()
 const { buildings } = useGameConfig()
 const { megastructures } = useResearchConfig()
@@ -16,6 +17,8 @@ const upkeepReduction = computed(() => {
   const reduction = getFullUpkeepReduction()
   return Math.round((1 - reduction) * 100)
 })
+
+const empirePressurePct = computed(() => Math.round((empirePressure.value - 1) * 100))
 
 const energyCategories = {
   production: { name: 'Production', color: '#4ade80', label: 'Production' },
@@ -200,8 +203,14 @@ const buildingUpkeepBreakdown = computed(() => {
         </div>
       </div>
 
+      <p v-if="!isTradeDisabled && tradeConversion.consumerGoods > 0" class="text-xs text-violet-400/80">
+        Trade contributing +{{ formatNumber(tradeConversion.consumerGoods) }} CG/s ({{ Math.round(conversionEfficiency * 100) }}% efficiency)
+      </p>
+      <p v-if="empirePressurePct > 0" class="text-xs text-amber-500/80">
+        Empire scale pressure: +{{ empirePressurePct }}% CG demand ({{ totalBuildings }} buildings). Invest in efficiency research and prestige upgrades.
+      </p>
       <p v-if="cgThrottle < 1" class="text-xs text-orange-400/80">
-        CG deficit is throttling credit and pop production. Build more Consumer Goods factories.
+        CG deficit is throttling credit and pop production.
       </p>
       <p v-if="energyThrottle < 1" class="text-xs text-red-400/80">
         Energy deficit is reducing CG production. Build more energy generators.

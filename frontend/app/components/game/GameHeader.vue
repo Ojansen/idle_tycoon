@@ -12,7 +12,7 @@ const tabs = [
   { key: 'overview', label: 'Overview', icon: 'i-lucide-gauge' },
   { key: 'prestige', label: 'Prestige', icon: 'i-lucide-star' },
   { key: 'research', label: 'Research', icon: 'i-lucide-flask-conical' },
-  { key: 'market', label: 'Market', icon: 'i-lucide-trending-up' },
+  { key: 'trade', label: 'Trade', icon: 'i-lucide-handshake' },
   { key: 'casino', label: 'Casino', icon: 'i-lucide-dices' },
   { key: 'stats', label: 'Stats', icon: 'i-lucide-bar-chart-3' },
   { key: 'profile', label: 'Profile', icon: 'i-lucide-user-circle' },

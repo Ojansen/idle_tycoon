@@ -43,6 +43,14 @@ const ascensionPerkPools: Record<number, AscensionPerk[]> = {
       icon: 'i-lucide-package',
       kardashevLevel: 1,
       effect: { stat: 'cgMultiplier', value: 1.25 }
+    },
+    {
+      id: 'commercial_expansion',
+      name: 'Commercial Expansion',
+      description: '+25% Trade capacity permanently',
+      icon: 'i-lucide-handshake',
+      kardashevLevel: 1,
+      effect: { stat: 'tradeMultiplier', value: 1.25 }
     }
   ],
 
@@ -115,6 +123,14 @@ const ascensionPerkPools: Record<number, AscensionPerk[]> = {
       icon: 'i-lucide-package',
       kardashevLevel: 3,
       effect: { stat: 'cgMultiplier', value: 1.5 }
+    },
+    {
+      id: 'galactic_marketplace',
+      name: 'Galactic Marketplace',
+      description: '+50% Trade capacity permanently',
+      icon: 'i-lucide-handshake',
+      kardashevLevel: 3,
+      effect: { stat: 'tradeMultiplier', value: 1.5 }
     }
   ],
 

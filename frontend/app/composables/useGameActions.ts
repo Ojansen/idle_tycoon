@@ -79,6 +79,7 @@ export function useGameActions() {
       victoryAchieved: state.value.victoryAchieved,
       repeatableResearch: {},
       productionHistory: [],
+      tradePolicy: 'wealth_creation' as const,
       totalPlayTime: state.value.totalPlayTime,
       runPlayTime: 0,
       allTimeClicks: state.value.allTimeClicks,

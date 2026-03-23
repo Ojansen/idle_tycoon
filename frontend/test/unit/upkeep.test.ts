@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calcBuildingMultiplier, calcUpkeepMultiplier } from '../../app/utils/gameMath'
+import { calcBuildingMultiplier, calcUpkeepMultiplier, calcEmpirePressure, EMPIRE_PRESSURE_THRESHOLD } from '../../app/utils/gameMath'
 
 // ── Building data with CG upkeep (mirrors useGameConfig — graduated values) ──
 
@@ -60,7 +60,15 @@ function calcCgProduction(owned: Record<string, number>): number {
   return total
 }
 
-function calcCgConsumption(owned: Record<string, number>, reductionMult = 1): number {
+function calcTotalBuildings(owned: Record<string, number>): number {
+  let total = 0
+  for (const count of Object.values(owned)) {
+    total += count || 0
+  }
+  return total
+}
+
+function calcCgConsumption(owned: Record<string, number>, reductionMult = 1, applyEmpirePressure = false): number {
   let total = 0
   for (const b of buildings) {
     if (b.resource === 'consumer_goods') continue
@@ -69,7 +77,11 @@ function calcCgConsumption(owned: Record<string, number>, reductionMult = 1): nu
     if (count === 0) continue
     total += count * b.cgUpkeep * calcUpkeepMultiplier(count)
   }
-  return total * reductionMult
+  total *= reductionMult
+  if (applyEmpirePressure) {
+    total *= calcEmpirePressure(calcTotalBuildings(owned))
+  }
+  return total
 }
 
 function calcEnergyProduction(owned: Record<string, number>): number {
@@ -375,5 +387,67 @@ describe('CG upkeep — dampening', () => {
       const consumptionMult = calcUpkeepMultiplier(n) // upkeep uses dampened
       expect(prodMult).toBe(consumptionMult)
     }
+  })
+})
+
+describe('Empire scale pressure on CG consumption', () => {
+  it('no pressure below threshold (grace period)', () => {
+    expect(calcEmpirePressure(0)).toBe(1)
+    expect(calcEmpirePressure(10)).toBe(1)
+    expect(calcEmpirePressure(EMPIRE_PRESSURE_THRESHOLD)).toBe(1)
+  })
+
+  it('pressure increases above threshold', () => {
+    expect(calcEmpirePressure(50)).toBeGreaterThan(1)
+    expect(calcEmpirePressure(100)).toBeGreaterThan(calcEmpirePressure(50))
+    expect(calcEmpirePressure(200)).toBeGreaterThan(calcEmpirePressure(100))
+  })
+
+  it('pressure is gradual, not a cliff', () => {
+    const at26 = calcEmpirePressure(26)
+    expect(at26).toBeGreaterThan(1)
+    expect(at26).toBeLessThan(1.01) // barely noticeable just above threshold
+  })
+
+  it('pressure values match expected scaling', () => {
+    expect(calcEmpirePressure(50)).toBeCloseTo(1 + Math.pow(25 / 100, 1.3), 5)
+    expect(calcEmpirePressure(100)).toBeCloseTo(1 + Math.pow(75 / 100, 1.3), 5)
+    expect(calcEmpirePressure(200)).toBeCloseTo(1 + Math.pow(175 / 100, 1.3), 5)
+    expect(calcEmpirePressure(500)).toBeCloseTo(1 + Math.pow(475 / 100, 1.3), 5)
+  })
+
+  it('empire pressure increases CG consumption', () => {
+    const owned = { mining_drone: 50, solar_array: 50, consumer_factory: 5 }
+    const baseConsumption = calcCgConsumption(owned)
+    const pressuredConsumption = calcCgConsumption(owned, 1, true)
+    // 105 total buildings > threshold, so pressure should increase consumption
+    expect(pressuredConsumption).toBeGreaterThan(baseConsumption)
+  })
+
+  it('small empires are unaffected by pressure', () => {
+    const owned = { mining_drone: 5, solar_array: 5, consumer_factory: 1 }
+    const baseConsumption = calcCgConsumption(owned)
+    const pressuredConsumption = calcCgConsumption(owned, 1, true)
+    // 11 total buildings < threshold
+    expect(pressuredConsumption).toBe(baseConsumption)
+  })
+
+  it('balanced mid-game build starts feeling pressure', () => {
+    const owned = {
+      mining_drone: 25, solar_array: 25, corporate_drone: 10,
+      consumer_factory: 5,
+      asteroid_mine: 15, fusion_reactor: 15, executive_assistant: 5,
+      industrial_complex: 3
+    }
+    const cgProd = calcCgProduction(owned)
+    const cgConsumptionBase = calcCgConsumption(owned)
+    const cgConsumptionPressured = calcCgConsumption(owned, 1, true)
+    const totalBldgs = calcTotalBuildings(owned)
+
+    // Without pressure, CG should be fine
+    expect(cgProd).toBeGreaterThan(cgConsumptionBase)
+    // With pressure, CG gets tighter (103 buildings)
+    expect(totalBldgs).toBeGreaterThan(EMPIRE_PRESSURE_THRESHOLD)
+    expect(cgConsumptionPressured).toBeGreaterThan(cgConsumptionBase)
   })
 })

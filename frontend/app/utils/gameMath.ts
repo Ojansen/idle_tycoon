@@ -52,6 +52,17 @@ export function calcUpkeepMultiplier(owned: number): number {
   return Math.pow(calcBuildingMultiplier(owned), UPKEEP_DAMPENING)
 }
 
+// ── Empire scale pressure on CG consumption ──
+// Large empires face increasing CG demand that factories alone can't solve
+export const EMPIRE_PRESSURE_THRESHOLD = 25  // grace period (no pressure below this)
+export const EMPIRE_PRESSURE_SCALE = 100     // how fast pressure scales
+export const EMPIRE_PRESSURE_EXPONENT = 1.3  // how aggressive the curve is
+
+export function calcEmpirePressure(totalBuildings: number): number {
+  if (totalBuildings <= EMPIRE_PRESSURE_THRESHOLD) return 1
+  return 1 + Math.pow((totalBuildings - EMPIRE_PRESSURE_THRESHOLD) / EMPIRE_PRESSURE_SCALE, EMPIRE_PRESSURE_EXPONENT)
+}
+
 // ── Building cost (geometric sum with multipliers) ──
 export function calcBuildingCost(
   baseCost: number,

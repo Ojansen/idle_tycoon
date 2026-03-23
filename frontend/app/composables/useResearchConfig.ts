@@ -151,6 +151,73 @@ const researchTree: ResearchDefinition[] = [
     unlockKardashev: 5
   },
 
+  // ── TRADE (Industry branch) ──
+  {
+    id: 'trade_fundamentals',
+    name: 'Trade Fundamentals',
+    description: 'Establish basic trade routes between your holdings. +15% trade capacity.',
+    icon: 'i-lucide-handshake',
+    branch: 'industry',
+    tier: 0,
+    energyCost: 4000,
+    researchTime: 30,
+    prerequisites: [],
+    effects: [{ type: 'multiplier', stat: 'tradeMultiplier', value: 1.15 }],
+    unlockKardashev: 0
+  },
+  {
+    id: 'trade_consumer_policy',
+    name: 'Consumer Trade Networks',
+    description: 'Route trade into consumer goods production. +10% trade capacity. Unlocks Consumer Benefits policy.',
+    icon: 'i-lucide-package-check',
+    branch: 'industry',
+    tier: 1,
+    energyCost: 1e5,
+    researchTime: 60,
+    prerequisites: ['trade_fundamentals'],
+    effects: [{ type: 'multiplier', stat: 'tradeMultiplier', value: 1.10 }],
+    unlockKardashev: 1
+  },
+  {
+    id: 'trade_energy_policy',
+    name: 'Energy Trade Subsidies',
+    description: 'Subsidize energy production through trade. +10% trade capacity. Unlocks Energy Subsidies policy.',
+    icon: 'i-lucide-zap',
+    branch: 'industry',
+    tier: 1,
+    energyCost: 1e5,
+    researchTime: 60,
+    prerequisites: ['trade_fundamentals'],
+    effects: [{ type: 'multiplier', stat: 'tradeMultiplier', value: 1.10 }],
+    unlockKardashev: 1
+  },
+  {
+    id: 'trade_balanced_policy',
+    name: 'Balanced Trade Agreement',
+    description: 'A comprehensive trade framework distributing value evenly. +25% trade capacity. Unlocks Balanced Economy policy.',
+    icon: 'i-lucide-scale',
+    branch: 'industry',
+    tier: 2,
+    energyCost: 2e6,
+    researchTime: 120,
+    prerequisites: ['trade_consumer_policy', 'trade_energy_policy'],
+    effects: [{ type: 'multiplier', stat: 'tradeMultiplier', value: 1.25 }],
+    unlockKardashev: 2
+  },
+  {
+    id: 'trade_mastery',
+    name: 'Trade Mastery',
+    description: 'Total mastery of interstellar commerce. +50% trade capacity.',
+    icon: 'i-lucide-crown',
+    branch: 'industry',
+    tier: 3,
+    energyCost: 5e10,
+    researchTime: 180,
+    prerequisites: ['trade_balanced_policy'],
+    effects: [{ type: 'multiplier', stat: 'tradeMultiplier', value: 1.50 }],
+    unlockKardashev: 3
+  },
+
   // =============================================
   // ENERGY BRANCH
   // =============================================
@@ -766,6 +833,18 @@ const repeatableResearch: RepeatableResearchDefinition[] = [
     baseResearchTime: 120,
     timeScale: 1.2,
     effect: { stat: 'popMultiplier', valuePerLevel: 1.05 }
+  },
+  {
+    id: 'rep_trade',
+    name: 'Trade Optimization',
+    description: '+5% Trade capacity per level',
+    icon: 'i-lucide-handshake',
+    branch: 'industry',
+    baseEnergyCost: 1e4,
+    costScale: 2.0,
+    baseResearchTime: 60,
+    timeScale: 1.3,
+    effect: { stat: 'tradeMultiplier' as const, valuePerLevel: 1.05 }
   },
   {
     id: 'rep_exotic',

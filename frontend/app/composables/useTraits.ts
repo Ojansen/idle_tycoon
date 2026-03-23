@@ -68,10 +68,18 @@ const traits: TraitDefinition[] = [
   {
     id: 'isolationist',
     name: 'Isolationist',
-    description: 'Your corporation operates in total isolation. No outside investments.',
+    description: 'Your corporation operates in total isolation. No outside trade.',
     icon: 'i-lucide-lock',
-    bonus: { stat: 'allProductionMultiplier', value: 1.15, label: '+15% All production' },
-    malus: { stat: 'marketDisabled', value: 1, label: 'Market disabled' }
+    bonus: { stat: 'allProductionMultiplier', value: 1.20, label: '+20% All production' },
+    malus: { stat: 'tradeDisabled', value: 1, label: 'Trade disabled' }
+  },
+  {
+    id: 'trade_magnate',
+    name: 'Trade Magnate',
+    description: 'Your megacorp dominates interstellar commerce at the cost of energy infrastructure.',
+    icon: 'i-lucide-handshake',
+    bonus: { stat: 'tradeMultiplier', value: 1.30, label: '+30% Trade capacity' },
+    malus: { stat: 'energyMultiplier', value: 0.85, label: '-15% Energy/s' }
   },
   {
     id: 'mass_producer',

@@ -28,6 +28,7 @@ export type PrestigeEffect =
   | { type: 'popMultiplier'; value: number }
   | { type: 'buildingCostMultiplier'; value: number }
   | { type: 'cgMultiplier'; value: number }
+  | { type: 'tradeMultiplier'; value: number }
   | { type: 'quickStart'; buildings: Record<string, number> }
   | { type: 'unlockKardashev'; level: number }
 
@@ -55,7 +56,9 @@ export interface KardashevLevel {
   energyPerSecond: number
 }
 
-export type TraitStat = 'creditsMultiplier' | 'energyMultiplier' | 'clickMultiplier' | 'popMultiplier' | 'buildingCostMultiplier' | 'casinoMultiplier' | 'casinoDisabled' | 'upkeepReduction' | 'allProductionMultiplier' | 'marketDisabled' | 'cgMultiplier'
+export type TraitStat = 'creditsMultiplier' | 'energyMultiplier' | 'clickMultiplier' | 'popMultiplier' | 'buildingCostMultiplier' | 'casinoMultiplier' | 'casinoDisabled' | 'upkeepReduction' | 'allProductionMultiplier' | 'tradeDisabled' | 'cgMultiplier' | 'tradeMultiplier'
+
+export type TradePolicy = 'wealth_creation' | 'consumer_benefits' | 'energy_subsidies' | 'balanced_economy'
 
 export interface TraitEffect {
   stat: TraitStat
@@ -185,4 +188,5 @@ export interface GameState {
   victoryAchieved: boolean
   repeatableResearch: Record<string, number>
   productionHistory: { credits: number; energy: number }[]
+  tradePolicy: TradePolicy
 }

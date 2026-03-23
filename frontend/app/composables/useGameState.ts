@@ -1,4 +1,4 @@
-import type { GameState, TraitStat } from '~/types/game'
+import type { GameState, TraitStat, TradePolicy } from '~/types/game'
 import { calcBuildingMultiplier, calcUpkeepMultiplier, calcClickPower, calcBuildingCost as calcBuildingCostPure, calcMaxBuyable, KARDASHEV_MILESTONE_GRANTS } from '~/utils/gameMath'
 
 function createDefaultState(): GameState {
@@ -34,7 +34,8 @@ function createDefaultState(): GameState {
     createdAt: now,
     victoryAchieved: false,
     repeatableResearch: {},
-    productionHistory: []
+    productionHistory: [],
+    tradePolicy: 'wealth_creation' as TradePolicy
   }
 }
 
@@ -42,7 +43,7 @@ export function useGameState() {
   const state = useState<GameState>('gameState', createDefaultState)
   const { buildings, kardashevLevels, prestigeUpgrades, repeatablePrestigeUpgrades } = useGameConfig()
 
-  function getPrestigeMultiplier(type: 'creditsMultiplier' | 'energyMultiplier' | 'clickMultiplier' | 'popMultiplier' | 'buildingCostMultiplier' | 'cgMultiplier'): number {
+  function getPrestigeMultiplier(type: 'creditsMultiplier' | 'energyMultiplier' | 'clickMultiplier' | 'popMultiplier' | 'buildingCostMultiplier' | 'cgMultiplier' | 'tradeMultiplier'): number {
     let multiplier = 1
     for (const upgradeId of state.value.prestigeUpgradesBought) {
       const upgrade = prestigeUpgrades.find(u => u.id === upgradeId)
@@ -263,6 +264,7 @@ export function useGameState() {
     saved.victoryAchieved ??= false
     saved.repeatableResearch ??= {}
     saved.productionHistory ??= []
+    saved.tradePolicy ??= 'wealth_creation'
     state.value = saved
   }
 

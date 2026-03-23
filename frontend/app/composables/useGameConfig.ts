@@ -998,6 +998,7 @@ const prestigeUpgrades: PrestigeUpgradeDefinition[] = [
     requiredKardashev: 0
   },
   { id: 'efficient_logistics', name: 'Efficient Logistics', description: '1.5x Consumer Goods/s — optimized supply chains', cost: 500, effect: { type: 'cgMultiplier', value: 1.5 }, requiredKardashev: 0 },
+  { id: 'trade_networks', name: 'Trade Networks', description: '1.5x Trade capacity — establish interstellar trade routes', cost: 500, effect: { type: 'tradeMultiplier', value: 1.5 }, requiredKardashev: 0 },
   // ── Tier 1: Requires Type I ──
   {
     id: 'corporate_synergy',
@@ -1024,6 +1025,7 @@ const prestigeUpgrades: PrestigeUpgradeDefinition[] = [
     requiredKardashev: 1
   },
   { id: 'interstellar_supply', name: 'Interstellar Supply Lines', description: '2x Consumer Goods/s — interplanetary logistics network', cost: 5000, effect: { type: 'cgMultiplier', value: 2 }, requiredKardashev: 1 },
+  { id: 'trade_empires', name: 'Trade Empires', description: '2x Trade capacity — galactic trade empire infrastructure', cost: 5000, effect: { type: 'tradeMultiplier', value: 2 }, requiredKardashev: 1 },
   // ── Tier 2: Requires Type II ──
   {
     id: 'bulk_contracts',
@@ -1050,6 +1052,7 @@ const prestigeUpgrades: PrestigeUpgradeDefinition[] = [
     requiredKardashev: 2
   },
   { id: 'galactic_distribution', name: 'Galactic Distribution', description: '3x Consumer Goods/s — galaxy-spanning supply infrastructure', cost: 25000, effect: { type: 'cgMultiplier', value: 3 }, requiredKardashev: 2 },
+  { id: 'trade_dominion', name: 'Trade Dominion', description: '3x Trade capacity — absolute dominion over all commerce', cost: 25000, effect: { type: 'tradeMultiplier', value: 3 }, requiredKardashev: 2 },
   // ── Tier 3: Requires Type III ──
   {
     id: 'galactic_monopoly',
@@ -1184,6 +1187,16 @@ const repeatablePrestigeUpgrades: RepeatablePrestigeUpgrade[] = [
     costScale: 1.8,
     maxLevel: 30,
     effect: { type: 'cgMultiplier', valuePerLevel: 1.10 }
+  },
+  {
+    id: 'trade_efficiency',
+    name: 'Trade Efficiency',
+    description: '+10% Trade capacity per level',
+    icon: 'i-lucide-handshake',
+    baseCost: 100,
+    costScale: 1.8,
+    maxLevel: 30,
+    effect: { type: 'tradeMultiplier', valuePerLevel: 1.10 }
   },
 ]
 

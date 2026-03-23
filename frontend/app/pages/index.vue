@@ -1,14 +1,12 @@
 <script setup lang="ts">
 const { state, tick } = useGameState()
 const { loadGame, startAutoSave } = useGamePersistence()
-const { tickExchange } = useResourceExchange()
 const { checkAchievements, suppressExistingToasts } = useAchievements()
 const { sample: sampleHistory } = useProductionHistory()
 
-// Game tick - 100ms (includes exchange decay)
+// Game tick - 100ms
 useIntervalFn(() => {
   tick()
-  tickExchange(0.1)
 }, 100)
 
 // Achievement check + production history sampling - every 1s
@@ -113,9 +111,9 @@ function onSetupComplete() {
           <ResearchView />
         </div>
 
-        <!-- Market tab -->
-        <div v-else-if="activeTab === 'market'">
-          <MarketView />
+        <!-- Trade tab -->
+        <div v-else-if="activeTab === 'trade'">
+          <GameTradePanel />
         </div>
 
         <!-- Casino tab -->

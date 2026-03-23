@@ -20,6 +20,7 @@ const statMeta: { stat: TraitStat; label: string; icon: string; hasPrestige: boo
   { stat: 'popMultiplier', label: 'Pop Output', icon: 'i-lucide-users', hasPrestige: true },
   { stat: 'cgMultiplier', label: 'Consumer Goods/s', icon: 'i-lucide-package', hasPrestige: true },
   { stat: 'buildingCostMultiplier', label: 'Building Costs', icon: 'i-lucide-tags', hasPrestige: true },
+  { stat: 'tradeMultiplier', label: 'Trade Capacity', icon: 'i-lucide-handshake', hasPrestige: true },
   { stat: 'casinoMultiplier', label: 'Casino Winnings', icon: 'i-lucide-dices', hasPrestige: false },
   { stat: 'upkeepReduction', label: 'Upkeep Costs', icon: 'i-lucide-trending-down', hasPrestige: false }
 ]
@@ -40,7 +41,7 @@ export function useMultiplierBreakdown() {
       if (trait !== 1) sources.push({ label: 'Traits', value: trait })
 
       if (meta.hasPrestige) {
-        const prestige = getPrestigeMultiplier(meta.stat as 'creditsMultiplier' | 'energyMultiplier' | 'clickMultiplier' | 'popMultiplier' | 'buildingCostMultiplier' | 'cgMultiplier')
+        const prestige = getPrestigeMultiplier(meta.stat as 'creditsMultiplier' | 'energyMultiplier' | 'clickMultiplier' | 'popMultiplier' | 'buildingCostMultiplier' | 'cgMultiplier' | 'tradeMultiplier')
         if (prestige !== 1) sources.push({ label: 'Prestige', value: prestige })
       }
 
