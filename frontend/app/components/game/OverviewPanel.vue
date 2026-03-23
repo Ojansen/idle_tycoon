@@ -2,8 +2,8 @@
 import { CurveType } from '@unovis/ts'
 
 const { creditsPerSecond, energyPerSecond, state, getUpkeepMultiplier, getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
-const { totalEnergyUpkeep, effectiveCgProduction, totalCgConsumption, energyThrottle, cgThrottle, netEnergyPerSecond, hasUpkeep, getFullUpkeepReduction, empirePressure, totalBuildings } = useUpkeep()
-const { tradeConversion, convertedTradeValue, conversionEfficiency, isTradeDisabled } = useTrade()
+const { totalEnergyUpkeep, effectiveCgProduction, totalCgConsumption, energyThrottle, cgThrottle, netEnergyPerSecond, hasUpkeep, getFullUpkeepReduction, empirePressure, totalBuildings, empireSize } = useUpkeep()
+const { tradeConversion, isTradeDisabled } = useTrade()
 const { energyChartData, cgChartData, growthChartData } = useProductionHistory()
 const { buildings } = useGameConfig()
 const { megastructures } = useResearchConfig()
@@ -204,10 +204,10 @@ const buildingUpkeepBreakdown = computed(() => {
       </div>
 
       <p v-if="!isTradeDisabled && tradeConversion.consumerGoods > 0" class="text-xs text-violet-400/80">
-        Trade contributing +{{ formatNumber(tradeConversion.consumerGoods) }} CG/s ({{ Math.round(conversionEfficiency * 100) }}% efficiency)
+        Trade contributing +{{ formatNumber(tradeConversion.consumerGoods) }} CG/s
       </p>
       <p v-if="empirePressurePct > 0" class="text-xs text-amber-500/80">
-        Empire scale pressure: +{{ empirePressurePct }}% CG demand ({{ totalBuildings }} buildings). Invest in efficiency research and prestige upgrades.
+        Empire scale pressure: +{{ empirePressurePct }}% CG demand (size {{ Math.round(empireSize) }}). Invest in efficiency research and prestige upgrades.
       </p>
       <p v-if="cgThrottle < 1" class="text-xs text-orange-400/80">
         CG deficit is throttling credit and pop production.

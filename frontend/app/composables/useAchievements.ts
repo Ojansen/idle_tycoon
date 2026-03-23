@@ -72,8 +72,8 @@ const achievements: AchievementDefinition[] = [
     category: 'Buildings',
     check: (s) => {
       const type0Ids = [
-        'mining_drone', 'ore_refinery', 'cargo_shuttle', 'orbital_factory', 'space_station',
-        'solar_array', 'wind_turbine_grid', 'geothermal_tap', 'fission_plant', 'orbital_mirror',
+        'mining_drone', 'ore_refinery', 'orbital_factory', 'space_station',
+        'solar_array', 'wind_turbine_grid', 'fission_plant', 'orbital_mirror',
         'corporate_drone'
       ]
       return type0Ids.every(id => (s.buildings[id] || 0) >= 1)

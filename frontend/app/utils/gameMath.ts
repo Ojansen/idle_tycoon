@@ -52,15 +52,25 @@ export function calcUpkeepMultiplier(owned: number): number {
   return Math.pow(calcBuildingMultiplier(owned), UPKEEP_DAMPENING)
 }
 
-// ── Empire scale pressure on CG consumption ──
-// Large empires face increasing CG demand that factories alone can't solve
-export const EMPIRE_PRESSURE_THRESHOLD = 25  // grace period (no pressure below this)
-export const EMPIRE_PRESSURE_SCALE = 100     // how fast pressure scales
-export const EMPIRE_PRESSURE_EXPONENT = 1.3  // how aggressive the curve is
+// ── Empire size (composite metric — buildings, megastructures, pops) ──
+export const EMPIRE_SIZE_PER_BUILDING = 0.5
+export const EMPIRE_SIZE_PER_MEGASTRUCTURE = 5
+export const EMPIRE_SIZE_PER_POP_RATE = 0.01  // 1 empire size per 100 autoclick/s
 
-export function calcEmpirePressure(totalBuildings: number): number {
-  if (totalBuildings <= EMPIRE_PRESSURE_THRESHOLD) return 1
-  return 1 + Math.pow((totalBuildings - EMPIRE_PRESSURE_THRESHOLD) / EMPIRE_PRESSURE_SCALE, EMPIRE_PRESSURE_EXPONENT)
+export function calcEmpireSize(totalBuildings: number, completedMegastructures: number, autoclickPerSecond: number): number {
+  return totalBuildings * EMPIRE_SIZE_PER_BUILDING
+    + completedMegastructures * EMPIRE_SIZE_PER_MEGASTRUCTURE
+    + autoclickPerSecond * EMPIRE_SIZE_PER_POP_RATE
+}
+
+// ── Empire scale pressure on CG consumption (logarithmic) ──
+// Grows steadily but never explodes — suitable for idle games scaling to 10k+ buildings
+export const EMPIRE_PRESSURE_THRESHOLD = 25    // empire size below this = no pressure
+export const EMPIRE_PRESSURE_LOG_SCALE = 0.15  // controls steepness of log curve
+
+export function calcEmpirePressure(empireSize: number): number {
+  if (empireSize <= EMPIRE_PRESSURE_THRESHOLD) return 1
+  return 1 + EMPIRE_PRESSURE_LOG_SCALE * Math.log(empireSize / EMPIRE_PRESSURE_THRESHOLD)
 }
 
 // ── Building cost (geometric sum with multipliers) ──

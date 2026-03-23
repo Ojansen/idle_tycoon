@@ -2,11 +2,10 @@
 const { state, creditsPerSecond, energyPerSecond, cgPerSecond } = useGameState()
 const { energyDrainPerSecond, isResearching } = useResearchActions()
 const { netCreditsPerSecond, netEnergyPerSecond, totalEnergyUpkeep, effectiveCgProduction, totalCgConsumption, cgThrottle, energyThrottle, hasUpkeep } = useUpkeep()
-const { convertedTradeValue, conversionEfficiency, isTradeDisabled } = useTrade()
+const { convertedTradeValue, isTradeDisabled } = useTrade()
 const { formatNumber } = useNumberFormat()
 
 const hasTradeValue = computed(() => !isTradeDisabled.value && convertedTradeValue.value > 0)
-const tradeEffPct = computed(() => Math.round(conversionEfficiency.value * 100))
 
 const totalEnergyNeed = computed(() => totalEnergyUpkeep.value + energyDrainPerSecond.value)
 const isThrottled = computed(() => cgThrottle.value < 1 || energyThrottle.value < 1)
@@ -72,7 +71,6 @@ const statusColor: Record<string, string> = {
       <div v-if="hasTradeValue" class="flex items-center gap-1.5 shrink-0">
         <UIcon name="i-lucide-handshake" class="text-violet-400 text-sm" />
         <span class="text-violet-300 font-semibold">{{ formatNumber(convertedTradeValue) }}/s</span>
-        <span class="text-zinc-500 hidden sm:inline">{{ tradeEffPct }}%</span>
       </div>
 
       <!-- Efficiency badge -->

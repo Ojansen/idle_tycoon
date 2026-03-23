@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calcBuildingMultiplier, calcUpkeepMultiplier, calcEmpirePressure, EMPIRE_PRESSURE_THRESHOLD } from '../../app/utils/gameMath'
+import { calcBuildingMultiplier, calcUpkeepMultiplier, calcEmpirePressure, calcEmpireSize, EMPIRE_PRESSURE_THRESHOLD } from '../../app/utils/gameMath'
 
 // ── Building data with CG upkeep (mirrors useGameConfig — graduated values) ──
 
@@ -18,19 +18,19 @@ interface Building {
 // prettier-ignore
 const buildings: Building[] = [
   // Type 0 — graduated cgUpkeep: [0.08, 0.20, 0.50, 1.20, 3.00] × 0.25 base, pop × 0.10
-  { id: 'mining_drone', name: 'Mining Drone', baseCost: 10, costMultiplier: 1.045, baseOutput: 0.50, resource: 'credits', unlockKardashev: 0, cgUpkeep: 0.02 },
-  { id: 'solar_array', name: 'Solar Array', baseCost: 50, costMultiplier: 1.045, baseOutput: 2.00, resource: 'energy', unlockKardashev: 0, cgUpkeep: 0.02 },
-  { id: 'corporate_drone', name: 'Corporate Drone', baseCost: 50, costMultiplier: 1.12, baseOutput: 1, resource: 'autoclick', unlockKardashev: 0, cgUpkeep: 0.03 },
+  { id: 'mining_drone', name: 'Mining Drone', baseCost: 10, costMultiplier: 1.045, baseOutput: 0.50, resource: 'credits', unlockKardashev: 0, cgUpkeep: 0.025 },
+  { id: 'solar_array', name: 'Solar Array', baseCost: 50, costMultiplier: 1.045, baseOutput: 2.00, resource: 'energy', unlockKardashev: 0, cgUpkeep: 0.10 },
+  { id: 'corporate_drone', name: 'Corporate Drone', baseCost: 50, costMultiplier: 1.12, baseOutput: 1, resource: 'autoclick', unlockKardashev: 0, cgUpkeep: 0.05 },
   { id: 'consumer_factory', name: 'Consumer Factory', baseCost: 500, costMultiplier: 1.06, baseOutput: 5, resource: 'consumer_goods', unlockKardashev: 0, energyUpkeep: 5 },
   // Type 1 — graduated cgUpkeep: [0.08, 0.20, 0.50, 1.20, 3.00] × 250 base, pop × 0.10
-  { id: 'asteroid_mine', name: 'Asteroid Mine', baseCost: 200000, costMultiplier: 1.045, baseOutput: 3000, resource: 'credits', unlockKardashev: 1, cgUpkeep: 20 },
-  { id: 'fusion_reactor', name: 'Fusion Reactor', baseCost: 300000, costMultiplier: 1.045, baseOutput: 3600, resource: 'energy', unlockKardashev: 1, cgUpkeep: 20 },
-  { id: 'executive_assistant', name: 'Executive Assistant', baseCost: 500000, costMultiplier: 1.12, baseOutput: 15, resource: 'autoclick', unlockKardashev: 1, cgUpkeep: 25 },
+  { id: 'asteroid_mine', name: 'Asteroid Mine', baseCost: 200000, costMultiplier: 1.045, baseOutput: 3000, resource: 'credits', unlockKardashev: 1, cgUpkeep: 150 },
+  { id: 'fusion_reactor', name: 'Fusion Reactor', baseCost: 300000, costMultiplier: 1.045, baseOutput: 3600, resource: 'energy', unlockKardashev: 1, cgUpkeep: 180 },
+  { id: 'executive_assistant', name: 'Executive Assistant', baseCost: 500000, costMultiplier: 1.12, baseOutput: 15, resource: 'autoclick', unlockKardashev: 1, cgUpkeep: 0.75 },
   { id: 'industrial_complex', name: 'Industrial Complex', baseCost: 5e5, costMultiplier: 1.06, baseOutput: 5e3, resource: 'consumer_goods', unlockKardashev: 1, energyUpkeep: 5e3 },
   // Type 2 — graduated cgUpkeep: [0.08, 0.20, 0.50, 1.20, 3.00] × 2.5e5 base, pop × 0.10
-  { id: 'colony_world', name: 'Colony World', baseCost: 1e9, costMultiplier: 1.045, baseOutput: 4.50e6, resource: 'credits', unlockKardashev: 2, cgUpkeep: 2e4 },
-  { id: 'dyson_swarm', name: 'Dyson Swarm', baseCost: 2e9, costMultiplier: 1.045, baseOutput: 7.20e6, resource: 'energy', unlockKardashev: 2, cgUpkeep: 2e4 },
-  { id: 'sector_governor', name: 'Sector Governor', baseCost: 5e9, costMultiplier: 1.12, baseOutput: 500, resource: 'autoclick', unlockKardashev: 2, cgUpkeep: 2.5e4 },
+  { id: 'colony_world', name: 'Colony World', baseCost: 1e9, costMultiplier: 1.045, baseOutput: 4.50e6, resource: 'credits', unlockKardashev: 2, cgUpkeep: 2.25e5 },
+  { id: 'dyson_swarm', name: 'Dyson Swarm', baseCost: 2e9, costMultiplier: 1.045, baseOutput: 7.20e6, resource: 'energy', unlockKardashev: 2, cgUpkeep: 3.60e5 },
+  { id: 'sector_governor', name: 'Sector Governor', baseCost: 5e9, costMultiplier: 1.12, baseOutput: 500, resource: 'autoclick', unlockKardashev: 2, cgUpkeep: 25 },
   { id: 'stellar_forge_cg', name: 'Stellar Forge', baseCost: 5e8, costMultiplier: 1.06, baseOutput: 5e6, resource: 'consumer_goods', unlockKardashev: 2, energyUpkeep: 5e6 },
 ]
 
@@ -79,7 +79,8 @@ function calcCgConsumption(owned: Record<string, number>, reductionMult = 1, app
   }
   total *= reductionMult
   if (applyEmpirePressure) {
-    total *= calcEmpirePressure(calcTotalBuildings(owned))
+    const empireSize = calcEmpireSize(calcTotalBuildings(owned), 0, 0)
+    total *= calcEmpirePressure(empireSize)
   }
   return total
 }
@@ -150,8 +151,8 @@ describe('CG upkeep — CG production and consumption', () => {
   it('CG consumption = sum of non-CG buildings cgUpkeep × dampened multiplier', () => {
     const owned = { mining_drone: 10, solar_array: 10 }
     const consumption = calcCgConsumption(owned)
-    // 10 * 0.02 * 1 + 10 * 0.02 * 1 = 0.4 (multiplier is 1 for <25 buildings)
-    expect(consumption).toBeCloseTo(10 * 0.02 + 10 * 0.02)
+    // 10 * 0.025 * 1 + 10 * 0.10 * 1 = 1.25 (multiplier is 1 for <25 buildings)
+    expect(consumption).toBeCloseTo(10 * 0.025 + 10 * 0.10)
   })
 
   it('CG buildings themselves do not contribute to CG consumption', () => {
@@ -200,7 +201,7 @@ describe('CG upkeep — balanced play keeps >80% efficiency', () => {
     const cgConsumption = calcCgConsumption(owned)
 
     // 1 factory * 5 = 5 CG/s production (dampened mult = 1 at <25)
-    // 10*0.02 + 10*0.02 + 10*0.03 = 0.7 CG/s consumption
+    // 10*0.025 + 10*0.10 + 10*0.05 = 1.75 CG/s consumption
     expect(cgProd).toBeGreaterThan(cgConsumption)
     const throttle = calcThrottle(cgProd, cgConsumption)
     expect(throttle).toBe(1)
@@ -299,7 +300,7 @@ describe('CG upkeep — cross-tier CG balance', () => {
 
     const cgProd = calcCgProduction(owned)
     const cgConsumption = calcCgConsumption(owned)
-    // 1 factory = 5 CG/s, 20 cheap buildings = 20 * 0.02 = 0.4 CG/s
+    // 1 factory = 5 CG/s, 10*0.025 + 10*0.10 = 1.25 CG/s
     expect(cgProd).toBeGreaterThanOrEqual(cgConsumption)
   })
 
@@ -310,14 +311,14 @@ describe('CG upkeep — cross-tier CG balance', () => {
 
     const cgProd = calcCgProduction(owned)
     const cgConsumption = calcCgConsumption(owned)
-    // 1 IC = 5000 CG/s, 20 cheapest tier 1 = 20 * 20 = 400 CG/s
+    // 1 IC = 5000 CG/s, 10*150 + 10*180 = 3300 CG/s
     expect(cgProd).toBeGreaterThanOrEqual(cgConsumption)
   })
 
   it('lower-tier CG buildings should be inadequate for higher tiers', () => {
     const owned = { consumer_factory: 5, asteroid_mine: 10, fusion_reactor: 10 }
     const cgProd = calcCgProduction(owned) // 5 * 5 = 25 CG/s
-    const cgConsumption = calcCgConsumption(owned) // 20 * 20 = 400 CG/s
+    const cgConsumption = calcCgConsumption(owned) // 10*150 + 10*180 = 3300 CG/s
     expect(cgProd).toBeLessThan(cgConsumption)
     const throttle = calcThrottle(cgProd, cgConsumption)
     expect(throttle).toBe(0.25) // maxed out
@@ -374,8 +375,8 @@ describe('CG upkeep — dampening', () => {
     expect(miningDrone.cgUpkeep!).toBeLessThan(corporateDrone.cgUpkeep!)
 
     const asteroidMine = buildings.find(b => b.id === 'asteroid_mine')!
-    const executiveAssistant = buildings.find(b => b.id === 'executive_assistant')!
-    expect(asteroidMine.cgUpkeep!).toBeLessThan(executiveAssistant.cgUpkeep!)
+    const fusionReactor = buildings.find(b => b.id === 'fusion_reactor')!
+    expect(asteroidMine.cgUpkeep!).toBeLessThan(fusionReactor.cgUpkeep!)
   })
 
   it('CG production and consumption scale at the same rate (dampened)', () => {
@@ -390,7 +391,32 @@ describe('CG upkeep — dampening', () => {
   })
 })
 
-describe('Empire scale pressure on CG consumption', () => {
+describe('Empire size calculation', () => {
+  it('buildings contribute 0.5 each', () => {
+    expect(calcEmpireSize(100, 0, 0)).toBe(50)
+    expect(calcEmpireSize(200, 0, 0)).toBe(100)
+  })
+
+  it('megastructures contribute 5 each', () => {
+    expect(calcEmpireSize(0, 3, 0)).toBe(15)
+    expect(calcEmpireSize(100, 3, 0)).toBe(65)
+  })
+
+  it('pops contribute 1 per 100 autoclick/s', () => {
+    expect(calcEmpireSize(0, 0, 500)).toBe(5)
+    expect(calcEmpireSize(100, 0, 500)).toBe(55)
+  })
+
+  it('all sources combined', () => {
+    expect(calcEmpireSize(100, 3, 500)).toBe(70)
+  })
+
+  it('zero inputs = zero size', () => {
+    expect(calcEmpireSize(0, 0, 0)).toBe(0)
+  })
+})
+
+describe('Empire scale pressure on CG consumption (logarithmic)', () => {
   it('no pressure below threshold (grace period)', () => {
     expect(calcEmpirePressure(0)).toBe(1)
     expect(calcEmpirePressure(10)).toBe(1)
@@ -403,24 +429,30 @@ describe('Empire scale pressure on CG consumption', () => {
     expect(calcEmpirePressure(200)).toBeGreaterThan(calcEmpirePressure(100))
   })
 
-  it('pressure is gradual, not a cliff', () => {
+  it('pressure is gradual just above threshold', () => {
     const at26 = calcEmpirePressure(26)
     expect(at26).toBeGreaterThan(1)
-    expect(at26).toBeLessThan(1.01) // barely noticeable just above threshold
+    expect(at26).toBeLessThan(1.01)
   })
 
-  it('pressure values match expected scaling', () => {
-    expect(calcEmpirePressure(50)).toBeCloseTo(1 + Math.pow(25 / 100, 1.3), 5)
-    expect(calcEmpirePressure(100)).toBeCloseTo(1 + Math.pow(75 / 100, 1.3), 5)
-    expect(calcEmpirePressure(200)).toBeCloseTo(1 + Math.pow(175 / 100, 1.3), 5)
-    expect(calcEmpirePressure(500)).toBeCloseTo(1 + Math.pow(475 / 100, 1.3), 5)
+  it('pressure values match logarithmic formula', () => {
+    expect(calcEmpirePressure(50)).toBeCloseTo(1 + 0.15 * Math.log(50 / 25), 5)
+    expect(calcEmpirePressure(100)).toBeCloseTo(1 + 0.15 * Math.log(100 / 25), 5)
+    expect(calcEmpirePressure(200)).toBeCloseTo(1 + 0.15 * Math.log(200 / 25), 5)
+    expect(calcEmpirePressure(5000)).toBeCloseTo(1 + 0.15 * Math.log(5000 / 25), 5)
+  })
+
+  it('scales gracefully at large empire sizes (idle game 10k+ buildings)', () => {
+    // 10k buildings → empire size ~5000 → pressure should be under +100%
+    expect(calcEmpirePressure(5000)).toBeLessThan(2.0)
+    expect(calcEmpirePressure(5000)).toBeGreaterThan(1.5)
   })
 
   it('empire pressure increases CG consumption', () => {
     const owned = { mining_drone: 50, solar_array: 50, consumer_factory: 5 }
     const baseConsumption = calcCgConsumption(owned)
     const pressuredConsumption = calcCgConsumption(owned, 1, true)
-    // 105 total buildings > threshold, so pressure should increase consumption
+    // empire size = 105 * 0.5 = 52.5 > threshold
     expect(pressuredConsumption).toBeGreaterThan(baseConsumption)
   })
 
@@ -428,7 +460,7 @@ describe('Empire scale pressure on CG consumption', () => {
     const owned = { mining_drone: 5, solar_array: 5, consumer_factory: 1 }
     const baseConsumption = calcCgConsumption(owned)
     const pressuredConsumption = calcCgConsumption(owned, 1, true)
-    // 11 total buildings < threshold
+    // empire size = 11 * 0.5 = 5.5 < threshold
     expect(pressuredConsumption).toBe(baseConsumption)
   })
 
@@ -443,11 +475,12 @@ describe('Empire scale pressure on CG consumption', () => {
     const cgConsumptionBase = calcCgConsumption(owned)
     const cgConsumptionPressured = calcCgConsumption(owned, 1, true)
     const totalBldgs = calcTotalBuildings(owned)
+    const empireSize = calcEmpireSize(totalBldgs, 0, 0)
 
     // Without pressure, CG should be fine
     expect(cgProd).toBeGreaterThan(cgConsumptionBase)
-    // With pressure, CG gets tighter (103 buildings)
-    expect(totalBldgs).toBeGreaterThan(EMPIRE_PRESSURE_THRESHOLD)
+    // 103 buildings → empire size 51.5 > threshold
+    expect(empireSize).toBeGreaterThan(EMPIRE_PRESSURE_THRESHOLD)
     expect(cgConsumptionPressured).toBeGreaterThan(cgConsumptionBase)
   })
 })

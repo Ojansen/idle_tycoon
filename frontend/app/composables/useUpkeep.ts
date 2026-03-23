@@ -1,11 +1,11 @@
 export function useUpkeep() {
-  const { state, creditsPerSecond, energyPerSecond, cgPerSecond, getUpkeepMultiplier, getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
+  const { state, creditsPerSecond, energyPerSecond, cgPerSecond, autoclickPerSecond, getUpkeepMultiplier, getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
   const { buildings } = useGameConfig()
   const { megastructures } = useResearchConfig()
   const { getAscensionMultiplier } = useAscensionPerks()
   const { getResearchMultiplier } = useResearchActions()
 
-  // Total buildings owned (for empire pressure calculation)
+  // Total buildings owned
   const totalBuildings = computed(() => {
     let total = 0
     for (const count of Object.values(state.value.buildings)) {
@@ -13,6 +13,20 @@ export function useUpkeep() {
     }
     return total
   })
+
+  // Completed megastructure count
+  const completedMegastructureCount = computed(() => {
+    let count = 0
+    for (const progress of Object.values(state.value.megastructures)) {
+      if (progress.completed) count++
+    }
+    return count
+  })
+
+  // Composite empire size metric
+  const empireSize = computed(() =>
+    calcEmpireSize(totalBuildings.value, completedMegastructureCount.value, autoclickPerSecond.value)
+  )
 
   function getResearchUpkeepReduction(): number {
     const { researchTree } = useResearchConfig()
@@ -90,7 +104,7 @@ export function useUpkeep() {
   })
 
   // Empire pressure — large empires face increasing CG demand
-  const empirePressure = computed(() => calcEmpirePressure(totalBuildings.value))
+  const empirePressure = computed(() => calcEmpirePressure(empireSize.value))
 
   // Step 4: CG consumption — all non-CG buildings + megastructures consume consumer goods
   const totalCgConsumption = computed(() => {
@@ -169,6 +183,7 @@ export function useUpkeep() {
     hasUpkeep,
     getFullUpkeepReduction,
     empirePressure,
-    totalBuildings
+    totalBuildings,
+    empireSize
   }
 }

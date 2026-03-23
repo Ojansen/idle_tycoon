@@ -21,13 +21,11 @@ const TYPE_VI_BUILDINGS: Building[] = [
   // Credits
   { id: 'genesis_compiler', baseCost: 1e42,   costMultiplier: 1.045, baseOutput: 3.65e37, resource: 'credits', unlockKardashev: 6, energyUpkeep: 1.75e37 },
   { id: 'axiom_mint',       baseCost: 50e42,  costMultiplier: 1.048, baseOutput: 1.28e39, resource: 'credits', unlockKardashev: 6, energyUpkeep: 2.46e38 },
-  { id: 'fate_exchange',    baseCost: 1e45,   costMultiplier: 1.050, baseOutput: 1.79e40, resource: 'credits', unlockKardashev: 6, energyUpkeep: 8.60e39 },
   { id: 'void_consortium',  baseCost: 50e45,  costMultiplier: 1.053, baseOutput: 6.26e41, resource: 'credits', unlockKardashev: 6, energyUpkeep: 1.20e41 },
   { id: 'absolute_engine',  baseCost: 1e48,   costMultiplier: 1.055, baseOutput: 8.77e42, resource: 'credits', unlockKardashev: 6, energyUpkeep: 4.21e42 },
   // Energy
   { id: 'planck_harvester',   baseCost: 5e42,   costMultiplier: 1.045, baseOutput: 1.46e38, resource: 'energy', unlockKardashev: 6, creditsUpkeep: 4.38e36 },
   { id: 'logos_reactor',      baseCost: 100e42, costMultiplier: 1.048, baseOutput: 2.05e39, resource: 'energy', unlockKardashev: 6, creditsUpkeep: 1.54e38 },
-  { id: 'noosphere_tap',      baseCost: 5e45,   costMultiplier: 1.050, baseOutput: 7.16e40, resource: 'energy', unlockKardashev: 6, creditsUpkeep: 2.15e39 },
   { id: 'eschaton_dynamo',    baseCost: 100e45, costMultiplier: 1.053, baseOutput: 1.00e42, resource: 'energy', unlockKardashev: 6, creditsUpkeep: 7.52e40 },
   { id: 'source_code_engine', baseCost: 5e48,   costMultiplier: 1.055, baseOutput: 3.51e43, resource: 'energy', unlockKardashev: 6, creditsUpkeep: 1.05e42 },
 ]

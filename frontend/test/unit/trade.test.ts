@@ -9,7 +9,6 @@ const TRADE_COEFFICIENTS: Record<string, number> = {
   consumer_goods: 0.05
 }
 
-const BASE_TRADE_CAPACITY = 100
 const EMPIRE_TRADE_SCALE = 50
 
 // Building data subset for trade calculations
@@ -54,13 +53,8 @@ function calcTotalBuildings(owned: Record<string, number>): number {
   return Object.values(owned).reduce((sum, n) => sum + (n || 0), 0)
 }
 
-function calcTradeCapacity(multiplierStack: number, totalBuildings: number): number {
-  return BASE_TRADE_CAPACITY * multiplierStack * calcEmpireSizeBonus(totalBuildings)
-}
-
-function calcConversionEfficiency(rawTrade: number, capacity: number): number {
-  if (rawTrade <= 0) return 1
-  return capacity / (rawTrade + capacity)
+function calcConvertedTradeValue(rawTrade: number, multiplierStack: number, totalBuildings: number): number {
+  return rawTrade * multiplierStack * calcEmpireSizeBonus(totalBuildings)
 }
 
 // ── TESTS ──
@@ -114,7 +108,7 @@ describe('Trade value — raw trade from buildings', () => {
   })
 })
 
-describe('Trade capacity — empire size bonus', () => {
+describe('Trade — empire size bonus', () => {
   it('empire size bonus starts at 1 with no buildings', () => {
     expect(calcEmpireSizeBonus(0)).toBeCloseTo(1)
   })
@@ -125,51 +119,38 @@ describe('Trade capacity — empire size bonus', () => {
   })
 
   it('empire size bonus uses logarithmic scaling (sublinear growth)', () => {
-    // Doubling buildings should less than double the bonus
     const bonus100 = calcEmpireSizeBonus(100)
     const bonus200 = calcEmpireSizeBonus(200)
-    // Bonus grows, but less than 2x
     expect(bonus200).toBeGreaterThan(bonus100)
     expect(bonus200).toBeLessThan(bonus100 * 2)
   })
-
-  it('trade capacity scales with multiplier stack', () => {
-    const base = calcTradeCapacity(1, 50)
-    const doubled = calcTradeCapacity(2, 50)
-    expect(doubled).toBeCloseTo(base * 2)
-  })
 })
 
-describe('Trade conversion — diminishing returns', () => {
-  it('100% efficiency when trade value is 0', () => {
-    expect(calcConversionEfficiency(0, 100)).toBe(1)
+describe('Trade conversion — direct multiplier', () => {
+  it('converted value = raw × multiplier × empire bonus', () => {
+    const raw = 100
+    const multiplier = 2
+    const buildings = 50
+    const expected = raw * multiplier * calcEmpireSizeBonus(buildings)
+    expect(calcConvertedTradeValue(raw, multiplier, buildings)).toBeCloseTo(expected)
   })
 
-  it('50% efficiency when trade equals capacity', () => {
-    expect(calcConversionEfficiency(100, 100)).toBeCloseTo(0.5)
+  it('converted value scales linearly with multiplier stack', () => {
+    const raw = 500
+    const base = calcConvertedTradeValue(raw, 1, 50)
+    const doubled = calcConvertedTradeValue(raw, 2, 50)
+    expect(doubled).toBeCloseTo(base * 2)
   })
 
-  it('high efficiency when trade is much less than capacity', () => {
-    expect(calcConversionEfficiency(10, 1000)).toBeGreaterThan(0.9)
+  it('larger empires get more converted value from empire size bonus', () => {
+    const raw = 500
+    const small = calcConvertedTradeValue(raw, 1, 20)
+    const large = calcConvertedTradeValue(raw, 1, 200)
+    expect(large).toBeGreaterThan(small)
   })
 
-  it('low efficiency when trade far exceeds capacity', () => {
-    expect(calcConversionEfficiency(10000, 100)).toBeLessThan(0.02)
-  })
-
-  it('efficiency decreases as trade grows', () => {
-    const eff10 = calcConversionEfficiency(10, 100)
-    const eff100 = calcConversionEfficiency(100, 100)
-    const eff1000 = calcConversionEfficiency(1000, 100)
-    expect(eff10).toBeGreaterThan(eff100)
-    expect(eff100).toBeGreaterThan(eff1000)
-  })
-
-  it('increasing capacity improves efficiency', () => {
-    const trade = 500
-    const effLow = calcConversionEfficiency(trade, 100)
-    const effHigh = calcConversionEfficiency(trade, 1000)
-    expect(effHigh).toBeGreaterThan(effLow)
+  it('zero raw trade = zero converted', () => {
+    expect(calcConvertedTradeValue(0, 2, 100)).toBe(0)
   })
 })
 
@@ -217,36 +198,26 @@ describe('Trade policies — resource conversion', () => {
 
 describe('Trade integration — CG relief from empire pressure', () => {
   it('consumer benefits policy trade provides CG that helps offset empire pressure', () => {
-    // With a mid-game empire, trade-converted CG should meaningfully contribute
     const owned = {
       mining_drone: 25, solar_array: 25, corporate_drone: 15,
       consumer_factory: 5, asteroid_mine: 10, fusion_reactor: 10
     }
     const rawTrade = calcRawTradeValue(owned)
     const totalBldgs = calcTotalBuildings(owned)
-    const capacity = calcTradeCapacity(1, totalBldgs)
-    const efficiency = calcConversionEfficiency(rawTrade, capacity)
-    const converted = rawTrade * efficiency
+    const converted = calcConvertedTradeValue(rawTrade, 1, totalBldgs)
 
     // Consumer benefits: 50% goes to CG
     const tradeCg = converted * 0.5
     expect(tradeCg).toBeGreaterThan(0)
-    // Trade CG should be a meaningful fraction of total CG production
-    // (5 CG factories * 5 base = 25 CG/s base)
     expect(tradeCg).toBeGreaterThan(0.1)
   })
 
-  it('larger empires generate more trade but with diminishing efficiency', () => {
+  it('larger empires generate more converted trade value', () => {
     const small = { corporate_drone: 10, mining_drone: 10 }
     const large = { corporate_drone: 50, mining_drone: 50, solar_array: 50, consumer_factory: 10 }
 
-    const smallTrade = calcRawTradeValue(small)
-    const largeTrade = calcRawTradeValue(large)
-    expect(largeTrade).toBeGreaterThan(smallTrade)
-
-    // But efficiency is lower for the larger empire
-    const smallEff = calcConversionEfficiency(smallTrade, calcTradeCapacity(1, calcTotalBuildings(small)))
-    const largeEff = calcConversionEfficiency(largeTrade, calcTradeCapacity(1, calcTotalBuildings(large)))
-    expect(smallEff).toBeGreaterThan(largeEff)
+    const smallConverted = calcConvertedTradeValue(calcRawTradeValue(small), 1, calcTotalBuildings(small))
+    const largeConverted = calcConvertedTradeValue(calcRawTradeValue(large), 1, calcTotalBuildings(large))
+    expect(largeConverted).toBeGreaterThan(smallConverted)
   })
 })

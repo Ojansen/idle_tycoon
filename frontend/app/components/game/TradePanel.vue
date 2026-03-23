@@ -1,14 +1,6 @@
 <script setup lang="ts">
-const { rawTradeValue, tradeCapacity, conversionEfficiency, convertedTradeValue, tradeConversion, activePolicy, availablePolicies, empireSizeBonus, isTradeDisabled, setTradePolicy } = useTrade()
+const { rawTradeValue, convertedTradeValue, tradeConversion, activePolicy, availablePolicies, tradeMultiplierStack, empireSizeBonus, isTradeDisabled, setTradePolicy } = useTrade()
 const { formatNumber } = useNumberFormat()
-
-const efficiencyPct = computed(() => Math.round(conversionEfficiency.value * 100))
-
-const efficiencyColor = computed(() => {
-  if (efficiencyPct.value >= 75) return 'text-emerald-400'
-  if (efficiencyPct.value >= 50) return 'text-amber-400'
-  return 'text-red-400'
-})
 </script>
 
 <template>
@@ -26,28 +18,22 @@ const efficiencyColor = computed(() => {
         <div class="flex items-center gap-2 mb-3">
           <UIcon name="i-lucide-handshake" class="text-lg text-violet-400" />
           <h3 class="text-sm font-bold text-white uppercase tracking-wider">Trade Overview</h3>
-          <UBadge size="xs" :color="efficiencyPct >= 75 ? 'success' : efficiencyPct >= 50 ? 'warning' : 'error'" variant="subtle">
-            {{ efficiencyPct }}% efficiency
-          </UBadge>
         </div>
 
-        <div class="grid grid-cols-3 gap-4 mb-3 text-center">
+        <div class="grid grid-cols-2 gap-4 mb-3 text-center">
           <div>
             <div class="text-sm font-bold text-violet-300">{{ formatNumber(rawTradeValue) }}/s</div>
             <div class="text-xs text-zinc-500">Raw Trade Value</div>
           </div>
           <div>
-            <div class="text-sm font-bold" :class="efficiencyColor">{{ formatNumber(convertedTradeValue) }}/s</div>
+            <div class="text-sm font-bold text-emerald-400">{{ formatNumber(convertedTradeValue) }}/s</div>
             <div class="text-xs text-zinc-500">Converted Value</div>
-          </div>
-          <div>
-            <div class="text-sm font-bold text-zinc-300">{{ formatNumber(tradeCapacity) }}</div>
-            <div class="text-xs text-zinc-500">Trade Capacity</div>
           </div>
         </div>
 
-        <div class="text-xs text-zinc-500">
-          Empire size bonus: {{ empireSizeBonus.toFixed(2) }}x
+        <div class="text-xs text-zinc-500 space-y-0.5">
+          <div>Trade multiplier: {{ tradeMultiplierStack.toFixed(2) }}x</div>
+          <div>Empire size bonus: {{ empireSizeBonus.toFixed(2) }}x</div>
         </div>
       </div>
 

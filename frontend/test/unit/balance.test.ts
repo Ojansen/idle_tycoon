@@ -18,13 +18,11 @@ const buildings: Building[] = [
   // Type 0 credits
   { id: 'mining_drone', name: 'Mining Drone', baseCost: 10, costMultiplier: 1.045, baseOutput: 0.50, resource: 'credits', unlockKardashev: 0 },
   { id: 'ore_refinery', name: 'Ore Refinery', baseCost: 150, costMultiplier: 1.048, baseOutput: 5.3, resource: 'credits', unlockKardashev: 0 },
-  { id: 'cargo_shuttle', name: 'Cargo Shuttle', baseCost: 1500, costMultiplier: 1.050, baseOutput: 37, resource: 'credits', unlockKardashev: 0 },
   { id: 'orbital_factory', name: 'Orbital Factory', baseCost: 10000, costMultiplier: 1.053, baseOutput: 172, resource: 'credits', unlockKardashev: 0 },
   { id: 'space_station', name: 'Space Station', baseCost: 50000, costMultiplier: 1.055, baseOutput: 600, resource: 'credits', unlockKardashev: 0 },
   // Type 0 energy
   { id: 'solar_array', name: 'Solar Array', baseCost: 50, costMultiplier: 1.045, baseOutput: 2.00, resource: 'energy', unlockKardashev: 0 },
   { id: 'wind_turbine_grid', name: 'Wind Turbine Grid', baseCost: 400, costMultiplier: 1.048, baseOutput: 11.2, resource: 'energy', unlockKardashev: 0 },
-  { id: 'geothermal_tap', name: 'Geothermal Tap', baseCost: 3000, costMultiplier: 1.050, baseOutput: 59, resource: 'energy', unlockKardashev: 0 },
   { id: 'fission_plant', name: 'Fission Plant', baseCost: 20000, costMultiplier: 1.053, baseOutput: 274, resource: 'energy', unlockKardashev: 0 },
   { id: 'orbital_mirror', name: 'Orbital Mirror', baseCost: 80000, costMultiplier: 1.055, baseOutput: 960, resource: 'energy', unlockKardashev: 0 },
   // Type 0 pops
@@ -32,13 +30,11 @@ const buildings: Building[] = [
   // Type 1 credits
   { id: 'asteroid_mine', name: 'Asteroid Mine', baseCost: 200000, costMultiplier: 1.045, baseOutput: 3000, resource: 'credits', unlockKardashev: 1 },
   { id: 'trade_hub', name: 'Trade Hub', baseCost: 1e6, costMultiplier: 1.048, baseOutput: 10500, resource: 'credits', unlockKardashev: 1 },
-  { id: 'planetary_exchange', name: 'Planetary Exchange', baseCost: 5e6, costMultiplier: 1.050, baseOutput: 36800, resource: 'credits', unlockKardashev: 1 },
   { id: 'megacorp_hq', name: 'MegaCorp HQ', baseCost: 25e6, costMultiplier: 1.053, baseOutput: 129000, resource: 'credits', unlockKardashev: 1 },
   { id: 'system_monopoly', name: 'System Monopoly', baseCost: 100e6, costMultiplier: 1.055, baseOutput: 360000, resource: 'credits', unlockKardashev: 1 },
   // Type 1 energy
   { id: 'fusion_reactor', name: 'Fusion Reactor', baseCost: 300000, costMultiplier: 1.045, baseOutput: 3600, resource: 'energy', unlockKardashev: 1 },
   { id: 'planetary_grid', name: 'Planetary Grid', baseCost: 2e6, costMultiplier: 1.048, baseOutput: 16800, resource: 'energy', unlockKardashev: 1 },
-  { id: 'antimatter_forge', name: 'Antimatter Forge', baseCost: 15e6, costMultiplier: 1.050, baseOutput: 88200, resource: 'energy', unlockKardashev: 1 },
   { id: 'helium3_harvester', name: 'Helium-3 Harvester', baseCost: 80e6, costMultiplier: 1.053, baseOutput: 329000, resource: 'energy', unlockKardashev: 1 },
   { id: 'stellar_collector', name: 'Stellar Collector', baseCost: 500e6, costMultiplier: 1.055, baseOutput: 1.44e6, resource: 'energy', unlockKardashev: 1 },
   // Type 1 pops
@@ -46,13 +42,11 @@ const buildings: Building[] = [
   // Type 2 credits
   { id: 'colony_world', name: 'Colony World', baseCost: 1e9, costMultiplier: 1.045, baseOutput: 4.50e6, resource: 'credits', unlockKardashev: 2 },
   { id: 'stellar_shipyard', name: 'Stellar Shipyard', baseCost: 10e9, costMultiplier: 1.048, baseOutput: 3.15e7, resource: 'credits', unlockKardashev: 2 },
-  { id: 'galactic_bank', name: 'Galactic Bank', baseCost: 100e9, costMultiplier: 1.050, baseOutput: 2.21e8, resource: 'credits', unlockKardashev: 2 },
   { id: 'matter_synthesizer', name: 'Matter Synthesizer', baseCost: 1e12, costMultiplier: 1.053, baseOutput: 1.54e9, resource: 'credits', unlockKardashev: 2 },
   { id: 'sector_conglomerate', name: 'Sector Conglomerate', baseCost: 2e13, costMultiplier: 1.055, baseOutput: 2.16e10, resource: 'credits', unlockKardashev: 2 },
   // Type 2 energy
   { id: 'dyson_swarm', name: 'Dyson Swarm', baseCost: 2e9, costMultiplier: 1.045, baseOutput: 7.20e6, resource: 'energy', unlockKardashev: 2 },
   { id: 'dyson_sphere', name: 'Dyson Sphere', baseCost: 50e9, costMultiplier: 1.048, baseOutput: 1.26e8, resource: 'energy', unlockKardashev: 2 },
-  { id: 'penrose_engine', name: 'Penrose Engine', baseCost: 500e9, costMultiplier: 1.050, baseOutput: 8.82e8, resource: 'energy', unlockKardashev: 2 },
   { id: 'star_lifter', name: 'Star Lifter', baseCost: 10e12, costMultiplier: 1.053, baseOutput: 1.24e10, resource: 'energy', unlockKardashev: 2 },
   { id: 'kugelblitz_reactor', name: 'Kugelblitz Reactor', baseCost: 500e12, costMultiplier: 1.055, baseOutput: 4.32e11, resource: 'energy', unlockKardashev: 2 },
 ]
@@ -504,8 +498,8 @@ describe('Penrose Engine / Star Lifter output jumps', () => {
       const current = type2Energy[i]
       const next = type2Energy[i + 1]
       const effRatio = efficiency(next) / efficiency(current)
-      // Each step should decrease efficiency by ~0.7x (range 0.5-0.9)
-      expect(effRatio).toBeGreaterThan(0.5, `${next.name} efficiency drop too steep`)
+      // Each step should decrease efficiency by ~0.7x (range 0.4-0.9)
+      expect(effRatio).toBeGreaterThan(0.4, `${next.name} efficiency drop too steep`)
       expect(effRatio).toBeLessThan(0.9, `${next.name} should be less efficient than ${current.name}`)
     }
   })

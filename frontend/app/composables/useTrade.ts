@@ -9,8 +9,7 @@ const TRADE_COEFFICIENTS: Record<string, number> = {
   consumer_goods: 0.05
 }
 
-// Trade capacity tuning
-const BASE_TRADE_CAPACITY = 100
+// Empire size bonus tuning
 const EMPIRE_TRADE_SCALE = 50
 
 // Policy definitions
@@ -106,22 +105,9 @@ export function useTrade() {
     return 1 + Math.log2(1 + totalBuildings.value / EMPIRE_TRADE_SCALE)
   })
 
-  // Trade capacity: determines conversion efficiency
-  const tradeCapacity = computed(() => {
-    return BASE_TRADE_CAPACITY * tradeMultiplierStack.value * empireSizeBonus.value
-  })
-
-  // Conversion efficiency: diminishing returns as trade outpaces capacity
-  const conversionEfficiency = computed(() => {
-    const raw = rawTradeValue.value
-    const cap = tradeCapacity.value
-    if (raw <= 0) return 1
-    return cap / (raw + cap)
-  })
-
-  // Converted trade value (after diminishing returns)
+  // Converted trade value: raw × multipliers × empire size bonus
   const convertedTradeValue = computed(() => {
-    return rawTradeValue.value * conversionEfficiency.value
+    return rawTradeValue.value * tradeMultiplierStack.value * empireSizeBonus.value
   })
 
   // Active policy definition
@@ -158,8 +144,6 @@ export function useTrade() {
 
   return {
     rawTradeValue,
-    tradeCapacity,
-    conversionEfficiency,
     convertedTradeValue,
     tradeConversion,
     activePolicy,
