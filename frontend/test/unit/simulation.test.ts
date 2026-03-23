@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calcBuildingMultiplier, calcBuildingCost } from '../../app/utils/gameMath'
+import { calcBuildingMultiplier, calcUpkeepMultiplier, calcBuildingCost } from '../../app/utils/gameMath'
 
 // ── Building data (subset per tier for simulation) ──
 
@@ -17,21 +17,21 @@ interface SimBuilding {
 
 const buildings: SimBuilding[] = [
   // Type 0
-  { id: 'mining_drone', name: 'Mining Drone', baseCost: 10, costMultiplier: 1.045, baseOutput: 0.50, resource: 'credits', unlockKardashev: 0, cgUpkeep: 0.25 },
-  { id: 'ore_refinery', name: 'Ore Refinery', baseCost: 150, costMultiplier: 1.048, baseOutput: 5.3, resource: 'credits', unlockKardashev: 0, cgUpkeep: 0.25 },
-  { id: 'cargo_shuttle', name: 'Cargo Shuttle', baseCost: 1500, costMultiplier: 1.050, baseOutput: 37, resource: 'credits', unlockKardashev: 0, cgUpkeep: 0.25 },
-  { id: 'orbital_factory', name: 'Orbital Factory', baseCost: 10000, costMultiplier: 1.053, baseOutput: 172, resource: 'credits', unlockKardashev: 0, cgUpkeep: 0.25 },
-  { id: 'space_station', name: 'Space Station', baseCost: 50000, costMultiplier: 1.055, baseOutput: 600, resource: 'credits', unlockKardashev: 0, cgUpkeep: 0.25 },
-  { id: 'solar_array', name: 'Solar Array', baseCost: 50, costMultiplier: 1.045, baseOutput: 2.00, resource: 'energy', unlockKardashev: 0, cgUpkeep: 0.25 },
-  { id: 'wind_turbine_grid', name: 'Wind Turbine Grid', baseCost: 400, costMultiplier: 1.048, baseOutput: 11.2, resource: 'energy', unlockKardashev: 0, cgUpkeep: 0.25 },
-  { id: 'geothermal_tap', name: 'Geothermal Tap', baseCost: 3000, costMultiplier: 1.050, baseOutput: 59, resource: 'energy', unlockKardashev: 0, cgUpkeep: 0.25 },
-  { id: 'fission_plant', name: 'Fission Plant', baseCost: 20000, costMultiplier: 1.053, baseOutput: 274, resource: 'energy', unlockKardashev: 0, cgUpkeep: 0.25 },
-  { id: 'orbital_mirror', name: 'Orbital Mirror', baseCost: 80000, costMultiplier: 1.055, baseOutput: 960, resource: 'energy', unlockKardashev: 0, cgUpkeep: 0.25 },
-  { id: 'corporate_drone', name: 'Corporate Drone', baseCost: 50, costMultiplier: 1.12, baseOutput: 1, resource: 'autoclick', unlockKardashev: 0, cgUpkeep: 0.25 },
+  { id: 'mining_drone', name: 'Mining Drone', baseCost: 10, costMultiplier: 1.045, baseOutput: 0.50, resource: 'credits', unlockKardashev: 0, cgUpkeep: 0.02 },
+  { id: 'ore_refinery', name: 'Ore Refinery', baseCost: 150, costMultiplier: 1.048, baseOutput: 5.3, resource: 'credits', unlockKardashev: 0, cgUpkeep: 0.05 },
+  { id: 'cargo_shuttle', name: 'Cargo Shuttle', baseCost: 1500, costMultiplier: 1.050, baseOutput: 37, resource: 'credits', unlockKardashev: 0, cgUpkeep: 0.12 },
+  { id: 'orbital_factory', name: 'Orbital Factory', baseCost: 10000, costMultiplier: 1.053, baseOutput: 172, resource: 'credits', unlockKardashev: 0, cgUpkeep: 0.30 },
+  { id: 'space_station', name: 'Space Station', baseCost: 50000, costMultiplier: 1.055, baseOutput: 600, resource: 'credits', unlockKardashev: 0, cgUpkeep: 0.75 },
+  { id: 'solar_array', name: 'Solar Array', baseCost: 50, costMultiplier: 1.045, baseOutput: 2.00, resource: 'energy', unlockKardashev: 0, cgUpkeep: 0.02 },
+  { id: 'wind_turbine_grid', name: 'Wind Turbine Grid', baseCost: 400, costMultiplier: 1.048, baseOutput: 11.2, resource: 'energy', unlockKardashev: 0, cgUpkeep: 0.05 },
+  { id: 'geothermal_tap', name: 'Geothermal Tap', baseCost: 3000, costMultiplier: 1.050, baseOutput: 59, resource: 'energy', unlockKardashev: 0, cgUpkeep: 0.12 },
+  { id: 'fission_plant', name: 'Fission Plant', baseCost: 20000, costMultiplier: 1.053, baseOutput: 274, resource: 'energy', unlockKardashev: 0, cgUpkeep: 0.30 },
+  { id: 'orbital_mirror', name: 'Orbital Mirror', baseCost: 80000, costMultiplier: 1.055, baseOutput: 960, resource: 'energy', unlockKardashev: 0, cgUpkeep: 0.75 },
+  { id: 'corporate_drone', name: 'Corporate Drone', baseCost: 50, costMultiplier: 1.12, baseOutput: 1, resource: 'autoclick', unlockKardashev: 0, cgUpkeep: 0.03 },
   { id: 'consumer_factory', name: 'Consumer Factory', baseCost: 500, costMultiplier: 1.06, baseOutput: 5, resource: 'consumer_goods', unlockKardashev: 0, energyUpkeep: 5 },
   // Type 1
-  { id: 'asteroid_mine', name: 'Asteroid Mine', baseCost: 200000, costMultiplier: 1.045, baseOutput: 3000, resource: 'credits', unlockKardashev: 1, cgUpkeep: 250 },
-  { id: 'fusion_reactor', name: 'Fusion Reactor', baseCost: 300000, costMultiplier: 1.045, baseOutput: 3600, resource: 'energy', unlockKardashev: 1, cgUpkeep: 250 },
+  { id: 'asteroid_mine', name: 'Asteroid Mine', baseCost: 200000, costMultiplier: 1.045, baseOutput: 3000, resource: 'credits', unlockKardashev: 1, cgUpkeep: 20 },
+  { id: 'fusion_reactor', name: 'Fusion Reactor', baseCost: 300000, costMultiplier: 1.045, baseOutput: 3600, resource: 'energy', unlockKardashev: 1, cgUpkeep: 20 },
   { id: 'industrial_complex', name: 'Industrial Complex', baseCost: 5e5, costMultiplier: 1.06, baseOutput: 5e3, resource: 'consumer_goods', unlockKardashev: 1, energyUpkeep: 5e3 },
 ]
 
@@ -58,7 +58,10 @@ function calcProduction(state: SimState, resource: string): number {
     if (b.resource !== resource) continue
     const owned = getOwned(state, b.id)
     if (owned === 0) continue
-    total += owned * b.baseOutput * calcBuildingMultiplier(owned)
+    const multiplier = resource === 'consumer_goods'
+      ? calcUpkeepMultiplier(owned)
+      : calcBuildingMultiplier(owned)
+    total += owned * b.baseOutput * multiplier
   }
   return total
 }
@@ -70,7 +73,7 @@ function calcEnergyUpkeep(state: SimState): number {
     if (!b.energyUpkeep) continue
     const owned = getOwned(state, b.id)
     if (owned === 0) continue
-    upkeep += owned * b.energyUpkeep * calcBuildingMultiplier(owned)
+    upkeep += owned * b.energyUpkeep * calcUpkeepMultiplier(owned)
   }
   return upkeep
 }
@@ -86,7 +89,7 @@ function calcCgConsumption(state: SimState): number {
     if (!b.cgUpkeep) continue
     const owned = getOwned(state, b.id)
     if (owned === 0) continue
-    consumption += owned * b.cgUpkeep * calcBuildingMultiplier(owned)
+    consumption += owned * b.cgUpkeep * calcUpkeepMultiplier(owned)
   }
   return consumption
 }
@@ -172,7 +175,7 @@ describe('simulation — balanced player (Type 0)', () => {
 
     console.log(`Balanced start: CG prod=${cgProd} cons=${cgCons} energy throttle=${(energyThrottle*100).toFixed(0)}% cg throttle=${(cgThrottle*100).toFixed(0)}%`)
 
-    // 8 buildings * 0.25 = 2 CG consumption, 1 factory = 5 CG production → surplus
+    // 5 miners * 0.02 + 3 solar * 0.02 = 0.16 CG consumption, 1 factory = 5 CG production → surplus
     expect(cgThrottle).toBe(1)
     // 3 solar arrays = 6 energy, 1 factory = 5 energy upkeep → covered
     expect(energyThrottle).toBe(1)
@@ -198,7 +201,7 @@ describe('simulation — greedy player (no CG)', () => {
     const { cgThrottle: after, energyThrottle } = simTick(state, 0)
     console.log(`Greedy recovery: before=${(before*100).toFixed(0)}% after=${(after*100).toFixed(0)}% energy=${(energyThrottle*100).toFixed(0)}%`)
 
-    // 2 factories = 10 CG/s, 30 buildings * 0.25 = 7.5 CG/s → surplus
+    // 2 factories = 10 CG/s, 20 miners * 0.02 + 10 solar * 0.02 = 0.60 CG/s → surplus
     expect(after).toBe(1)
   })
 })
@@ -217,9 +220,9 @@ describe('simulation — energy-starved CG player', () => {
 
     // 0 energy, 5 factories need 25 energy → max throttle
     expect(energyThrottle).toBe(0.25)
-    // CG production at 25% = 6.25 CG/s, consumption = 2.5 CG/s → still covered!
+    // CG production at 25% = 6.25 CG/s, consumption = 10 miners * 0.02 = 0.20 CG/s → still covered!
     // This shows energy starvation reduces CG capacity but doesn't kill it
-    // To actually cause CG deficit, you'd need MORE non-CG buildings
+    // To actually cause CG deficit, you'd need many more non-CG buildings
     expect(cgThrottle).toBeLessThanOrEqual(1)
   })
 })
@@ -357,7 +360,7 @@ describe('simulation — Type 1 transition', () => {
     const { cgThrottle } = simTick(state, 0)
     console.log(`Type 1 with Type 0 CG: throttle=${(cgThrottle*100).toFixed(0)}%`)
 
-    // 10 Type 0 factories = 50 CG/s vs 10 Type 1 buildings * 250 = 2500 CG/s
+    // 10 Type 0 factories = 50 CG/s vs 5 asteroid_mines * 20 + 5 fusion_reactors * 20 = 200 CG/s
     expect(cgThrottle).toBe(0.25)
 
     // Add 1 Industrial Complex
@@ -419,7 +422,7 @@ describe('simulation — time to 100% with clicking', () => {
     log.forEach(l => console.log('  ' + l))
 
     // With 1 miner + 1 solar + 1 CG factory:
-    // CG: 5 prod vs 2*0.25 = 0.5 cons → 100%
+    // CG: 5 prod vs 1*0.02 + 1*0.02 = 0.04 cons → 100%
     // Energy: 2 prod vs 5 upkeep → throttled!
     // This reveals the player needs MORE solar arrays before CG factory pays off
   })
@@ -469,7 +472,7 @@ describe('simulation — time to 100% with clicking', () => {
     log.push(`RESULT: CG=${(cgThrottle * 100).toFixed(0)}% Energy=${(energyThrottle * 100).toFixed(0)}%`)
 
     // 3 solar = 6 energy, 1 CG factory = 5 energy upkeep → energy OK
-    // 1 CG factory = 5 CG/s, 6 buildings * 0.25 = 1.5 CG → CG OK
+    // 1 CG factory = 5 CG/s, 3 miners * 0.02 + 3 solar * 0.02 = 0.12 CG → CG OK
     expect(energyThrottle).toBe(1)
     expect(cgThrottle).toBe(1)
 
@@ -490,14 +493,14 @@ describe('simulation — time to 100% with clicking', () => {
     expect(before).toBe(0.25) // fully throttled
 
     // How many CG factories to recover?
-    // 30 buildings * 0.25 = 7.5 CG consumption → need 2 factories (10 CG/s)
+    // 15 miners * 0.02 + 15 solar * 0.02 = 0.60 CG consumption → 1 factory (5 CG/s) is sufficient
     // Each factory costs ~500 credits at current price, needs 5 energy/s
 
     const clickPower = 1
     let clicks = 0
     let seconds = 0
 
-    // Click + earn (at 25% throttle) until we can afford 2 CG factories
+    // Click + earn (at 25% throttle) until we can afford 1+ CG factory
     const targetFactories = 2
     while ((state.buildings['consumer_factory'] || 0) < targetFactories) {
       const cost = calcBuildingCost(500, 1.06, state.buildings['consumer_factory'] || 0, 1)
@@ -541,7 +544,7 @@ describe('simulation — CG deficit recovery is instant', () => {
     const { cgThrottle: after } = simTick(state, 0)
     console.log(`Recovery: ${(before*100).toFixed(0)}% → ${(after*100).toFixed(0)}% (instant)`)
 
-    // 5 factories * 5 = 25 CG/s, 40 buildings * 0.25 = 10 CG/s → surplus
+    // 5 factories * 5 = 25 CG/s, 20 miners * 0.02 + 20 solar * 0.02 = 0.80 CG/s → surplus
     expect(after).toBe(1)
   })
 })

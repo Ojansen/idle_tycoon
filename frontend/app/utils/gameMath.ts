@@ -45,6 +45,13 @@ export function calcBuildingMultiplier(owned: number): number {
   return Math.pow(2, Math.floor(owned / 25))
 }
 
+// ── Dampened multiplier for CG system (upkeep + CG production) ──
+export const UPKEEP_DAMPENING = 0.8
+
+export function calcUpkeepMultiplier(owned: number): number {
+  return Math.pow(calcBuildingMultiplier(owned), UPKEEP_DAMPENING)
+}
+
 // ── Building cost (geometric sum with multipliers) ──
 export function calcBuildingCost(
   baseCost: number,

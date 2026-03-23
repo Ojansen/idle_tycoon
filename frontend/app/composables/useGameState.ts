@@ -1,5 +1,5 @@
 import type { GameState, TraitStat } from '~/types/game'
-import { calcBuildingMultiplier, calcClickPower, calcBuildingCost as calcBuildingCostPure, calcMaxBuyable, KARDASHEV_MILESTONE_GRANTS } from '~/utils/gameMath'
+import { calcBuildingMultiplier, calcUpkeepMultiplier, calcClickPower, calcBuildingCost as calcBuildingCostPure, calcMaxBuyable, KARDASHEV_MILESTONE_GRANTS } from '~/utils/gameMath'
 
 function createDefaultState(): GameState {
   const now = Date.now()
@@ -92,6 +92,11 @@ export function useGameState() {
     return calcBuildingMultiplier(owned)
   }
 
+  function getUpkeepMultiplier(buildingId: string): number {
+    const owned = state.value.buildings[buildingId] || 0
+    return calcUpkeepMultiplier(owned)
+  }
+
   // Raw pop clicks/sec (before trait multiplier, used for click boost)
   const rawPopClicks = computed(() => {
     let clicks = 0
@@ -120,12 +125,13 @@ export function useGameState() {
   })
 
   // Consumer goods production (before energy throttle)
+  // Uses dampened multiplier so CG production scales at the same rate as CG consumption
   const cgPerSecond = computed(() => {
     let base = 0
     for (const b of buildings) {
       if (b.resource !== 'consumer_goods') continue
       const owned = state.value.buildings[b.id] || 0
-      base += owned * b.baseOutput * getBuildingMultiplier(b.id)
+      base += owned * b.baseOutput * getUpkeepMultiplier(b.id)
     }
     const prestige = getPrestigeMultiplier('cgMultiplier')
     const trait = getTraitMultiplier('cgMultiplier')
@@ -273,6 +279,7 @@ export function useGameState() {
     getTraitMultiplier,
     getRepeatableMultiplier,
     getBuildingMultiplier,
+    getUpkeepMultiplier,
     getBuildingCost,
     getMaxBuyableCount,
     tick,

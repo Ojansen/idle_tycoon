@@ -4,6 +4,7 @@ import {
   calcPrestigeInfluence,
   calcRepeatableCost,
   calcBuildingMultiplier,
+  calcUpkeepMultiplier,
   calcBuildingCost,
   calcMaxBuyable,
   calcClickPower,
@@ -140,6 +141,67 @@ describe('calcBuildingMultiplier', () => {
   it('stays at same tier between milestones', () => {
     expect(calcBuildingMultiplier(49)).toBe(2)
     expect(calcBuildingMultiplier(74)).toBe(4)
+  })
+})
+
+// ── calcUpkeepMultiplier ──
+// Formula: calcBuildingMultiplier(owned)^0.8 = (2^floor(owned/25))^0.8
+// Dampening factor 0.8 means upkeep/CG production scales slower than credit/energy output,
+// keeping the CG system manageable at high building counts.
+
+describe('calcUpkeepMultiplier', () => {
+  it('returns 1x for 0 owned', () => {
+    expect(calcUpkeepMultiplier(0)).toBe(1)
+  })
+
+  it('returns 1x for 24 owned (below first milestone)', () => {
+    expect(calcUpkeepMultiplier(24)).toBe(1)
+  })
+
+  it('returns 2^0.8 (~1.741) for 25 owned', () => {
+    expect(calcUpkeepMultiplier(25)).toBeCloseTo(Math.pow(2, 0.8), 10)
+  })
+
+  it('returns 4^0.8 (~3.031) for 50 owned', () => {
+    expect(calcUpkeepMultiplier(50)).toBeCloseTo(Math.pow(4, 0.8), 10)
+  })
+
+  it('returns 16^0.8 (~9.19) for 100 owned', () => {
+    expect(calcUpkeepMultiplier(100)).toBeCloseTo(Math.pow(16, 0.8), 10)
+  })
+
+  it('grows slower than calcBuildingMultiplier at every milestone', () => {
+    for (const n of [25, 50, 100, 150, 200]) {
+      expect(calcUpkeepMultiplier(n)).toBeLessThan(calcBuildingMultiplier(n))
+    }
+  })
+
+  it('stays at 1x between 0 and 24', () => {
+    expect(calcUpkeepMultiplier(1)).toBe(1)
+    expect(calcUpkeepMultiplier(10)).toBe(1)
+    expect(calcUpkeepMultiplier(24)).toBe(1)
+  })
+
+  it('stays at same tier between milestones', () => {
+    // Between 25 and 49, multiplier is constant at 2^0.8
+    expect(calcUpkeepMultiplier(26)).toBeCloseTo(calcUpkeepMultiplier(25), 10)
+    expect(calcUpkeepMultiplier(49)).toBeCloseTo(calcUpkeepMultiplier(25), 10)
+    // Between 50 and 74, multiplier is constant at 4^0.8
+    expect(calcUpkeepMultiplier(74)).toBeCloseTo(calcUpkeepMultiplier(50), 10)
+  })
+
+  it('jumps at the 25-building milestone boundary', () => {
+    const before = calcUpkeepMultiplier(24)
+    const after = calcUpkeepMultiplier(25)
+    expect(after).toBeGreaterThan(before)
+    expect(after / before).toBeCloseTo(Math.pow(2, 0.8), 10)
+  })
+
+  it('scales correctly at high counts', () => {
+    // owned=150 → floor(150/25)=6 milestones → 2^6=64 → 64^0.8
+    expect(calcUpkeepMultiplier(150)).toBeCloseTo(Math.pow(64, 0.8), 5)
+    // owned=200 → floor(200/25)=8 milestones → 2^8=256 → 256^0.8
+    expect(calcUpkeepMultiplier(200)).toBeCloseTo(Math.pow(256, 0.8), 5)
   })
 })
 

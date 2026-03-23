@@ -19,7 +19,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 0.50,
     resource: 'credits',
     unlockKardashev: 0,
-    cgUpkeep: 0.25
+    cgUpkeep: 0.02
   },
   {
     id: 'ore_refinery',
@@ -31,7 +31,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 5.3,
     resource: 'credits',
     unlockKardashev: 0,
-    cgUpkeep: 0.25
+    cgUpkeep: 0.05
   },
   {
     id: 'cargo_shuttle',
@@ -43,7 +43,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 37,
     resource: 'credits',
     unlockKardashev: 0,
-    cgUpkeep: 0.25
+    cgUpkeep: 0.12
   },
   {
     id: 'orbital_factory',
@@ -55,7 +55,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 172,
     resource: 'credits',
     unlockKardashev: 0,
-    cgUpkeep: 0.25
+    cgUpkeep: 0.30
   },
   {
     id: 'space_station',
@@ -67,7 +67,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 600,
     resource: 'credits',
     unlockKardashev: 0,
-    cgUpkeep: 0.25
+    cgUpkeep: 0.75
   },
 
   // Energy
@@ -81,7 +81,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 2.00,
     resource: 'energy',
     unlockKardashev: 0,
-    cgUpkeep: 0.25
+    cgUpkeep: 0.02
   },
   {
     id: 'wind_turbine_grid',
@@ -93,7 +93,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 11.2,
     resource: 'energy',
     unlockKardashev: 0,
-    cgUpkeep: 0.25
+    cgUpkeep: 0.05
   },
   {
     id: 'geothermal_tap',
@@ -105,7 +105,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 59,
     resource: 'energy',
     unlockKardashev: 0,
-    cgUpkeep: 0.25
+    cgUpkeep: 0.12
   },
   {
     id: 'fission_plant',
@@ -117,7 +117,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 274,
     resource: 'energy',
     unlockKardashev: 0,
-    cgUpkeep: 0.25
+    cgUpkeep: 0.30
   },
   {
     id: 'orbital_mirror',
@@ -129,7 +129,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 960,
     resource: 'energy',
     unlockKardashev: 0,
-    cgUpkeep: 0.25
+    cgUpkeep: 0.75
   },
 
   // Pops
@@ -143,7 +143,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 1,
     resource: 'autoclick',
     unlockKardashev: 0,
-    cgUpkeep: 0.25
+    cgUpkeep: 0.03
   },
 
   // Consumer Goods
@@ -175,7 +175,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 3000,
     resource: 'credits',
     unlockKardashev: 1,
-    cgUpkeep: 250
+    cgUpkeep: 20
   },
   {
     id: 'trade_hub',
@@ -187,7 +187,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 10500,
     resource: 'credits',
     unlockKardashev: 1,
-    cgUpkeep: 250
+    cgUpkeep: 50
   },
   {
     id: 'planetary_exchange',
@@ -199,7 +199,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 36800,
     resource: 'credits',
     unlockKardashev: 1,
-    cgUpkeep: 250
+    cgUpkeep: 125
   },
   {
     id: 'megacorp_hq',
@@ -211,7 +211,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 129000,
     resource: 'credits',
     unlockKardashev: 1,
-    cgUpkeep: 250
+    cgUpkeep: 300
   },
   {
     id: 'system_monopoly',
@@ -223,7 +223,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 360000,
     resource: 'credits',
     unlockKardashev: 1,
-    cgUpkeep: 250
+    cgUpkeep: 750
   },
 
   // Energy
@@ -237,7 +237,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 3600,
     resource: 'energy',
     unlockKardashev: 1,
-    cgUpkeep: 250
+    cgUpkeep: 20
   },
   {
     id: 'planetary_grid',
@@ -249,7 +249,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 16800,
     resource: 'energy',
     unlockKardashev: 1,
-    cgUpkeep: 250
+    cgUpkeep: 50
   },
   {
     id: 'antimatter_forge',
@@ -261,7 +261,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 88200,
     resource: 'energy',
     unlockKardashev: 1,
-    cgUpkeep: 250
+    cgUpkeep: 125
   },
   {
     id: 'helium3_harvester',
@@ -273,7 +273,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 329000,
     resource: 'energy',
     unlockKardashev: 1,
-    cgUpkeep: 250
+    cgUpkeep: 300
   },
   {
     id: 'stellar_collector',
@@ -285,7 +285,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 1.44e6,
     resource: 'energy',
     unlockKardashev: 1,
-    cgUpkeep: 250
+    cgUpkeep: 750
   },
 
   // Pops
@@ -299,7 +299,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 15,
     resource: 'autoclick',
     unlockKardashev: 1,
-    cgUpkeep: 250
+    cgUpkeep: 25
   },
 
   // Consumer Goods
@@ -331,7 +331,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 4.50e6,
     resource: 'credits',
     unlockKardashev: 2,
-    cgUpkeep: 2.5e5
+    cgUpkeep: 2e4
   },
   {
     id: 'stellar_shipyard',
@@ -343,7 +343,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 3.15e7,
     resource: 'credits',
     unlockKardashev: 2,
-    cgUpkeep: 2.5e5
+    cgUpkeep: 5e4
   },
   {
     id: 'galactic_bank',
@@ -355,7 +355,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 2.21e8,
     resource: 'credits',
     unlockKardashev: 2,
-    cgUpkeep: 2.5e5
+    cgUpkeep: 1.25e5
   },
   {
     id: 'matter_synthesizer',
@@ -367,7 +367,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 1.54e9,
     resource: 'credits',
     unlockKardashev: 2,
-    cgUpkeep: 2.5e5
+    cgUpkeep: 3e5
   },
   {
     id: 'sector_conglomerate',
@@ -379,7 +379,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 2.16e10,
     resource: 'credits',
     unlockKardashev: 2,
-    cgUpkeep: 2.5e5
+    cgUpkeep: 7.5e5
   },
 
   // Energy
@@ -393,7 +393,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 7.20e6,
     resource: 'energy',
     unlockKardashev: 2,
-    cgUpkeep: 2.5e5
+    cgUpkeep: 2e4
   },
   {
     id: 'dyson_sphere',
@@ -405,7 +405,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 1.26e8,
     resource: 'energy',
     unlockKardashev: 2,
-    cgUpkeep: 2.5e5
+    cgUpkeep: 5e4
   },
   {
     id: 'penrose_engine',
@@ -417,7 +417,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 8.82e8,
     resource: 'energy',
     unlockKardashev: 2,
-    cgUpkeep: 2.5e5
+    cgUpkeep: 1.25e5
   },
   {
     id: 'star_lifter',
@@ -429,7 +429,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 1.24e10,
     resource: 'energy',
     unlockKardashev: 2,
-    cgUpkeep: 2.5e5
+    cgUpkeep: 3e5
   },
   {
     id: 'kugelblitz_reactor',
@@ -441,7 +441,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 4.32e11,
     resource: 'energy',
     unlockKardashev: 2,
-    cgUpkeep: 2.5e5
+    cgUpkeep: 7.5e5
   },
 
   // Pops
@@ -455,7 +455,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 500,
     resource: 'autoclick',
     unlockKardashev: 2,
-    cgUpkeep: 2.5e5
+    cgUpkeep: 2.5e4
   },
 
   // Consumer Goods
@@ -487,7 +487,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 1.35e12,
     resource: 'credits',
     unlockKardashev: 3,
-    cgUpkeep: 2.5e11
+    cgUpkeep: 2e10
   },
   {
     id: 'galactic_trade_league',
@@ -499,7 +499,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 4.73e13,
     resource: 'credits',
     unlockKardashev: 3,
-    cgUpkeep: 2.5e11
+    cgUpkeep: 5e10
   },
   {
     id: 'reality_market',
@@ -511,7 +511,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 6.62e14,
     resource: 'credits',
     unlockKardashev: 3,
-    cgUpkeep: 2.5e11
+    cgUpkeep: 1.25e11
   },
   {
     id: 'intergalactic_consortium',
@@ -523,7 +523,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 2.32e16,
     resource: 'credits',
     unlockKardashev: 3,
-    cgUpkeep: 2.5e11
+    cgUpkeep: 3e11
   },
   {
     id: 'time_arbitrage_firm',
@@ -535,7 +535,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 3.24e17,
     resource: 'credits',
     unlockKardashev: 3,
-    cgUpkeep: 2.5e11
+    cgUpkeep: 7.5e11
   },
 
   // Energy
@@ -549,7 +549,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 5.41e12,
     resource: 'energy',
     unlockKardashev: 3,
-    cgUpkeep: 2.5e11
+    cgUpkeep: 2e10
   },
   {
     id: 'galactic_core_tap',
@@ -561,7 +561,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 7.57e13,
     resource: 'energy',
     unlockKardashev: 3,
-    cgUpkeep: 2.5e11
+    cgUpkeep: 5e10
   },
   {
     id: 'quasar_harvester',
@@ -573,7 +573,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 2.65e15,
     resource: 'energy',
     unlockKardashev: 3,
-    cgUpkeep: 2.5e11
+    cgUpkeep: 1.25e11
   },
   {
     id: 'dark_matter_reactor',
@@ -585,7 +585,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 3.71e16,
     resource: 'energy',
     unlockKardashev: 3,
-    cgUpkeep: 2.5e11
+    cgUpkeep: 3e11
   },
   {
     id: 'neutron_star_battery',
@@ -597,7 +597,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 1.30e18,
     resource: 'energy',
     unlockKardashev: 3,
-    cgUpkeep: 2.5e11
+    cgUpkeep: 7.5e11
   },
 
   // Pops
@@ -611,7 +611,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 25000,
     resource: 'autoclick',
     unlockKardashev: 3,
-    cgUpkeep: 2.5e11
+    cgUpkeep: 2.5e10
   },
 
   // Consumer Goods
@@ -643,7 +643,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 4.06e20,
     resource: 'credits',
     unlockKardashev: 4,
-    cgUpkeep: 2.5e19
+    cgUpkeep: 2e18
   },
   {
     id: 'entropy_bank',
@@ -655,7 +655,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 1.42e22,
     resource: 'credits',
     unlockKardashev: 4,
-    cgUpkeep: 2.5e19
+    cgUpkeep: 5e18
   },
   {
     id: 'dimension_broker',
@@ -667,7 +667,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 1.99e23,
     resource: 'credits',
     unlockKardashev: 4,
-    cgUpkeep: 2.5e19
+    cgUpkeep: 1.25e19
   },
   {
     id: 'causality_exchange',
@@ -679,7 +679,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 6.96e24,
     resource: 'credits',
     unlockKardashev: 4,
-    cgUpkeep: 2.5e19
+    cgUpkeep: 3e19
   },
   {
     id: 'omega_corp',
@@ -691,7 +691,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 9.75e25,
     resource: 'credits',
     unlockKardashev: 4,
-    cgUpkeep: 2.5e19
+    cgUpkeep: 7.5e19
   },
 
   // Energy
@@ -705,7 +705,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 1.62e21,
     resource: 'energy',
     unlockKardashev: 4,
-    cgUpkeep: 2.5e19
+    cgUpkeep: 2e18
   },
   {
     id: 'cosmic_string_engine',
@@ -717,7 +717,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 2.27e22,
     resource: 'energy',
     unlockKardashev: 4,
-    cgUpkeep: 2.5e19
+    cgUpkeep: 5e18
   },
   {
     id: 'false_vacuum_tap',
@@ -729,7 +729,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 7.94e23,
     resource: 'energy',
     unlockKardashev: 4,
-    cgUpkeep: 2.5e19
+    cgUpkeep: 1.25e19
   },
   {
     id: 'white_hole_generator',
@@ -741,7 +741,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 1.11e25,
     resource: 'energy',
     unlockKardashev: 4,
-    cgUpkeep: 2.5e19
+    cgUpkeep: 3e19
   },
   {
     id: 'big_bang_echo',
@@ -753,7 +753,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 3.89e26,
     resource: 'energy',
     unlockKardashev: 4,
-    cgUpkeep: 2.5e19
+    cgUpkeep: 7.5e19
   },
 
   // Consumer Goods
@@ -785,7 +785,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 1.22e29,
     resource: 'credits',
     unlockKardashev: 5,
-    cgUpkeep: 2.5e27
+    cgUpkeep: 2e26
   },
   {
     id: 'probability_mine',
@@ -797,7 +797,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 4.26e30,
     resource: 'credits',
     unlockKardashev: 5,
-    cgUpkeep: 2.5e27
+    cgUpkeep: 5e26
   },
   {
     id: 'reality_compiler',
@@ -809,7 +809,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 5.97e31,
     resource: 'credits',
     unlockKardashev: 5,
-    cgUpkeep: 2.5e27
+    cgUpkeep: 1.25e27
   },
   {
     id: 'entropy_reversal_engine',
@@ -821,7 +821,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 2.09e33,
     resource: 'credits',
     unlockKardashev: 5,
-    cgUpkeep: 2.5e27
+    cgUpkeep: 3e27
   },
   {
     id: 'omniscience_engine',
@@ -833,7 +833,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 2.92e34,
     resource: 'credits',
     unlockKardashev: 5,
-    cgUpkeep: 2.5e27
+    cgUpkeep: 7.5e27
   },
 
   // Energy
@@ -847,7 +847,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 4.87e29,
     resource: 'energy',
     unlockKardashev: 5,
-    cgUpkeep: 2.5e27
+    cgUpkeep: 2e26
   },
   {
     id: 'multiversal_conduit',
@@ -859,7 +859,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 6.82e30,
     resource: 'energy',
     unlockKardashev: 5,
-    cgUpkeep: 2.5e27
+    cgUpkeep: 5e26
   },
   {
     id: 'boltzmann_brain_farm',
@@ -871,7 +871,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 2.39e32,
     resource: 'energy',
     unlockKardashev: 5,
-    cgUpkeep: 2.5e27
+    cgUpkeep: 1.25e27
   },
   {
     id: 'reality_annihilator',
@@ -883,7 +883,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 3.34e33,
     resource: 'energy',
     unlockKardashev: 5,
-    cgUpkeep: 2.5e27
+    cgUpkeep: 3e27
   },
   {
     id: 'omega_point_engine',
@@ -895,7 +895,7 @@ const buildings: BuildingDefinition[] = [
     baseOutput: 1.17e35,
     resource: 'energy',
     unlockKardashev: 5,
-    cgUpkeep: 2.5e27
+    cgUpkeep: 7.5e27
   },
 
   // Consumer Goods
@@ -917,18 +917,18 @@ const buildings: BuildingDefinition[] = [
   // =============================================
 
   // Credits
-  { id: 'genesis_compiler', name: 'Genesis Compiler', description: 'Compiles new universes optimized for maximum economic output.', icon: 'i-lucide-binary', baseCost: 1e42, costMultiplier: 1.045, baseOutput: 3.65e37, resource: 'credits', unlockKardashev: 6, cgUpkeep: 2.5e36 },
-  { id: 'axiom_mint', name: 'Axiom Mint', description: 'Mints value from the fundamental axioms of mathematics itself.', icon: 'i-lucide-sigma', baseCost: 50e42, costMultiplier: 1.048, baseOutput: 1.28e39, resource: 'credits', unlockKardashev: 6, cgUpkeep: 2.5e36 },
-  { id: 'fate_exchange', name: 'Fate Exchange', description: 'Trades in the probability of events across all possible timelines.', icon: 'i-lucide-shuffle', baseCost: 1e45, costMultiplier: 1.050, baseOutput: 1.79e40, resource: 'credits', unlockKardashev: 6, cgUpkeep: 2.5e36 },
-  { id: 'void_consortium', name: 'Void Consortium', description: 'A corporate entity that exists in the spaces between realities.', icon: 'i-lucide-square-dashed-bottom', baseCost: 50e45, costMultiplier: 1.053, baseOutput: 6.26e41, resource: 'credits', unlockKardashev: 6, cgUpkeep: 2.5e36 },
-  { id: 'absolute_engine', name: 'Absolute Engine', description: 'Converts pure mathematical truth into economic value. The final word in commerce.', icon: 'i-lucide-crown', baseCost: 1e48, costMultiplier: 1.055, baseOutput: 8.77e42, resource: 'credits', unlockKardashev: 6, cgUpkeep: 2.5e36 },
+  { id: 'genesis_compiler', name: 'Genesis Compiler', description: 'Compiles new universes optimized for maximum economic output.', icon: 'i-lucide-binary', baseCost: 1e42, costMultiplier: 1.045, baseOutput: 3.65e37, resource: 'credits', unlockKardashev: 6, cgUpkeep: 2e35 },
+  { id: 'axiom_mint', name: 'Axiom Mint', description: 'Mints value from the fundamental axioms of mathematics itself.', icon: 'i-lucide-sigma', baseCost: 50e42, costMultiplier: 1.048, baseOutput: 1.28e39, resource: 'credits', unlockKardashev: 6, cgUpkeep: 5e35 },
+  { id: 'fate_exchange', name: 'Fate Exchange', description: 'Trades in the probability of events across all possible timelines.', icon: 'i-lucide-shuffle', baseCost: 1e45, costMultiplier: 1.050, baseOutput: 1.79e40, resource: 'credits', unlockKardashev: 6, cgUpkeep: 1.25e36 },
+  { id: 'void_consortium', name: 'Void Consortium', description: 'A corporate entity that exists in the spaces between realities.', icon: 'i-lucide-square-dashed-bottom', baseCost: 50e45, costMultiplier: 1.053, baseOutput: 6.26e41, resource: 'credits', unlockKardashev: 6, cgUpkeep: 3e36 },
+  { id: 'absolute_engine', name: 'Absolute Engine', description: 'Converts pure mathematical truth into economic value. The final word in commerce.', icon: 'i-lucide-crown', baseCost: 1e48, costMultiplier: 1.055, baseOutput: 8.77e42, resource: 'credits', unlockKardashev: 6, cgUpkeep: 7.5e36 },
 
   // Energy
-  { id: 'planck_harvester', name: 'Planck Harvester', description: 'Extracts energy from the Planck-scale quantum foam of spacetime.', icon: 'i-lucide-scan', baseCost: 5e42, costMultiplier: 1.045, baseOutput: 1.46e38, resource: 'energy', unlockKardashev: 6, cgUpkeep: 2.5e36 },
-  { id: 'logos_reactor', name: 'Logos Reactor', description: 'Powers itself on the fundamental logic underlying existence.', icon: 'i-lucide-lightbulb', baseCost: 100e42, costMultiplier: 1.048, baseOutput: 2.05e39, resource: 'energy', unlockKardashev: 6, cgUpkeep: 2.5e36 },
-  { id: 'noosphere_tap', name: 'Noosphere Tap', description: 'Harvests the collective consciousness of all sentient beings as energy.', icon: 'i-lucide-brain', baseCost: 5e45, costMultiplier: 1.050, baseOutput: 7.16e40, resource: 'energy', unlockKardashev: 6, cgUpkeep: 2.5e36 },
-  { id: 'eschaton_dynamo', name: 'Eschaton Dynamo', description: 'Draws power from the inevitable end of all things.', icon: 'i-lucide-hourglass', baseCost: 100e45, costMultiplier: 1.053, baseOutput: 1.00e42, resource: 'energy', unlockKardashev: 6, cgUpkeep: 2.5e36 },
-  { id: 'source_code_engine', name: 'Source Code Engine', description: 'Rewrites the source code of reality for infinite energy. There is nothing beyond this.', icon: 'i-lucide-terminal', baseCost: 5e48, costMultiplier: 1.055, baseOutput: 3.51e43, resource: 'energy', unlockKardashev: 6, cgUpkeep: 2.5e36 },
+  { id: 'planck_harvester', name: 'Planck Harvester', description: 'Extracts energy from the Planck-scale quantum foam of spacetime.', icon: 'i-lucide-scan', baseCost: 5e42, costMultiplier: 1.045, baseOutput: 1.46e38, resource: 'energy', unlockKardashev: 6, cgUpkeep: 2e35 },
+  { id: 'logos_reactor', name: 'Logos Reactor', description: 'Powers itself on the fundamental logic underlying existence.', icon: 'i-lucide-lightbulb', baseCost: 100e42, costMultiplier: 1.048, baseOutput: 2.05e39, resource: 'energy', unlockKardashev: 6, cgUpkeep: 5e35 },
+  { id: 'noosphere_tap', name: 'Noosphere Tap', description: 'Harvests the collective consciousness of all sentient beings as energy.', icon: 'i-lucide-brain', baseCost: 5e45, costMultiplier: 1.050, baseOutput: 7.16e40, resource: 'energy', unlockKardashev: 6, cgUpkeep: 1.25e36 },
+  { id: 'eschaton_dynamo', name: 'Eschaton Dynamo', description: 'Draws power from the inevitable end of all things.', icon: 'i-lucide-hourglass', baseCost: 100e45, costMultiplier: 1.053, baseOutput: 1.00e42, resource: 'energy', unlockKardashev: 6, cgUpkeep: 3e36 },
+  { id: 'source_code_engine', name: 'Source Code Engine', description: 'Rewrites the source code of reality for infinite energy. There is nothing beyond this.', icon: 'i-lucide-terminal', baseCost: 5e48, costMultiplier: 1.055, baseOutput: 3.51e43, resource: 'energy', unlockKardashev: 6, cgUpkeep: 7.5e36 },
 
   // Consumer Goods
   {

@@ -14,12 +14,17 @@ const emit = defineEmits<{
 }>()
 
 const { formatNumber } = useNumberFormat()
-const { getBuildingMultiplier } = useGameState()
+const { getBuildingMultiplier, getUpkeepMultiplier } = useGameState()
 
 const milestone = computed(() => getBuildingMultiplier(props.building.id))
-const effectiveOutput = computed(() => props.building.baseOutput * milestone.value)
-const effectiveEnergyUpkeep = computed(() => (props.building.energyUpkeep ?? 0) * milestone.value)
-const effectiveCgUpkeep = computed(() => (props.building.cgUpkeep ?? 0) * milestone.value)
+const upkeepMilestone = computed(() => getUpkeepMultiplier(props.building.id))
+const effectiveOutput = computed(() => {
+  // CG factories use dampened multiplier for output (matches cgPerSecond calculation)
+  const mult = props.building.resource === 'consumer_goods' ? upkeepMilestone.value : milestone.value
+  return props.building.baseOutput * mult
+})
+const effectiveEnergyUpkeep = computed(() => (props.building.energyUpkeep ?? 0) * upkeepMilestone.value)
+const effectiveCgUpkeep = computed(() => (props.building.cgUpkeep ?? 0) * upkeepMilestone.value)
 const hasUpkeep = computed(() => effectiveEnergyUpkeep.value > 0 || effectiveCgUpkeep.value > 0)
 
 const resourceColor = computed(() => {

@@ -1,5 +1,5 @@
 export function useUpkeep() {
-  const { state, creditsPerSecond, energyPerSecond, cgPerSecond, getBuildingMultiplier, getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
+  const { state, creditsPerSecond, energyPerSecond, cgPerSecond, getUpkeepMultiplier, getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
   const { buildings } = useGameConfig()
   const { megastructures } = useResearchConfig()
   const { getAscensionMultiplier } = useAscensionPerks()
@@ -46,7 +46,7 @@ export function useUpkeep() {
       if (!b.energyUpkeep) continue
       const owned = state.value.buildings[b.id] || 0
       if (owned === 0) continue
-      upkeep += owned * b.energyUpkeep * getBuildingMultiplier(b.id)
+      upkeep += owned * b.energyUpkeep * getUpkeepMultiplier(b.id)
     }
 
     // Megastructure energy upkeep (completed only)
@@ -87,7 +87,7 @@ export function useUpkeep() {
       if (!b.cgUpkeep) continue
       const owned = state.value.buildings[b.id] || 0
       if (owned === 0) continue
-      consumption += owned * b.cgUpkeep * getBuildingMultiplier(b.id)
+      consumption += owned * b.cgUpkeep * getUpkeepMultiplier(b.id)
     }
 
     // Megastructure CG upkeep (completed only)

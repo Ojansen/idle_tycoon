@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { CurveType } from '@unovis/ts'
 
-const { creditsPerSecond, energyPerSecond, state, getBuildingMultiplier, getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
+const { creditsPerSecond, energyPerSecond, state, getUpkeepMultiplier, getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
 const { totalEnergyUpkeep, effectiveCgProduction, totalCgConsumption, energyThrottle, cgThrottle, netEnergyPerSecond, hasUpkeep, getFullUpkeepReduction } = useUpkeep()
 const { energyChartData, cgChartData, growthChartData } = useProductionHistory()
 const { buildings } = useGameConfig()
@@ -53,7 +53,7 @@ const buildingUpkeepBreakdown = computed(() => {
     if (owned === 0) continue
     if (!b.energyUpkeep && !b.cgUpkeep) continue
 
-    const milestone = getBuildingMultiplier(b.id)
+    const milestone = getUpkeepMultiplier(b.id)
     entries.push({
       name: b.name,
       icon: b.icon,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { calcBuildingMultiplier } from '../../app/utils/gameMath'
+import { calcBuildingMultiplier, calcUpkeepMultiplier } from '../../app/utils/gameMath'
 
-// ── Building data with CG upkeep (mirrors useGameConfig) ──
+// ── Building data with CG upkeep (mirrors useGameConfig — graduated values) ──
 
 interface Building {
   id: string
@@ -17,24 +17,24 @@ interface Building {
 
 // prettier-ignore
 const buildings: Building[] = [
-  // Type 0
-  { id: 'mining_drone', name: 'Mining Drone', baseCost: 10, costMultiplier: 1.045, baseOutput: 0.50, resource: 'credits', unlockKardashev: 0, cgUpkeep: 0.25 },
-  { id: 'solar_array', name: 'Solar Array', baseCost: 50, costMultiplier: 1.045, baseOutput: 2.00, resource: 'energy', unlockKardashev: 0, cgUpkeep: 0.25 },
-  { id: 'corporate_drone', name: 'Corporate Drone', baseCost: 50, costMultiplier: 1.12, baseOutput: 1, resource: 'autoclick', unlockKardashev: 0, cgUpkeep: 0.25 },
+  // Type 0 — graduated cgUpkeep: [0.08, 0.20, 0.50, 1.20, 3.00] × 0.25 base, pop × 0.10
+  { id: 'mining_drone', name: 'Mining Drone', baseCost: 10, costMultiplier: 1.045, baseOutput: 0.50, resource: 'credits', unlockKardashev: 0, cgUpkeep: 0.02 },
+  { id: 'solar_array', name: 'Solar Array', baseCost: 50, costMultiplier: 1.045, baseOutput: 2.00, resource: 'energy', unlockKardashev: 0, cgUpkeep: 0.02 },
+  { id: 'corporate_drone', name: 'Corporate Drone', baseCost: 50, costMultiplier: 1.12, baseOutput: 1, resource: 'autoclick', unlockKardashev: 0, cgUpkeep: 0.03 },
   { id: 'consumer_factory', name: 'Consumer Factory', baseCost: 500, costMultiplier: 1.06, baseOutput: 5, resource: 'consumer_goods', unlockKardashev: 0, energyUpkeep: 5 },
-  // Type 1
-  { id: 'asteroid_mine', name: 'Asteroid Mine', baseCost: 200000, costMultiplier: 1.045, baseOutput: 3000, resource: 'credits', unlockKardashev: 1, cgUpkeep: 250 },
-  { id: 'fusion_reactor', name: 'Fusion Reactor', baseCost: 300000, costMultiplier: 1.045, baseOutput: 3600, resource: 'energy', unlockKardashev: 1, cgUpkeep: 250 },
-  { id: 'executive_assistant', name: 'Executive Assistant', baseCost: 500000, costMultiplier: 1.12, baseOutput: 15, resource: 'autoclick', unlockKardashev: 1, cgUpkeep: 250 },
+  // Type 1 — graduated cgUpkeep: [0.08, 0.20, 0.50, 1.20, 3.00] × 250 base, pop × 0.10
+  { id: 'asteroid_mine', name: 'Asteroid Mine', baseCost: 200000, costMultiplier: 1.045, baseOutput: 3000, resource: 'credits', unlockKardashev: 1, cgUpkeep: 20 },
+  { id: 'fusion_reactor', name: 'Fusion Reactor', baseCost: 300000, costMultiplier: 1.045, baseOutput: 3600, resource: 'energy', unlockKardashev: 1, cgUpkeep: 20 },
+  { id: 'executive_assistant', name: 'Executive Assistant', baseCost: 500000, costMultiplier: 1.12, baseOutput: 15, resource: 'autoclick', unlockKardashev: 1, cgUpkeep: 25 },
   { id: 'industrial_complex', name: 'Industrial Complex', baseCost: 5e5, costMultiplier: 1.06, baseOutput: 5e3, resource: 'consumer_goods', unlockKardashev: 1, energyUpkeep: 5e3 },
-  // Type 2
-  { id: 'colony_world', name: 'Colony World', baseCost: 1e9, costMultiplier: 1.045, baseOutput: 4.50e6, resource: 'credits', unlockKardashev: 2, cgUpkeep: 2.5e5 },
-  { id: 'dyson_swarm', name: 'Dyson Swarm', baseCost: 2e9, costMultiplier: 1.045, baseOutput: 7.20e6, resource: 'energy', unlockKardashev: 2, cgUpkeep: 2.5e5 },
-  { id: 'sector_governor', name: 'Sector Governor', baseCost: 5e9, costMultiplier: 1.12, baseOutput: 500, resource: 'autoclick', unlockKardashev: 2, cgUpkeep: 2.5e5 },
+  // Type 2 — graduated cgUpkeep: [0.08, 0.20, 0.50, 1.20, 3.00] × 2.5e5 base, pop × 0.10
+  { id: 'colony_world', name: 'Colony World', baseCost: 1e9, costMultiplier: 1.045, baseOutput: 4.50e6, resource: 'credits', unlockKardashev: 2, cgUpkeep: 2e4 },
+  { id: 'dyson_swarm', name: 'Dyson Swarm', baseCost: 2e9, costMultiplier: 1.045, baseOutput: 7.20e6, resource: 'energy', unlockKardashev: 2, cgUpkeep: 2e4 },
+  { id: 'sector_governor', name: 'Sector Governor', baseCost: 5e9, costMultiplier: 1.12, baseOutput: 500, resource: 'autoclick', unlockKardashev: 2, cgUpkeep: 2.5e4 },
   { id: 'stellar_forge_cg', name: 'Stellar Forge', baseCost: 5e8, costMultiplier: 1.06, baseOutput: 5e6, resource: 'consumer_goods', unlockKardashev: 2, energyUpkeep: 5e6 },
 ]
 
-// ── Upkeep calculation helpers (mirrors new useUpkeep.ts logic) ──
+// ── Upkeep calculation helpers (mirrors useUpkeep.ts — uses dampened multiplier) ──
 
 function calcTotalEnergyUpkeep(owned: Record<string, number>, reductionMult = 1): number {
   let upkeep = 0
@@ -43,7 +43,7 @@ function calcTotalEnergyUpkeep(owned: Record<string, number>, reductionMult = 1)
     if (!b.energyUpkeep) continue
     const count = owned[b.id] || 0
     if (count === 0) continue
-    upkeep += count * b.energyUpkeep * calcBuildingMultiplier(count)
+    upkeep += count * b.energyUpkeep * calcUpkeepMultiplier(count)
   }
   return upkeep * reductionMult
 }
@@ -54,7 +54,8 @@ function calcCgProduction(owned: Record<string, number>): number {
     if (b.resource !== 'consumer_goods') continue
     const count = owned[b.id] || 0
     if (count === 0) continue
-    total += count * b.baseOutput * calcBuildingMultiplier(count)
+    // CG production uses dampened multiplier (matches useGameState.ts)
+    total += count * b.baseOutput * calcUpkeepMultiplier(count)
   }
   return total
 }
@@ -66,7 +67,7 @@ function calcCgConsumption(owned: Record<string, number>, reductionMult = 1): nu
     if (!b.cgUpkeep) continue
     const count = owned[b.id] || 0
     if (count === 0) continue
-    total += count * b.cgUpkeep * calcBuildingMultiplier(count)
+    total += count * b.cgUpkeep * calcUpkeepMultiplier(count)
   }
   return total * reductionMult
 }
@@ -128,16 +129,17 @@ describe('CG upkeep — all buildings consume consumer goods', () => {
 })
 
 describe('CG upkeep — CG production and consumption', () => {
-  it('CG production = sum of CG buildings output', () => {
+  it('CG production = sum of CG buildings output × dampened multiplier', () => {
     const owned = { consumer_factory: 5 }
     const production = calcCgProduction(owned)
-    expect(production).toBe(5 * 5 * calcBuildingMultiplier(5))
+    expect(production).toBe(5 * 5 * calcUpkeepMultiplier(5))
   })
 
-  it('CG consumption = sum of non-CG buildings cgUpkeep', () => {
+  it('CG consumption = sum of non-CG buildings cgUpkeep × dampened multiplier', () => {
     const owned = { mining_drone: 10, solar_array: 10 }
     const consumption = calcCgConsumption(owned)
-    expect(consumption).toBe(20 * 0.25 * calcBuildingMultiplier(10))
+    // 10 * 0.02 * 1 + 10 * 0.02 * 1 = 0.4 (multiplier is 1 for <25 buildings)
+    expect(consumption).toBeCloseTo(10 * 0.02 + 10 * 0.02)
   })
 
   it('CG buildings themselves do not contribute to CG consumption', () => {
@@ -157,7 +159,7 @@ describe('CG upkeep — energy throttle on CG production', () => {
     expect(calcThrottle(500, 1000)).toBeCloseTo(0.5)
   })
 
-  it('throttle caps at 50%', () => {
+  it('throttle caps at 25%', () => {
     expect(calcThrottle(100, 10000)).toBe(0.25)
   })
 })
@@ -171,22 +173,22 @@ describe('CG upkeep — CG throttle on credits/pops', () => {
     expect(calcThrottle(80, 100)).toBeCloseTo(0.8)
   })
 
-  it('throttle caps at 50%', () => {
+  it('throttle caps at 25%', () => {
     expect(calcThrottle(10, 1000)).toBe(0.25)
   })
 })
 
 describe('CG upkeep — balanced play keeps >80% efficiency', () => {
-  it('Type 0: 10 of each building + 1 CG factory → CG balance positive', () => {
+  it('Type 0: balanced buildings + CG factory → CG balance positive', () => {
     const owned = {
       mining_drone: 10, solar_array: 10, corporate_drone: 10,
-      consumer_factory: 2  // 2 CG factories
+      consumer_factory: 1
     }
     const cgProd = calcCgProduction(owned)
     const cgConsumption = calcCgConsumption(owned)
 
-    // 2 factories * 5 output = 10 CG/s production
-    // 30 buildings * 0.25 cgUpkeep = 7.5 CG/s consumption
+    // 1 factory * 5 = 5 CG/s production (dampened mult = 1 at <25)
+    // 10*0.02 + 10*0.02 + 10*0.03 = 0.7 CG/s consumption
     expect(cgProd).toBeGreaterThan(cgConsumption)
     const throttle = calcThrottle(cgProd, cgConsumption)
     expect(throttle).toBe(1)
@@ -217,7 +219,7 @@ describe('CG upkeep — expansion pressure', () => {
   it('many buildings without CG → deficit grows', () => {
     const owned = { mining_drone: 50, solar_array: 50 }
     const cgProd = calcCgProduction(owned) // 0
-    const cgConsumption = calcCgConsumption(owned) // 50*0.25*4 + 50*0.25*4 = 100
+    const cgConsumption = calcCgConsumption(owned)
     expect(cgProd).toBe(0)
     expect(cgConsumption).toBeGreaterThan(0)
     const throttle = calcThrottle(cgProd, cgConsumption)
@@ -225,14 +227,13 @@ describe('CG upkeep — expansion pressure', () => {
   })
 
   it('adding CG factories should meaningfully improve throttle', () => {
-    // 10 buildings total: 5 CG consumption. 1 factory: 5 CG production → balanced
     const ownedBefore = { mining_drone: 5, solar_array: 5 }
     const ownedAfter = { ...ownedBefore, consumer_factory: 1 }
 
     const throttleBefore = calcThrottle(calcCgProduction(ownedBefore), calcCgConsumption(ownedBefore))
     const throttleAfter = calcThrottle(calcCgProduction(ownedAfter), calcCgConsumption(ownedAfter))
 
-    expect(throttleBefore).toBe(0.25) // max throttle (25%) (0 CG production)
+    expect(throttleBefore).toBe(0.25) // max throttle (0 CG production)
     expect(throttleAfter).toBe(1) // fully recovered with 1 factory
   })
 
@@ -254,8 +255,6 @@ describe('CG upkeep — expansion pressure', () => {
 
 describe('CG upkeep — no death spiral', () => {
   it('CG deficit should NOT reduce energy production', () => {
-    // Many credit buildings, no CG → CG deficit
-    // Energy buildings should still produce at 100%
     const owned = { mining_drone: 100, solar_array: 50 }
     const cgThrottle = calcThrottle(calcCgProduction(owned), calcCgConsumption(owned))
     expect(cgThrottle).toBe(0.25) // CG deficit
@@ -263,56 +262,50 @@ describe('CG upkeep — no death spiral', () => {
     // Energy production is NOT affected by CG throttle
     const energyProd = calcEnergyProduction(owned)
     expect(energyProd).toBeGreaterThan(0)
-    // Energy is exempt from CG throttle — it stays at full production
-    // Net energy is only reduced by CG building energy upkeep
     const energyUpkeep = calcTotalEnergyUpkeep(owned)
     expect(energyUpkeep).toBe(0) // no CG buildings, no energy upkeep
   })
 
   it('energy deficit should reduce CG production (intended)', () => {
-    // CG buildings but not enough energy
-    const owned = { consumer_factory: 10 } // produces CG, consumes energy
-    const energyProd = calcEnergyProduction(owned) // 0 energy buildings
-    const energyUpkeep = calcTotalEnergyUpkeep(owned) // CG buildings need energy
+    const owned = { consumer_factory: 10 }
+    const energyProd = calcEnergyProduction(owned)
+    const energyUpkeep = calcTotalEnergyUpkeep(owned)
     expect(energyProd).toBe(0)
     expect(energyUpkeep).toBeGreaterThan(0)
 
-    // Energy throttle caps CG production
     const energyThrottle = calcThrottle(energyProd, energyUpkeep)
-    // With 0 energy production, throttle would be max(0.5, 0/upkeep) but our function uses production >= consumption check
-    // Since production (0) < consumption, throttle = max(0.5, 0/consumption) = 0.5
     expect(energyThrottle).toBe(0.25)
   })
 })
 
 describe('CG upkeep — cross-tier CG balance', () => {
-  it('1 CG building at tier 0 should support ~20 buildings at tier 0', () => {
+  it('1 CG building at tier 0 should support many cheap buildings', () => {
     const owned: Record<string, number> = { consumer_factory: 1 }
-    // Add 20 Type 0 buildings
+    // With graduated upkeep, cheapest buildings cost very little CG
     owned.mining_drone = 10
     owned.solar_array = 10
 
     const cgProd = calcCgProduction(owned)
     const cgConsumption = calcCgConsumption(owned)
-    // Exactly balanced at 20 buildings (5 CG/s production, 20 * 0.25 = 5 CG/s consumption)
+    // 1 factory = 5 CG/s, 20 cheap buildings = 20 * 0.02 = 0.4 CG/s
     expect(cgProd).toBeGreaterThanOrEqual(cgConsumption)
   })
 
-  it('1 CG building at tier 1 should support ~20 buildings at tier 1', () => {
+  it('1 CG building at tier 1 should support cheapest tier 1 buildings', () => {
     const owned: Record<string, number> = { industrial_complex: 1 }
     owned.asteroid_mine = 10
     owned.fusion_reactor = 10
 
     const cgProd = calcCgProduction(owned)
     const cgConsumption = calcCgConsumption(owned)
+    // 1 IC = 5000 CG/s, 20 cheapest tier 1 = 20 * 20 = 400 CG/s
     expect(cgProd).toBeGreaterThanOrEqual(cgConsumption)
   })
 
   it('lower-tier CG buildings should be inadequate for higher tiers', () => {
-    // Type 0 CG factory trying to support Type 1 buildings
     const owned = { consumer_factory: 5, asteroid_mine: 10, fusion_reactor: 10 }
     const cgProd = calcCgProduction(owned) // 5 * 5 = 25 CG/s
-    const cgConsumption = calcCgConsumption(owned) // 20 * 250 = 5000 CG/s
+    const cgConsumption = calcCgConsumption(owned) // 20 * 20 = 400 CG/s
     expect(cgProd).toBeLessThan(cgConsumption)
     const throttle = calcThrottle(cgProd, cgConsumption)
     expect(throttle).toBe(0.25) // maxed out
@@ -343,5 +336,44 @@ describe('CG upkeep — CG building efficiency', () => {
     const full = calcCgConsumption(owned)
     const reduced = calcCgConsumption(owned, 0.9)
     expect(reduced).toBeCloseTo(full * 0.9)
+  })
+})
+
+describe('CG upkeep — dampening', () => {
+  it('dampened multiplier < building multiplier at 25+ buildings', () => {
+    expect(calcUpkeepMultiplier(25)).toBeLessThan(calcBuildingMultiplier(25))
+    expect(calcUpkeepMultiplier(25)).toBeCloseTo(Math.pow(2, 0.8), 5)
+  })
+
+  it('gap between output and upkeep multiplier widens at higher counts', () => {
+    const ratio25 = calcBuildingMultiplier(25) / calcUpkeepMultiplier(25)
+    const ratio100 = calcBuildingMultiplier(100) / calcUpkeepMultiplier(100)
+    expect(ratio100).toBeGreaterThan(ratio25)
+  })
+
+  it('no dampening below 25 buildings', () => {
+    expect(calcUpkeepMultiplier(0)).toBe(1)
+    expect(calcUpkeepMultiplier(24)).toBe(1)
+  })
+
+  it('graduated cgUpkeep: cheap buildings cost less than expensive ones', () => {
+    const miningDrone = buildings.find(b => b.id === 'mining_drone')!
+    const corporateDrone = buildings.find(b => b.id === 'corporate_drone')!
+    expect(miningDrone.cgUpkeep!).toBeLessThan(corporateDrone.cgUpkeep!)
+
+    const asteroidMine = buildings.find(b => b.id === 'asteroid_mine')!
+    const executiveAssistant = buildings.find(b => b.id === 'executive_assistant')!
+    expect(asteroidMine.cgUpkeep!).toBeLessThan(executiveAssistant.cgUpkeep!)
+  })
+
+  it('CG production and consumption scale at the same rate (dampened)', () => {
+    // At any building count, the ratio of CG factory output to building upkeep
+    // should use the same dampened multiplier
+    const counts = [10, 25, 50, 100]
+    for (const n of counts) {
+      const prodMult = calcUpkeepMultiplier(n) // CG factory uses dampened
+      const consumptionMult = calcUpkeepMultiplier(n) // upkeep uses dampened
+      expect(prodMult).toBe(consumptionMult)
+    }
   })
 })

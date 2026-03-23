@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calcBuildingMultiplier, calcBuildingCost } from '../../app/utils/gameMath'
+import { calcBuildingMultiplier, calcUpkeepMultiplier, calcBuildingCost } from '../../app/utils/gameMath'
 
 // ── Building data Types 0-5 ──
 
@@ -8,62 +8,62 @@ interface B { id: string; name: string; baseCost: number; cm: number; out: numbe
 // prettier-ignore
 const ALL: B[] = [
   // TYPE 0
-  { id: 'mining_drone',     name: 'Mining Drone',      baseCost: 10,     cm: 1.045, out: 0.5,      res: 'cr',  tier: 0, cgUp: 0.25 },
-  { id: 'ore_refinery',     name: 'Ore Refinery',      baseCost: 150,    cm: 1.048, out: 5.3,      res: 'cr',  tier: 0, cgUp: 0.25 },
-  { id: 'cargo_shuttle',    name: 'Cargo Shuttle',     baseCost: 1500,   cm: 1.050, out: 37,       res: 'cr',  tier: 0, cgUp: 0.25 },
-  { id: 'orbital_factory',  name: 'Orbital Factory',   baseCost: 10000,  cm: 1.053, out: 172,      res: 'cr',  tier: 0, cgUp: 0.25 },
-  { id: 'space_station',    name: 'Space Station',     baseCost: 50000,  cm: 1.055, out: 600,      res: 'cr',  tier: 0, cgUp: 0.25 },
-  { id: 'solar_array',      name: 'Solar Array',       baseCost: 50,     cm: 1.045, out: 2.0,      res: 'en',  tier: 0, cgUp: 0.25 },
-  { id: 'wind_turbine',     name: 'Wind Turbine',      baseCost: 400,    cm: 1.048, out: 11.2,     res: 'en',  tier: 0, cgUp: 0.25 },
-  { id: 'geothermal_tap',   name: 'Geothermal Tap',    baseCost: 3000,   cm: 1.050, out: 59,       res: 'en',  tier: 0, cgUp: 0.25 },
-  { id: 'fission_plant',    name: 'Fission Plant',     baseCost: 20000,  cm: 1.053, out: 274,      res: 'en',  tier: 0, cgUp: 0.25 },
-  { id: 'orbital_mirror',   name: 'Orbital Mirror',    baseCost: 80000,  cm: 1.055, out: 960,      res: 'en',  tier: 0, cgUp: 0.25 },
+  { id: 'mining_drone',     name: 'Mining Drone',      baseCost: 10,     cm: 1.045, out: 0.5,      res: 'cr',  tier: 0, cgUp: 0.02 },
+  { id: 'ore_refinery',     name: 'Ore Refinery',      baseCost: 150,    cm: 1.048, out: 5.3,      res: 'cr',  tier: 0, cgUp: 0.05 },
+  { id: 'cargo_shuttle',    name: 'Cargo Shuttle',     baseCost: 1500,   cm: 1.050, out: 37,       res: 'cr',  tier: 0, cgUp: 0.12 },
+  { id: 'orbital_factory',  name: 'Orbital Factory',   baseCost: 10000,  cm: 1.053, out: 172,      res: 'cr',  tier: 0, cgUp: 0.30 },
+  { id: 'space_station',    name: 'Space Station',     baseCost: 50000,  cm: 1.055, out: 600,      res: 'cr',  tier: 0, cgUp: 0.75 },
+  { id: 'solar_array',      name: 'Solar Array',       baseCost: 50,     cm: 1.045, out: 2.0,      res: 'en',  tier: 0, cgUp: 0.02 },
+  { id: 'wind_turbine',     name: 'Wind Turbine',      baseCost: 400,    cm: 1.048, out: 11.2,     res: 'en',  tier: 0, cgUp: 0.05 },
+  { id: 'geothermal_tap',   name: 'Geothermal Tap',    baseCost: 3000,   cm: 1.050, out: 59,       res: 'en',  tier: 0, cgUp: 0.12 },
+  { id: 'fission_plant',    name: 'Fission Plant',     baseCost: 20000,  cm: 1.053, out: 274,      res: 'en',  tier: 0, cgUp: 0.30 },
+  { id: 'orbital_mirror',   name: 'Orbital Mirror',    baseCost: 80000,  cm: 1.055, out: 960,      res: 'en',  tier: 0, cgUp: 0.75 },
   { id: 'consumer_factory', name: 'Consumer Factory',  baseCost: 500,    cm: 1.06,  out: 5,        res: 'cg',  tier: 0, eUp: 5 },
   // TYPE 1
-  { id: 'asteroid_mine',    name: 'Asteroid Mine',     baseCost: 2e5,    cm: 1.045, out: 3000,     res: 'cr',  tier: 1, cgUp: 250 },
-  { id: 'trade_hub',        name: 'Trade Hub',         baseCost: 1e6,    cm: 1.048, out: 10500,    res: 'cr',  tier: 1, cgUp: 250 },
-  { id: 'planetary_exch',   name: 'Planetary Exch.',   baseCost: 5e6,    cm: 1.050, out: 36800,    res: 'cr',  tier: 1, cgUp: 250 },
-  { id: 'megacorp_hq',      name: 'MegaCorp HQ',      baseCost: 25e6,   cm: 1.053, out: 129000,   res: 'cr',  tier: 1, cgUp: 250 },
-  { id: 'system_monopoly',  name: 'System Monopoly',   baseCost: 100e6,  cm: 1.055, out: 360000,   res: 'cr',  tier: 1, cgUp: 250 },
-  { id: 'fusion_reactor',   name: 'Fusion Reactor',    baseCost: 3e5,    cm: 1.045, out: 3600,     res: 'en',  tier: 1, cgUp: 250 },
-  { id: 'planetary_grid',   name: 'Planetary Grid',    baseCost: 2e6,    cm: 1.048, out: 16800,    res: 'en',  tier: 1, cgUp: 250 },
-  { id: 'antimatter_forge', name: 'Antimatter Forge',  baseCost: 15e6,   cm: 1.050, out: 88200,    res: 'en',  tier: 1, cgUp: 250 },
-  { id: 'helium3',          name: 'Helium-3 Harv.',    baseCost: 80e6,   cm: 1.053, out: 329000,   res: 'en',  tier: 1, cgUp: 250 },
-  { id: 'stellar_coll',     name: 'Stellar Collector', baseCost: 500e6,  cm: 1.055, out: 1.44e6,   res: 'en',  tier: 1, cgUp: 250 },
+  { id: 'asteroid_mine',    name: 'Asteroid Mine',     baseCost: 2e5,    cm: 1.045, out: 3000,     res: 'cr',  tier: 1, cgUp: 20 },
+  { id: 'trade_hub',        name: 'Trade Hub',         baseCost: 1e6,    cm: 1.048, out: 10500,    res: 'cr',  tier: 1, cgUp: 50 },
+  { id: 'planetary_exch',   name: 'Planetary Exch.',   baseCost: 5e6,    cm: 1.050, out: 36800,    res: 'cr',  tier: 1, cgUp: 125 },
+  { id: 'megacorp_hq',      name: 'MegaCorp HQ',      baseCost: 25e6,   cm: 1.053, out: 129000,   res: 'cr',  tier: 1, cgUp: 300 },
+  { id: 'system_monopoly',  name: 'System Monopoly',   baseCost: 100e6,  cm: 1.055, out: 360000,   res: 'cr',  tier: 1, cgUp: 750 },
+  { id: 'fusion_reactor',   name: 'Fusion Reactor',    baseCost: 3e5,    cm: 1.045, out: 3600,     res: 'en',  tier: 1, cgUp: 20 },
+  { id: 'planetary_grid',   name: 'Planetary Grid',    baseCost: 2e6,    cm: 1.048, out: 16800,    res: 'en',  tier: 1, cgUp: 50 },
+  { id: 'antimatter_forge', name: 'Antimatter Forge',  baseCost: 15e6,   cm: 1.050, out: 88200,    res: 'en',  tier: 1, cgUp: 125 },
+  { id: 'helium3',          name: 'Helium-3 Harv.',    baseCost: 80e6,   cm: 1.053, out: 329000,   res: 'en',  tier: 1, cgUp: 300 },
+  { id: 'stellar_coll',     name: 'Stellar Collector', baseCost: 500e6,  cm: 1.055, out: 1.44e6,   res: 'en',  tier: 1, cgUp: 750 },
   { id: 'industrial_cplx',  name: 'Industrial Cmplx.', baseCost: 5e5,    cm: 1.06,  out: 5e3,      res: 'cg',  tier: 1, eUp: 5e3 },
   // TYPE 2
-  { id: 'colony_world',     name: 'Colony World',      baseCost: 1e9,    cm: 1.045, out: 4.5e6,    res: 'cr',  tier: 2, cgUp: 2.5e5 },
-  { id: 'stellar_shipyard', name: 'Stellar Shipyard',  baseCost: 10e9,   cm: 1.048, out: 3.15e7,   res: 'cr',  tier: 2, cgUp: 2.5e5 },
-  { id: 'galactic_bank',    name: 'Galactic Bank',     baseCost: 100e9,  cm: 1.050, out: 2.21e8,   res: 'cr',  tier: 2, cgUp: 2.5e5 },
-  { id: 'matter_synth',     name: 'Matter Synth.',     baseCost: 1e12,   cm: 1.053, out: 1.54e9,   res: 'cr',  tier: 2, cgUp: 2.5e5 },
-  { id: 'sector_conglom',   name: 'Sector Conglom.',   baseCost: 20e12,  cm: 1.055, out: 2.16e10,  res: 'cr',  tier: 2, cgUp: 2.5e5 },
-  { id: 'dyson_swarm',      name: 'Dyson Swarm',       baseCost: 2e9,    cm: 1.045, out: 7.2e6,    res: 'en',  tier: 2, cgUp: 2.5e5 },
-  { id: 'dyson_sphere',     name: 'Dyson Sphere',      baseCost: 50e9,   cm: 1.048, out: 1.26e8,   res: 'en',  tier: 2, cgUp: 2.5e5 },
-  { id: 'penrose_engine',   name: 'Penrose Engine',    baseCost: 500e9,  cm: 1.050, out: 8.82e8,   res: 'en',  tier: 2, cgUp: 2.5e5 },
-  { id: 'star_lifter',      name: 'Star Lifter',       baseCost: 10e12,  cm: 1.053, out: 1.24e10,  res: 'en',  tier: 2, cgUp: 2.5e5 },
-  { id: 'kugelblitz',       name: 'Kugelblitz React.', baseCost: 500e12, cm: 1.055, out: 4.32e11,  res: 'en',  tier: 2, cgUp: 2.5e5 },
+  { id: 'colony_world',     name: 'Colony World',      baseCost: 1e9,    cm: 1.045, out: 4.5e6,    res: 'cr',  tier: 2, cgUp: 2e4 },
+  { id: 'stellar_shipyard', name: 'Stellar Shipyard',  baseCost: 10e9,   cm: 1.048, out: 3.15e7,   res: 'cr',  tier: 2, cgUp: 5e4 },
+  { id: 'galactic_bank',    name: 'Galactic Bank',     baseCost: 100e9,  cm: 1.050, out: 2.21e8,   res: 'cr',  tier: 2, cgUp: 1.25e5 },
+  { id: 'matter_synth',     name: 'Matter Synth.',     baseCost: 1e12,   cm: 1.053, out: 1.54e9,   res: 'cr',  tier: 2, cgUp: 3e5 },
+  { id: 'sector_conglom',   name: 'Sector Conglom.',   baseCost: 20e12,  cm: 1.055, out: 2.16e10,  res: 'cr',  tier: 2, cgUp: 7.5e5 },
+  { id: 'dyson_swarm',      name: 'Dyson Swarm',       baseCost: 2e9,    cm: 1.045, out: 7.2e6,    res: 'en',  tier: 2, cgUp: 2e4 },
+  { id: 'dyson_sphere',     name: 'Dyson Sphere',      baseCost: 50e9,   cm: 1.048, out: 1.26e8,   res: 'en',  tier: 2, cgUp: 5e4 },
+  { id: 'penrose_engine',   name: 'Penrose Engine',    baseCost: 500e9,  cm: 1.050, out: 8.82e8,   res: 'en',  tier: 2, cgUp: 1.25e5 },
+  { id: 'star_lifter',      name: 'Star Lifter',       baseCost: 10e12,  cm: 1.053, out: 1.24e10,  res: 'en',  tier: 2, cgUp: 3e5 },
+  { id: 'kugelblitz',       name: 'Kugelblitz React.', baseCost: 500e12, cm: 1.055, out: 4.32e11,  res: 'en',  tier: 2, cgUp: 7.5e5 },
   { id: 'stellar_forge_cg', name: 'Stellar Forge CG',  baseCost: 5e8,    cm: 1.06,  out: 5e6,      res: 'cg',  tier: 2, eUp: 5e6 },
   // TYPE 3
-  { id: 'mega_forge',       name: 'Megastruct. Forge', baseCost: 1e15,   cm: 1.045, out: 1.35e12,  res: 'cr',  tier: 3, cgUp: 2.5e11 },
-  { id: 'gal_trade',        name: 'Galactic Trade L.', baseCost: 50e15,  cm: 1.048, out: 4.73e13,  res: 'cr',  tier: 3, cgUp: 2.5e11 },
-  { id: 'reality_market',   name: 'Reality Market',    baseCost: 1e18,   cm: 1.050, out: 6.62e14,  res: 'cr',  tier: 3, cgUp: 2.5e11 },
-  { id: 'intergal_consort', name: 'Intergal. Consort.',baseCost: 50e18,  cm: 1.053, out: 2.32e16,  res: 'cr',  tier: 3, cgUp: 2.5e11 },
-  { id: 'time_arb',         name: 'Time Arbitrage',    baseCost: 1e21,   cm: 1.055, out: 3.24e17,  res: 'cr',  tier: 3, cgUp: 2.5e11 },
-  { id: 'stellar_engine',   name: 'Stellar Engine',    baseCost: 5e15,   cm: 1.045, out: 5.41e12,  res: 'en',  tier: 3, cgUp: 2.5e11 },
-  { id: 'gal_core_tap',     name: 'Galactic Core Tap', baseCost: 100e15, cm: 1.048, out: 7.57e13,  res: 'en',  tier: 3, cgUp: 2.5e11 },
-  { id: 'quasar_harv',      name: 'Quasar Harvester',  baseCost: 5e18,   cm: 1.050, out: 2.65e15,  res: 'en',  tier: 3, cgUp: 2.5e11 },
-  { id: 'dark_matter_r',    name: 'Dark Matter React.',baseCost: 100e18, cm: 1.053, out: 3.71e16,  res: 'en',  tier: 3, cgUp: 2.5e11 },
-  { id: 'neutron_battery',  name: 'Neutron Star Batt.',baseCost: 5e21,   cm: 1.055, out: 1.30e18,  res: 'en',  tier: 3, cgUp: 2.5e11 },
+  { id: 'mega_forge',       name: 'Megastruct. Forge', baseCost: 1e15,   cm: 1.045, out: 1.35e12,  res: 'cr',  tier: 3, cgUp: 2e10 },
+  { id: 'gal_trade',        name: 'Galactic Trade L.', baseCost: 50e15,  cm: 1.048, out: 4.73e13,  res: 'cr',  tier: 3, cgUp: 5e10 },
+  { id: 'reality_market',   name: 'Reality Market',    baseCost: 1e18,   cm: 1.050, out: 6.62e14,  res: 'cr',  tier: 3, cgUp: 1.25e11 },
+  { id: 'intergal_consort', name: 'Intergal. Consort.',baseCost: 50e18,  cm: 1.053, out: 2.32e16,  res: 'cr',  tier: 3, cgUp: 3e11 },
+  { id: 'time_arb',         name: 'Time Arbitrage',    baseCost: 1e21,   cm: 1.055, out: 3.24e17,  res: 'cr',  tier: 3, cgUp: 7.5e11 },
+  { id: 'stellar_engine',   name: 'Stellar Engine',    baseCost: 5e15,   cm: 1.045, out: 5.41e12,  res: 'en',  tier: 3, cgUp: 2e10 },
+  { id: 'gal_core_tap',     name: 'Galactic Core Tap', baseCost: 100e15, cm: 1.048, out: 7.57e13,  res: 'en',  tier: 3, cgUp: 5e10 },
+  { id: 'quasar_harv',      name: 'Quasar Harvester',  baseCost: 5e18,   cm: 1.050, out: 2.65e15,  res: 'en',  tier: 3, cgUp: 1.25e11 },
+  { id: 'dark_matter_r',    name: 'Dark Matter React.',baseCost: 100e18, cm: 1.053, out: 3.71e16,  res: 'en',  tier: 3, cgUp: 3e11 },
+  { id: 'neutron_battery',  name: 'Neutron Star Batt.',baseCost: 5e21,   cm: 1.055, out: 1.30e18,  res: 'en',  tier: 3, cgUp: 7.5e11 },
   { id: 'gal_fabricator',   name: 'Galactic Fabric.',  baseCost: 5e14,   cm: 1.06,  out: 5e12,     res: 'cg',  tier: 3, eUp: 5e12 },
   // TYPE 4
-  { id: 'universe_factory', name: 'Universe Factory',  baseCost: 1e24,   cm: 1.045, out: 4.06e20,  res: 'cr',  tier: 4, cgUp: 2.5e19 },
-  { id: 'entropy_bank',     name: 'Entropy Bank',      baseCost: 50e24,  cm: 1.048, out: 1.42e22,  res: 'cr',  tier: 4, cgUp: 2.5e19 },
-  { id: 'vacuum_harv',      name: 'Vacuum Harvester',  baseCost: 5e24,   cm: 1.045, out: 1.62e21,  res: 'en',  tier: 4, cgUp: 2.5e19 },
-  { id: 'cosmic_string',    name: 'Cosmic String Eng.',baseCost: 100e24, cm: 1.048, out: 2.27e22,  res: 'en',  tier: 4, cgUp: 2.5e19 },
+  { id: 'universe_factory', name: 'Universe Factory',  baseCost: 1e24,   cm: 1.045, out: 4.06e20,  res: 'cr',  tier: 4, cgUp: 2e18 },
+  { id: 'entropy_bank',     name: 'Entropy Bank',      baseCost: 50e24,  cm: 1.048, out: 1.42e22,  res: 'cr',  tier: 4, cgUp: 5e18 },
+  { id: 'vacuum_harv',      name: 'Vacuum Harvester',  baseCost: 5e24,   cm: 1.045, out: 1.62e21,  res: 'en',  tier: 4, cgUp: 2e18 },
+  { id: 'cosmic_string',    name: 'Cosmic String Eng.',baseCost: 100e24, cm: 1.048, out: 2.27e22,  res: 'en',  tier: 4, cgUp: 5e18 },
   { id: 'univ_assembly',    name: 'Universal Assembly',baseCost: 5e22,   cm: 1.06,  out: 5e20,     res: 'cg',  tier: 4, eUp: 5e20 },
   // TYPE 5
-  { id: 'multiverse_hold',  name: 'Multiverse Hold.', baseCost: 1e33,    cm: 1.045, out: 1.22e29,  res: 'cr',  tier: 5, cgUp: 2.5e27 },
-  { id: 'big_crunch_gen',   name: 'Big Crunch Gen.',  baseCost: 5e33,    cm: 1.045, out: 4.87e29,  res: 'en',  tier: 5, cgUp: 2.5e27 },
+  { id: 'multiverse_hold',  name: 'Multiverse Hold.', baseCost: 1e33,    cm: 1.045, out: 1.22e29,  res: 'cr',  tier: 5, cgUp: 2e26 },
+  { id: 'big_crunch_gen',   name: 'Big Crunch Gen.',  baseCost: 5e33,    cm: 1.045, out: 4.87e29,  res: 'en',  tier: 5, cgUp: 2e26 },
   { id: 'reality_loom',     name: 'Reality Loom',     baseCost: 5e30,    cm: 1.06,  out: 5e28,     res: 'cg',  tier: 5, eUp: 5e28 },
 ]
 
@@ -77,19 +77,23 @@ function own(s: S, id: string) { return s.bldg[id] || 0 }
 
 function prod(s: S, res: string) {
   let t = 0
-  for (const b of ALL) { if (b.res !== res) continue; const n = own(s, b.id); if (n) t += n * b.out * calcBuildingMultiplier(n) }
+  for (const b of ALL) {
+    if (b.res !== res) continue
+    const n = own(s, b.id)
+    if (n) t += n * b.out * (res === 'cg' ? calcUpkeepMultiplier(n) : calcBuildingMultiplier(n))
+  }
   return t
 }
 
 function eUpkeep(s: S) {
   let t = 0
-  for (const b of ALL) { if (b.res !== 'cg' || !b.eUp) continue; const n = own(s, b.id); if (n) t += n * b.eUp * calcBuildingMultiplier(n) }
+  for (const b of ALL) { if (b.res !== 'cg' || !b.eUp) continue; const n = own(s, b.id); if (n) t += n * b.eUp * calcUpkeepMultiplier(n) }
   return t
 }
 
 function cgCons(s: S) {
   let t = 0
-  for (const b of ALL) { if (b.res === 'cg' || !b.cgUp) continue; const n = own(s, b.id); if (n) t += n * b.cgUp * calcBuildingMultiplier(n) }
+  for (const b of ALL) { if (b.res === 'cg' || !b.cgUp) continue; const n = own(s, b.id); if (n) t += n * b.cgUp * calcUpkeepMultiplier(n) }
   return t
 }
 
