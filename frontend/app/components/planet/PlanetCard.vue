@@ -5,8 +5,8 @@ const props = defineProps<{ systemIndex: number; planetIndex: number }>()
 
 const { state } = useGameState()
 const { getPlanetDef, getPlanetType, getPlanetSize, getPlanetTrait, getDivision } = usePlanetConfig()
-const { getPlanetHousingCap, getPlanetTotalLevels, getPlanetMaxLevels, getPlanetProduction, getPlanetJobStats } = usePlanets()
-const { setPlanetPolicy, upgradeDivision, getDivisionUpgradeCost, canUpgradeDivision, assignDivision, getAssignCost } = usePlanetActions()
+const { getPlanetHousingCap, getPlanetProduction, getPlanetJobStats } = usePlanets()
+const { setPlanetPolicy, upgradeDivision, getDivisionUpgradeCost, canUpgradeDivision, assignDivision, getAssignCost, demolishDivision } = usePlanetActions()
 const { formatNumber } = useNumberFormat()
 
 const planet = computed(() => state.value.systems[props.systemIndex]?.planets[props.planetIndex])
@@ -14,11 +14,8 @@ const planetType = computed(() => planet.value ? getPlanetType(planet.value.type
 const planetSize = computed(() => planet.value ? getPlanetSize(planet.value.size) : undefined)
 
 const housingCap = computed(() => planet.value ? getPlanetHousingCap(planet.value) : 0)
-const totalLevels = computed(() => planet.value ? getPlanetTotalLevels(planet.value) : 0)
-const maxLevels = computed(() => planet.value ? getPlanetMaxLevels(planet.value) : 0)
 const production = computed(() => planet.value ? getPlanetProduction(planet.value) : { credits: 0, cg: 0, trade: 0, research: 0 })
 const jobStats = computed(() => planet.value ? getPlanetJobStats(planet.value) : { totalJobs: 0, filledJobs: 0, unemployed: 0, perDivision: [] })
-const atLevelCap = computed(() => totalLevels.value >= maxLevels.value)
 
 const maintenanceCost = computed(() => {
   // Planet maintenance is handled at system level now
@@ -178,8 +175,8 @@ const sizeLabel = computed(() => {
           <div class="text-[10px] text-zinc-600">jobs</div>
         </div>
         <div>
-          <div class="text-xs font-bold" :class="atLevelCap ? 'text-red-400' : 'text-zinc-300'">{{ totalLevels }}/{{ maxLevels }}</div>
-          <div class="text-[10px] text-zinc-600">levels</div>
+          <div class="text-xs font-bold text-zinc-300">{{ planetSize?.slots ?? 0 }}</div>
+          <div class="text-[10px] text-zinc-600">slots</div>
         </div>
         <div>
           <div class="text-xs font-bold text-amber-400">₢{{ formatNumber(production.credits) }}</div>
@@ -229,18 +226,26 @@ const sizeLabel = computed(() => {
           >
             <div class="flex items-center gap-2">
               <span class="text-xs font-medium" :class="divColorMap[div.type]">{{ getDivision(div.type)?.name ?? div.type }}</span>
-              <span class="text-[10px] text-zinc-500 bg-zinc-800/80 px-1 rounded">Lv.{{ div.level }}</span>
-              <span v-if="div.type !== 'administrative'" class="text-[10px]" :class="(jobStats.perDivision[i]?.filled ?? 0) < div.level ? 'text-amber-500' : 'text-zinc-600'">
+              <span class="text-[10px] text-zinc-500 bg-zinc-800/80 px-1 rounded">{{ div.level }}/10</span>
+              <span v-if="div.type !== 'administrative' && div.type !== 'research'" class="text-[10px]" :class="(jobStats.perDivision[i]?.filled ?? 0) < div.level ? 'text-amber-500' : 'text-zinc-600'">
                 {{ jobStats.perDivision[i]?.filled ?? 0 }}/{{ div.level }}
               </span>
             </div>
-            <button
-              class="text-[11px] px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-zinc-300 disabled:opacity-30"
-              :disabled="!canUpgradeDivision(systemIndex, planetIndex, i)"
-              @click="upgradeDivision(systemIndex, planetIndex, i)"
-            >
-              ₢{{ formatNumber(getDivisionUpgradeCost(systemIndex, planetIndex, i)) }}
-            </button>
+            <div class="flex items-center gap-1">
+              <button
+                class="text-[11px] px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-zinc-300 disabled:opacity-30"
+                :disabled="!canUpgradeDivision(systemIndex, planetIndex, i)"
+                @click="upgradeDivision(systemIndex, planetIndex, i)"
+              >
+                ₢{{ formatNumber(getDivisionUpgradeCost(systemIndex, planetIndex, i)) }}
+              </button>
+              <button
+                class="text-[10px] px-1.5 py-0.5 rounded text-red-400/60 hover:text-red-400 hover:bg-red-500/10"
+                @click="demolishDivision(systemIndex, planetIndex, i)"
+              >
+                x
+              </button>
+            </div>
           </div>
         </div>
       </div>

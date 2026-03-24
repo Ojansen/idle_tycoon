@@ -4,6 +4,7 @@ import {
   DIVISION_REASSIGN_COST_MULT,
   POP_TRANSFER_BASE_COST,
   POP_TRANSFER_TIER_SCALE,
+  MAX_DIVISION_LEVEL,
 } from '~/composables/usePlanetConfig'
 
 export function usePlanetActions() {
@@ -110,10 +111,21 @@ export function usePlanetActions() {
   function canUpgradeDivision(systemIndex: number, planetIndex: number, slotIndex: number): boolean {
     const planet = getPlanet(systemIndex, planetIndex)
     if (!planet) return false
-    // Check planet level cap
-    const { getPlanetTotalLevels, getPlanetMaxLevels } = usePlanets()
-    if (getPlanetTotalLevels(planet) >= getPlanetMaxLevels(planet)) return false
+    const div = planet.divisions[slotIndex]
+    if (!div) return false
+    // Check per-division max level
+    if (div.level >= MAX_DIVISION_LEVEL) return false
     return state.value.credits >= getDivisionUpgradeCost(systemIndex, planetIndex, slotIndex)
+  }
+
+  // ── Demolish a division ──
+
+  function demolishDivision(systemIndex: number, planetIndex: number, slotIndex: number): boolean {
+    const planet = getPlanet(systemIndex, planetIndex)
+    if (!planet) return false
+    if (!planet.divisions[slotIndex]) return false // already empty
+    planet.divisions[slotIndex] = null
+    return true
   }
 
   function upgradeDivision(systemIndex: number, planetIndex: number, slotIndex: number): boolean {
@@ -206,6 +218,7 @@ export function usePlanetActions() {
     upgradeDivision,
     canUpgradeDivision,
     getDivisionUpgradeCost,
+    demolishDivision,
     setPlanetPolicy,
     transferPops,
     canTransferPops,

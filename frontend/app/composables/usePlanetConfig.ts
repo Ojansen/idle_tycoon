@@ -147,6 +147,7 @@ const planets: PlanetDefinition[] = [
 
 export const DIVISION_REASSIGN_COST_MULT = 0.5 // fraction of upgrade cost at current level
 export const MAINTENANCE_PER_DIVISION_LEVEL = 2 // ₢/s per division level (empty or filled)
+export const MAX_DIVISION_LEVEL = 10             // max level per division
 
 // ── Pop growth constants ──
 
