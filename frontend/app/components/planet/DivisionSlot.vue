@@ -2,6 +2,7 @@
 import type { DivisionType } from '~/types/planet'
 
 const props = defineProps<{
+  systemIndex: number
   planetIndex: number
   slotIndex: number
 }>()
@@ -11,12 +12,12 @@ const { assignDivision, upgradeDivision, canUpgradeDivision, getDivisionUpgradeC
 const { getDivision, divisions } = usePlanetConfig()
 const { formatNumber } = useNumberFormat()
 
-const planet = computed(() => state.value.planets?.[props.planetIndex])
+const planet = computed(() => state.value.systems[props.systemIndex]?.planets[props.planetIndex])
 const division = computed(() => planet.value?.divisions[props.slotIndex] ?? null)
 const divDef = computed(() => division.value ? getDivision(division.value.type) : null)
 
-const upgradeCost = computed(() => getDivisionUpgradeCost(props.planetIndex, props.slotIndex))
-const canAffordUpgrade = computed(() => canUpgradeDivision(props.planetIndex, props.slotIndex))
+const upgradeCost = computed(() => getDivisionUpgradeCost(props.systemIndex, props.planetIndex, props.slotIndex))
+const canAffordUpgrade = computed(() => canUpgradeDivision(props.systemIndex, props.planetIndex, props.slotIndex))
 
 const dropdownOpen = ref(false)
 
@@ -29,12 +30,12 @@ function closeDropdown() {
 }
 
 function handleAssign(divType: DivisionType) {
-  assignDivision(props.planetIndex, props.slotIndex, divType)
+  assignDivision(props.systemIndex, props.planetIndex, props.slotIndex, divType)
   closeDropdown()
 }
 
 function handleUpgrade() {
-  upgradeDivision(props.planetIndex, props.slotIndex)
+  upgradeDivision(props.systemIndex, props.planetIndex, props.slotIndex)
 }
 
 const colorMap: Record<string, string> = {
@@ -149,7 +150,7 @@ const hoverMap: Record<string, string> = {
           />
           <span class="flex-1 text-xs text-zinc-200">{{ div.name }}</span>
           <span class="text-[10px] text-zinc-500 tabular-nums shrink-0">
-            ₢{{ formatNumber(getAssignCost(planetIndex, slotIndex, div.type as DivisionType)) }}
+            ₢{{ formatNumber(getAssignCost(systemIndex, planetIndex, slotIndex, div.type as DivisionType)) }}
           </span>
         </button>
       </div>

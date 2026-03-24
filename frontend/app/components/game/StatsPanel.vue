@@ -42,7 +42,7 @@ function formatTime(seconds: number): string {
         </div>
         <div>
           <div class="text-zinc-500">Total Planets</div>
-          <div class="text-white font-medium">{{ state.planets.length }}</div>
+          <div class="text-white font-medium">{{ state.systems.filter(s => s.status === 'claimed').reduce((n, s) => n + s.planets.length, 0) }}</div>
         </div>
         <div>
           <div class="text-zinc-500">Total Pops</div>

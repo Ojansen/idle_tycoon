@@ -157,16 +157,8 @@ export const CG_PER_POP = 0.25            // CG/s consumed per pop
 // ── Composable ──
 
 export function usePlanetConfig() {
-  const { state } = useGameState()
-
-  // getPlanetDef for 'homeworld' uses the player's chosen type
   function getPlanetDef(id: string) {
-    const def = planets.find(p => p.id === id)
-    if (!def) return undefined
-    if (id === 'homeworld') {
-      return { ...def, type: state.value.homeworldType || 'garden' } as typeof def
-    }
-    return def
+    return planets.find(p => p.id === id)
   }
 
   return {

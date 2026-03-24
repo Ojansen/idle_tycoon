@@ -75,6 +75,9 @@ export interface DivisionState {
 export interface PlanetState {
   definitionId: string
   name: string
+  type: PlanetType
+  size: PlanetSize
+  traits: string[]
   pops: number
   divisions: (DivisionState | null)[] // length = slot count from planet size
   policy: PlanetPolicy

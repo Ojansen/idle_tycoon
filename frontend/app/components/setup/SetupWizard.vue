@@ -95,7 +95,7 @@ async function establish() {
 
   // Set homeworld name
   const name = planetName.value.trim() || defaultNames[selectedPlanetType.value] || 'Homeworld'
-  if (state.value.planets[0]) state.value.planets[0].name = name
+  if (state.value.systems[0]?.planets[0]) state.value.systems[0].planets[0].name = name
 
   showAccountId.value = true
 }

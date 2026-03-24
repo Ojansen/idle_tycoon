@@ -1,14 +1,14 @@
 <script setup lang="ts">
 const { state } = useGameState()
 
-const activeTab = defineModel<string>('tab', { default: 'planets' })
+const activeTab = defineModel<string>('tab', { default: 'galaxy' })
 const { pendingAscensionLevels } = useAscensionPerks()
 const hasPendingPerks = computed(() => pendingAscensionLevels.value.length > 0)
 
 const mobileMenuOpen = ref(false)
 
 const tabs = [
-  { key: 'planets', label: 'Planets', icon: 'i-lucide-globe' },
+  { key: 'galaxy', label: 'Galaxy', icon: 'i-lucide-orbit' },
   { key: 'overview', label: 'Overview', icon: 'i-lucide-gauge' },
   { key: 'prestige', label: 'Prestige', icon: 'i-lucide-star' },
   { key: 'research', label: 'Research', icon: 'i-lucide-flask-conical' },

@@ -1,19 +1,48 @@
 import type { GameState, TraitStat, TradePolicy } from '~/types/game'
-import type { PlanetState } from '~/types/planet'
+import type { StarSystemState } from '~/types/galaxy'
 import { KARDASHEV_MILESTONE_GRANTS } from '~/utils/gameMath'
 
-function createDefaultHomeworld(): PlanetState {
+function createHomeSystem(): StarSystemState {
   return {
-    definitionId: 'homeworld',
-    name: 'Terra Nova',
-    pops: 2,
-    divisions: [
-      { type: 'mining', level: 1 },
-      { type: 'industrial', level: 1 },
-      { type: 'administrative', level: 1 },
-      null, // empty 4th slot
-    ],
-    policy: 'balanced',
+    id: 'home_system',
+    seed: 0,
+    tier: 0,
+    status: 'claimed',
+    stars: [{
+      type: 'yellow_dwarf',
+      output: { credits: 3, cg: 0, trade: 0, researchSpeed: 0 },
+      maintenanceCost: 0,
+    }],
+    planets: [{
+      definitionId: 'homeworld',
+      name: 'Terra Nova',
+      type: 'garden',
+      size: 'medium',
+      traits: [],
+      pops: 2,
+      divisions: [
+        { type: 'mining', level: 1 },
+        { type: 'industrial', level: 1 },
+        { type: 'administrative', level: 1 },
+        null,
+      ],
+      policy: 'balanced',
+    }],
+    planetSlots: [{
+      type: 'garden',
+      size: 'medium',
+      traits: [],
+      colonized: true,
+      colonyCost: 0,
+      name: 'Terra Nova',
+    }],
+    traits: [],
+    surveyProgress: 0,
+    surveyTime: 0,
+    surveyCost: 0,
+    claimCost: 0,
+    name: 'Sol',
+    discoveredAt: 0,
   }
 }
 
@@ -28,7 +57,8 @@ function createDefaultState(): GameState {
     credits: 0,
     totalCreditsEarned: 0,
     influence: 0,
-    planets: [createDefaultHomeworld()],
+    systems: [createHomeSystem()],
+    lastDiscoveryTime: now,
     prestigeCount: 0,
     prestigeUpgradesBought: [],
     prestigeRepeatables: {},
@@ -139,6 +169,10 @@ export function useGameState() {
     const cgAvailability = Math.min(1, cgThrottle.value)
     tickPopGrowth(dt, cgAvailability)
 
+    // Galaxy discovery + survey progress
+    const { tickDiscovery } = useGalaxy()
+    tickDiscovery(dt)
+
     // Research & megastructure progress
     const { tickResearch, tickMegastructures } = useResearchActions()
     tickResearch(dt)
@@ -154,8 +188,8 @@ export function useGameState() {
   }
 
   function loadState(saved: GameState) {
-    // Migration: detect old save format (has buildings but no planets)
-    if ((saved as any).buildings && !saved.planets) {
+    // Migration: detect old save format (has buildings or planets[] but no systems)
+    if (((saved as any).buildings || (saved as any).planets) && !saved.systems) {
       // Old save — reset to new system
       const fresh = createDefaultState()
       fresh.setupComplete = saved.setupComplete ?? false
@@ -176,7 +210,8 @@ export function useGameState() {
     }
 
     // New format — apply defaults for any missing fields
-    saved.planets ??= [createDefaultHomeworld()]
+    saved.systems ??= [createHomeSystem()]
+    saved.lastDiscoveryTime ??= Date.now()
     saved.prestigeUpgradesBought ??= []
     saved.prestigeRepeatables ??= {}
     saved.setupComplete ??= false

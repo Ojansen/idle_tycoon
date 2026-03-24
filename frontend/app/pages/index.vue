@@ -6,7 +6,7 @@ const { sample: sampleHistory } = useProductionHistory()
 
 // Game tick - 100ms
 useIntervalFn(() => {
-  tick()
+  try { tick() } catch (e) { console.error('tick error:', e) }
 }, 100)
 
 // Achievement check + production history sampling - every 1s
@@ -18,7 +18,7 @@ useIntervalFn(() => {
 }, 1000)
 
 // Tab state
-const activeTab = ref('planets')
+const activeTab = ref('galaxy')
 
 // Loading state
 const loaded = ref(false)
@@ -40,14 +40,21 @@ watch(
   }
 )
 
+const loadError = ref('')
+
 onMounted(async () => {
-  const { offlineCredits, offlineSeconds } = await loadGame()
-  suppressExistingToasts()
-  if (offlineCredits > 0) {
-    offlineData.value = { credits: offlineCredits, seconds: offlineSeconds }
-    showOfflineModal.value = true
+  try {
+    const { offlineCredits, offlineSeconds } = await loadGame()
+    suppressExistingToasts()
+    if (offlineCredits > 0) {
+      offlineData.value = { credits: offlineCredits, seconds: offlineSeconds }
+      showOfflineModal.value = true
+    }
+    startAutoSave()
+  } catch (e: any) {
+    loadError.value = e.message + '\n' + (e.stack?.substring(0, 300) ?? '')
+    console.error('Load failed:', e)
   }
-  startAutoSave()
   loaded.value = true
 })
 
@@ -58,6 +65,10 @@ function onSetupComplete() {
 
 <template>
   <div class="min-h-screen flex flex-col">
+    <!-- Emergency debug -->
+    <div v-if="!loaded" class="text-white p-4">Loading game...</div>
+    <div v-if="loadError" class="text-red-400 p-4 font-mono text-xs whitespace-pre-wrap">{{ loadError }}</div>
+
     <!-- Show setup wizard if not complete -->
     <template v-if="loaded && !state.setupComplete">
       <SetupWizard @complete="onSetupComplete" />
@@ -75,9 +86,9 @@ function onSetupComplete() {
         <!-- Kardashev Scale (always visible) -->
         <GameKardashevDisplay />
 
-        <!-- Planets tab -->
-        <div v-if="activeTab === 'planets'">
-          <PlanetList />
+        <!-- Galaxy tab -->
+        <div v-if="activeTab === 'galaxy'">
+          <div class="text-white p-4">Galaxy tab is active. Systems: {{ state.systems?.length ?? 'none' }}</div>
         </div>
 
         <!-- Overview tab -->

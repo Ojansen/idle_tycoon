@@ -60,7 +60,7 @@ const statusColor: Record<string, string> = {
         <span class="text-white font-semibold">{{ formatNumber(totalPops) }}</span>
         <span class="text-zinc-500 hidden sm:inline">pops</span>
         <span class="text-zinc-600 hidden sm:inline">·</span>
-        <span class="text-white font-semibold hidden sm:inline">{{ state.planets.length }}</span>
+        <span class="text-white font-semibold hidden sm:inline">{{ state.systems.filter(s => s.status === 'claimed').reduce((n, s) => n + s.planets.length, 0) }}</span>
         <span class="text-zinc-500 hidden sm:inline">planets</span>
       </div>
 

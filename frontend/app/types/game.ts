@@ -1,4 +1,5 @@
-import type { PlanetState, PlanetType } from '~/types/planet'
+import type { PlanetType } from '~/types/planet'
+import type { StarSystemState } from '~/types/galaxy'
 
 export interface PrestigeUpgradeDefinition {
   id: string
@@ -129,7 +130,8 @@ export interface GameState {
   credits: number
   totalCreditsEarned: number
   influence: number
-  planets: PlanetState[]
+  systems: StarSystemState[]
+  lastDiscoveryTime: number
   prestigeCount: number
   prestigeUpgradesBought: string[]
   prestigeRepeatables: Record<string, number>

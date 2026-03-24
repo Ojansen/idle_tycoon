@@ -46,6 +46,17 @@ export function usePlanets(): {
   const { getAscensionMultiplier } = useAscensionPerks()
   const { getResearchMultiplier } = useResearchActions()
 
+  // Helper: collect all colonized planets from all systems
+  function getAllPlanets(): PlanetState[] {
+    const planets: PlanetState[] = []
+    for (const sys of state.value.systems ?? []) {
+      if (sys.status === 'claimed') {
+        for (const p of sys.planets) planets.push(p)
+      }
+    }
+    return planets
+  }
+
   // ── Multiplier stacks ──
 
   function getMultiplierStack(stat: 'creditsMultiplier' | 'cgMultiplier' | 'tradeMultiplier'): number {
@@ -76,9 +87,7 @@ export function usePlanets(): {
   // ── Per-planet computations ──
 
   function getPlanetHousingCap(planet: PlanetState): number {
-    const def = getPlanetDef(planet.definitionId)
-    if (!def) return 0
-    const sizeDef = getPlanetSize(def.size)
+    const sizeDef = getPlanetSize(planet.size)
     if (!sizeDef) return 0
 
     let adminLevels = 0
@@ -102,17 +111,13 @@ export function usePlanets(): {
   }
 
   function getPlanetMaxLevels(planet: PlanetState): number {
-    const def = getPlanetDef(planet.definitionId)
-    if (!def) return 0
-    const sizeDef = getPlanetSize(def.size)
+    const sizeDef = getPlanetSize(planet.size)
     return sizeDef?.maxLevels ?? 0
   }
 
   function getPlanetTraitModifier(planet: PlanetState, stat: 'credits' | 'cg' | 'popGrowth' | 'maintenance' | 'trade'): number {
-    const def = getPlanetDef(planet.definitionId)
-    if (!def) return 1
     let mod = 1
-    for (const traitId of def.traits) {
+    for (const traitId of planet.traits) {
       const trait = getPlanetTrait(traitId)
       if (!trait) continue
       for (const effect of trait.effects) {
@@ -123,9 +128,7 @@ export function usePlanets(): {
   }
 
   function getPlanetTypeBonus(planet: PlanetState, stat: 'credits' | 'cg' | 'popGrowth'): number {
-    const def = getPlanetDef(planet.definitionId)
-    if (!def) return 1
-    const typeDef = getPlanetType(def.type)
+    const typeDef = getPlanetType(planet.type)
     if (!typeDef) return 1
     return typeDef.bonuses[stat]
   }
@@ -197,7 +200,7 @@ export function usePlanets(): {
 
   const totalPops = computed(() => {
     let total = 0
-    for (const planet of state.value.planets || []) {
+    for (const planet of getAllPlanets()) {
       total += planet.pops
     }
     return total
@@ -205,7 +208,7 @@ export function usePlanets(): {
 
   const totalDivisionLevels = computed(() => {
     let total = 0
-    for (const planet of state.value.planets || []) {
+    for (const planet of getAllPlanets()) {
       for (const div of planet.divisions) {
         if (div) total += div.level
       }
@@ -215,7 +218,7 @@ export function usePlanets(): {
 
   const grossCreditsPerSecond = computed(() => {
     let total = 0
-    for (const planet of state.value.planets || []) {
+    for (const planet of getAllPlanets()) {
       total += getPlanetProduction(planet).credits
     }
     return total * getMultiplierStack('creditsMultiplier')
@@ -223,7 +226,7 @@ export function usePlanets(): {
 
   const grossCgPerSecond = computed(() => {
     let total = 0
-    for (const planet of state.value.planets || []) {
+    for (const planet of getAllPlanets()) {
       total += getPlanetProduction(planet).cg
     }
     return total * getMultiplierStack('cgMultiplier')
@@ -231,7 +234,7 @@ export function usePlanets(): {
 
   const rawTradeValue = computed(() => {
     let total = 0
-    for (const planet of state.value.planets || []) {
+    for (const planet of getAllPlanets()) {
       const prod = getPlanetProduction(planet)
       total += prod.trade
       total += planet.pops * 0.05
@@ -241,7 +244,7 @@ export function usePlanets(): {
 
   const totalMaintenance = computed(() => {
     let total = 0
-    for (const planet of state.value.planets || []) {
+    for (const planet of getAllPlanets()) {
       const def = getPlanetDef(planet.definitionId)
       if (!def) continue
       const typeDef = getPlanetType(def.type)
@@ -260,7 +263,7 @@ export function usePlanets(): {
   // CG consumption: sum of CG per filled job (scales with level) + unemployed base + admin upkeep
   const baseCgConsumption: ComputedRef<number> = computed(() => {
     let total = 0
-    for (const planet of state.value.planets || []) {
+    for (const planet of getAllPlanets()) {
       const popDist = getPlanetPopDistribution(planet)
 
       for (let i = 0; i < planet.divisions.length; i++) {
@@ -290,7 +293,7 @@ export function usePlanets(): {
   function tickPopGrowth(dt: number, cgAvailability: number) {
     const growthMult = getPopGrowthMultiplier()
 
-    for (const planet of state.value.planets || []) {
+    for (const planet of getAllPlanets()) {
       const housingCap = getPlanetHousingCap(planet)
       const planetGrowthMod = getPlanetTypeBonus(planet, 'popGrowth') * getPlanetTraitModifier(planet, 'popGrowth')
 

@@ -10,6 +10,12 @@ export function usePlanetActions() {
   const { state } = useGameState()
   const { getPlanetDef, getPlanetSize, getDivision, planets: planetDefs } = usePlanetConfig()
 
+  // ── Helper: locate planet by (systemIndex, planetIndex) ──
+
+  function getPlanet(systemIndex: number, planetIndex: number): PlanetState | undefined {
+    return state.value.systems[systemIndex]?.planets[planetIndex]
+  }
+
   // ── Colonize a new planet ──
 
   function getColonyCost(planetDefId: string): number {
@@ -26,7 +32,10 @@ export function usePlanetActions() {
     const { kardashevLevel } = useGameState()
     if (kardashevLevel.value < def.unlockKardashev) return false
     // Check not already colonized
-    if ((state.value.planets || []).some(p => p.definitionId === planetDefId)) return false
+    const alreadyColonized = state.value.systems.some(sys =>
+      sys.planets.some(p => p.definitionId === planetDefId)
+    )
+    if (alreadyColonized) return false
     // Check can afford
     return state.value.credits >= getColonyCost(planetDefId)
   }
@@ -42,20 +51,24 @@ export function usePlanetActions() {
     const newPlanet: PlanetState = {
       definitionId: def.id,
       name: def.name,
-      pops: 1, // start with 1 pop
+      type: def.type,
+      size: def.size,
+      traits: [...(def.traits || [])],
+      pops: 1,
       divisions: new Array(sizeDef.slots).fill(null),
       policy: 'balanced',
     }
 
-    if (!state.value.planets) state.value.planets = []
-    state.value.planets.push(newPlanet)
+    // Add planet to the first claimed system (homeworld system)
+    const homeSystem = state.value.systems.find(sys => sys.status === 'claimed')
+    if (homeSystem) homeSystem.planets.push(newPlanet)
     return true
   }
 
   // ── Assign a division to a slot ──
 
-  function getAssignCost(planetIndex: number, slotIndex: number, divisionType: DivisionType): number {
-    const planet = state.value.planets?.[planetIndex]
+  function getAssignCost(systemIndex: number, planetIndex: number, slotIndex: number, divisionType: DivisionType): number {
+    const planet = getPlanet(systemIndex, planetIndex)
     if (!planet) return Infinity
     const existing = planet.divisions[slotIndex]
     if (!existing) {
@@ -69,12 +82,12 @@ export function usePlanetActions() {
     return Math.floor(calcDivisionUpgradeCost(divDef.baseUpgradeCost, divDef.costMultiplier, existing.level) * DIVISION_REASSIGN_COST_MULT)
   }
 
-  function assignDivision(planetIndex: number, slotIndex: number, divisionType: DivisionType): boolean {
-    const planet = state.value.planets?.[planetIndex]
+  function assignDivision(systemIndex: number, planetIndex: number, slotIndex: number, divisionType: DivisionType): boolean {
+    const planet = getPlanet(systemIndex, planetIndex)
     if (!planet) return false
     if (slotIndex < 0 || slotIndex >= planet.divisions.length) return false
 
-    const cost = getAssignCost(planetIndex, slotIndex, divisionType)
+    const cost = getAssignCost(systemIndex, planetIndex, slotIndex, divisionType)
     if (state.value.credits < cost) return false
 
     state.value.credits -= cost
@@ -84,8 +97,8 @@ export function usePlanetActions() {
 
   // ── Upgrade a division ──
 
-  function getDivisionUpgradeCost(planetIndex: number, slotIndex: number): number {
-    const planet = state.value.planets?.[planetIndex]
+  function getDivisionUpgradeCost(systemIndex: number, planetIndex: number, slotIndex: number): number {
+    const planet = getPlanet(systemIndex, planetIndex)
     if (!planet) return Infinity
     const div = planet.divisions[slotIndex]
     if (!div) return Infinity
@@ -94,21 +107,21 @@ export function usePlanetActions() {
     return calcDivisionUpgradeCost(divDef.baseUpgradeCost, divDef.costMultiplier, div.level)
   }
 
-  function canUpgradeDivision(planetIndex: number, slotIndex: number): boolean {
-    const planet = state.value.planets[planetIndex]
+  function canUpgradeDivision(systemIndex: number, planetIndex: number, slotIndex: number): boolean {
+    const planet = getPlanet(systemIndex, planetIndex)
     if (!planet) return false
     // Check planet level cap
     const { getPlanetTotalLevels, getPlanetMaxLevels } = usePlanets()
     if (getPlanetTotalLevels(planet) >= getPlanetMaxLevels(planet)) return false
-    return state.value.credits >= getDivisionUpgradeCost(planetIndex, slotIndex)
+    return state.value.credits >= getDivisionUpgradeCost(systemIndex, planetIndex, slotIndex)
   }
 
-  function upgradeDivision(planetIndex: number, slotIndex: number): boolean {
-    if (!canUpgradeDivision(planetIndex, slotIndex)) return false
-    const planet = state.value.planets[planetIndex]
+  function upgradeDivision(systemIndex: number, planetIndex: number, slotIndex: number): boolean {
+    if (!canUpgradeDivision(systemIndex, planetIndex, slotIndex)) return false
+    const planet = getPlanet(systemIndex, planetIndex)
     const div = planet?.divisions[slotIndex]
     if (!planet || !div) return false
-    const cost = getDivisionUpgradeCost(planetIndex, slotIndex)
+    const cost = getDivisionUpgradeCost(systemIndex, planetIndex, slotIndex)
     state.value.credits -= cost
     div.level++
     return true
@@ -116,18 +129,23 @@ export function usePlanetActions() {
 
   // ── Set planet policy ──
 
-  function setPlanetPolicy(planetIndex: number, policy: PlanetPolicy): boolean {
-    const planet = state.value.planets?.[planetIndex]
+  function setPlanetPolicy(systemIndex: number, planetIndex: number, policy: PlanetPolicy): boolean {
+    const planet = getPlanet(systemIndex, planetIndex)
     if (!planet) return false
     planet.policy = policy
     return true
   }
 
   // ── Transfer pops between planets ──
+  // fromKey / toKey are { systemIndex, planetIndex } objects
 
-  function getTransferCost(fromIndex: number, toIndex: number, popCount: number): number {
-    const fromPlanet = state.value.planets?.[fromIndex]
-    const toPlanet = state.value.planets?.[toIndex]
+  function getTransferCost(
+    fromSystemIndex: number, fromPlanetIndex: number,
+    toSystemIndex: number, toPlanetIndex: number,
+    popCount: number
+  ): number {
+    const fromPlanet = getPlanet(fromSystemIndex, fromPlanetIndex)
+    const toPlanet = getPlanet(toSystemIndex, toPlanetIndex)
     if (!fromPlanet || !toPlanet) return Infinity
     const fromDef = getPlanetDef(fromPlanet.definitionId)
     const toDef = getPlanetDef(toPlanet.definitionId)
@@ -136,21 +154,29 @@ export function usePlanetActions() {
     return calcTransferCost(popCount, POP_TRANSFER_BASE_COST, POP_TRANSFER_TIER_SCALE, tierDiff)
   }
 
-  function canTransferPops(fromIndex: number, toIndex: number, popCount: number): boolean {
-    if (fromIndex === toIndex) return false
-    const fromPlanet = state.value.planets?.[fromIndex]
+  function canTransferPops(
+    fromSystemIndex: number, fromPlanetIndex: number,
+    toSystemIndex: number, toPlanetIndex: number,
+    popCount: number
+  ): boolean {
+    if (fromSystemIndex === toSystemIndex && fromPlanetIndex === toPlanetIndex) return false
+    const fromPlanet = getPlanet(fromSystemIndex, fromPlanetIndex)
     if (!fromPlanet || fromPlanet.pops < popCount || popCount <= 0) return false
     // Must leave at least 1 pop
     if (fromPlanet.pops - popCount < 1) return false
-    return state.value.credits >= getTransferCost(fromIndex, toIndex, popCount)
+    return state.value.credits >= getTransferCost(fromSystemIndex, fromPlanetIndex, toSystemIndex, toPlanetIndex, popCount)
   }
 
-  function transferPops(fromIndex: number, toIndex: number, popCount: number): boolean {
-    if (!canTransferPops(fromIndex, toIndex, popCount)) return false
-    const from = state.value.planets[fromIndex]
-    const to = state.value.planets[toIndex]
+  function transferPops(
+    fromSystemIndex: number, fromPlanetIndex: number,
+    toSystemIndex: number, toPlanetIndex: number,
+    popCount: number
+  ): boolean {
+    if (!canTransferPops(fromSystemIndex, fromPlanetIndex, toSystemIndex, toPlanetIndex, popCount)) return false
+    const from = getPlanet(fromSystemIndex, fromPlanetIndex)
+    const to = getPlanet(toSystemIndex, toPlanetIndex)
     if (!from || !to) return false
-    const cost = getTransferCost(fromIndex, toIndex, popCount)
+    const cost = getTransferCost(fromSystemIndex, fromPlanetIndex, toSystemIndex, toPlanetIndex, popCount)
     state.value.credits -= cost
     from.pops -= popCount
     to.pops += popCount
@@ -161,7 +187,9 @@ export function usePlanetActions() {
 
   const availablePlanets = computed(() => {
     const { kardashevLevel } = useGameState()
-    const colonized = new Set((state.value.planets || []).map(p => p.definitionId))
+    const colonized = new Set(
+      state.value.systems.flatMap(sys => sys.planets.map(p => p.definitionId))
+    )
     return planetDefs.filter(p => {
       if (colonized.has(p.id)) return false
       if (p.unlockKardashev > kardashevLevel.value) return false

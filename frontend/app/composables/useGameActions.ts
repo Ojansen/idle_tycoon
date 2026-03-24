@@ -19,21 +19,39 @@ export function useGameActions() {
     const influenceGain = getPrestigeInfluenceGain()
     const now = Date.now()
 
-    // Create default homeworld for new run
-    const defaultHomeworld = {
-      definitionId: 'homeworld',
-      name: 'Terra Nova',
-      pops: 2,
-      divisions: [
-        { type: 'mining' as const, level: 1 },
-        { type: 'industrial' as const, level: 1 },
-        { type: 'administrative' as const, level: 1 },
-        null,
-      ],
-      policy: 'balanced' as const,
+    // Create default home system for new run
+    const homeSystem = {
+      id: 'home_system',
+      seed: 0,
+      tier: 0,
+      status: 'claimed' as const,
+      stars: [{ type: 'yellow_dwarf' as const, output: { credits: 3, cg: 0, trade: 0, researchSpeed: 0 }, maintenanceCost: 0 }],
+      planets: [{
+        definitionId: 'homeworld',
+        name: 'Terra Nova',
+        type: 'garden' as const,
+        size: 'medium' as const,
+        traits: [] as string[],
+        pops: 2,
+        divisions: [
+          { type: 'mining' as const, level: 1 },
+          { type: 'industrial' as const, level: 1 },
+          { type: 'administrative' as const, level: 1 },
+          null,
+        ],
+        policy: 'balanced' as const,
+      }],
+      planetSlots: [{ type: 'garden' as const, size: 'medium' as const, traits: [] as string[], colonized: true, colonyCost: 0, name: 'Terra Nova' }],
+      traits: [] as string[],
+      surveyProgress: 0,
+      surveyTime: 0,
+      surveyCost: 0,
+      claimCost: 0,
+      name: 'Sol',
+      discoveredAt: 0,
     }
 
-    // Atomic replacement — ensures Vue detects the change and all computeds recompute
+    // Atomic replacement
     state.value = {
       setupComplete: state.value.setupComplete,
       companyName: state.value.companyName,
@@ -43,7 +61,8 @@ export function useGameActions() {
       // Reset
       credits: 0,
       totalCreditsEarned: 0,
-      planets: [defaultHomeworld],
+      systems: [homeSystem],
+      lastDiscoveryTime: now,
       // Kept
       influence: state.value.influence + influenceGain,
       prestigeCount: state.value.prestigeCount + 1,
@@ -76,7 +95,7 @@ export function useGameActions() {
       const upgrade = prestigeUpgrades.find(u => u.id === upgradeId)
       if (upgrade && upgrade.effect.type === 'quickStart') {
         // Boost homeworld division levels
-        const homeworld = state.value.planets[0]
+        const homeworld = state.value.systems[0]?.planets[0]
         if (homeworld) {
           for (const div of homeworld.divisions) {
             if (div) {

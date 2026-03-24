@@ -6,13 +6,13 @@ onMounted(async () => {
 
   try {
     const { state } = useGameState()
-    r.push('gameState OK, setupComplete=' + state.value.setupComplete + ', planets=' + (state.value.planets?.length ?? 'none'))
+    r.push('gameState OK, setupComplete=' + state.value.setupComplete + ', planets=' + state.value.systems.filter(s => s.status === 'claimed').reduce((n, s) => n + s.planets.length, 0))
 
     // Try loading saved game
     const { loadGame } = useGamePersistence()
     const loaded = await loadGame()
     r.push('loadGame OK, offlineCredits=' + loaded.offlineCredits)
-    r.push('after load: setupComplete=' + state.value.setupComplete + ', planets=' + (state.value.planets?.length ?? 'none'))
+    r.push('after load: setupComplete=' + state.value.setupComplete + ', planets=' + state.value.systems.filter(s => s.status === 'claimed').reduce((n, s) => n + s.planets.length, 0))
 
     // If old save detected, show traits
     r.push('companyTraits: ' + JSON.stringify(state.value.companyTraits))

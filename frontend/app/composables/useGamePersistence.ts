@@ -68,8 +68,8 @@ export function useGamePersistence() {
 
     // Watch for planet/division changes and prestige events, save shortly after
     watch(() => [
-      state.value.planets.length,
-      state.value.planets.reduce((sum, p) => sum + p.divisions.filter(d => d !== null).length, 0),
+      (state.value.systems ?? []).filter(s => s.status === 'claimed').reduce((n, s) => n + s.planets.length, 0),
+      (state.value.systems ?? []).flatMap(s => s.planets).reduce((sum, p) => sum + p.divisions.filter(d => d !== null).length, 0),
       state.value.prestigeUpgradesBought.length,
       state.value.prestigeCount
     ], () => {

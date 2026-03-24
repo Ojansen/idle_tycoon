@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{
+  fromSystemIndex: number
   fromPlanetIndex: number
 }>()
 
@@ -11,20 +12,33 @@ const { formatNumber } = useNumberFormat()
 
 // ── Source planet ──
 
-const sourcePlanet = computed(() => state.value.planets?.[props.fromPlanetIndex])
+const sourcePlanet = computed(() => state.value.systems[props.fromSystemIndex]?.planets[props.fromPlanetIndex])
 
 // Maximum pops that can be sent (must leave at least 1 behind)
 const maxTransferable = computed(() => Math.max(0, (sourcePlanet.value?.pops ?? 1) - 1))
 
 // ── Target planet selection ──
 
-const targetPlanets = computed(() =>
-  (state.value.planets ?? [])
-    .map((planet, index) => ({ planet, index }))
-    .filter(({ index }) => index !== props.fromPlanetIndex)
-)
+interface TargetEntry {
+  planet: typeof sourcePlanet.value
+  systemIndex: number
+  planetIndex: number
+}
 
-const selectedTargetIndex = ref<number | null>(null)
+const targetPlanets = computed((): TargetEntry[] => {
+  const results: TargetEntry[] = []
+  for (let si = 0; si < state.value.systems.length; si++) {
+    const sys = state.value.systems[si]
+    if (!sys || sys.status !== 'claimed') continue
+    for (let pi = 0; pi < sys.planets.length; pi++) {
+      if (si === props.fromSystemIndex && pi === props.fromPlanetIndex) continue
+      results.push({ planet: sys.planets[pi]!, systemIndex: si, planetIndex: pi })
+    }
+  }
+  return results
+})
+
+const selectedTarget = ref<{ systemIndex: number; planetIndex: number } | null>(null)
 
 // ── Pop count ──
 
@@ -38,21 +52,36 @@ watch([maxTransferable, open], () => {
 // Reset state when modal opens
 watch(open, (isOpen) => {
   if (isOpen) {
-    selectedTargetIndex.value = targetPlanets.value[0]?.index ?? null
+    const first = targetPlanets.value[0]
+    selectedTarget.value = first ? { systemIndex: first.systemIndex, planetIndex: first.planetIndex } : null
     popCount.value = 1
   }
 })
 
+function isSelected(entry: TargetEntry): boolean {
+  return selectedTarget.value !== null
+    && selectedTarget.value.systemIndex === entry.systemIndex
+    && selectedTarget.value.planetIndex === entry.planetIndex
+}
+
 // ── Cost & validity ──
 
 const transferCost = computed(() => {
-  if (selectedTargetIndex.value === null) return 0
-  return getTransferCost(props.fromPlanetIndex, selectedTargetIndex.value, popCount.value)
+  if (!selectedTarget.value) return 0
+  return getTransferCost(
+    props.fromSystemIndex, props.fromPlanetIndex,
+    selectedTarget.value.systemIndex, selectedTarget.value.planetIndex,
+    popCount.value
+  )
 })
 
 const canTransfer = computed(() => {
-  if (selectedTargetIndex.value === null) return false
-  return canTransferPops(props.fromPlanetIndex, selectedTargetIndex.value, popCount.value)
+  if (!selectedTarget.value) return false
+  return canTransferPops(
+    props.fromSystemIndex, props.fromPlanetIndex,
+    selectedTarget.value.systemIndex, selectedTarget.value.planetIndex,
+    popCount.value
+  )
 })
 
 // ── Actions ──
@@ -71,8 +100,12 @@ function clampPopCount() {
 }
 
 function confirm() {
-  if (selectedTargetIndex.value === null) return
-  const success = transferPops(props.fromPlanetIndex, selectedTargetIndex.value, popCount.value)
+  if (!selectedTarget.value) return
+  const success = transferPops(
+    props.fromSystemIndex, props.fromPlanetIndex,
+    selectedTarget.value.systemIndex, selectedTarget.value.planetIndex,
+    popCount.value
+  )
   if (success) open.value = false
 }
 
@@ -104,28 +137,28 @@ function cancel() {
           </div>
           <div v-else class="space-y-1.5">
             <button
-              v-for="{ planet, index } in targetPlanets"
-              :key="index"
+              v-for="entry in targetPlanets"
+              :key="`${entry.systemIndex}-${entry.planetIndex}`"
               class="w-full flex items-center gap-3 px-3 py-2 rounded-lg border transition-colors text-left"
-              :class="selectedTargetIndex === index
+              :class="isSelected(entry)
                 ? 'border-amber-500/50 bg-amber-500/10'
                 : 'border-white/5 bg-white/[0.02] hover:bg-white/[0.05]'"
-              @click="selectedTargetIndex = index"
+              @click="selectedTarget = { systemIndex: entry.systemIndex, planetIndex: entry.planetIndex }"
             >
               <UIcon
                 name="i-lucide-globe"
                 class="shrink-0"
-                :class="selectedTargetIndex === index ? 'text-amber-400' : 'text-zinc-500'"
+                :class="isSelected(entry) ? 'text-amber-400' : 'text-zinc-500'"
               />
               <span
                 class="text-sm font-medium flex-1"
-                :class="selectedTargetIndex === index ? 'text-white' : 'text-zinc-300'"
+                :class="isSelected(entry) ? 'text-white' : 'text-zinc-300'"
               >
-                {{ planet.name }}
+                {{ entry.planet?.name }}
               </span>
-              <span class="text-xs text-zinc-500 tabular-nums">{{ planet.pops }} pops</span>
+              <span class="text-xs text-zinc-500 tabular-nums">{{ entry.planet?.pops }} pops</span>
               <UIcon
-                v-if="selectedTargetIndex === index"
+                v-if="isSelected(entry)"
                 name="i-lucide-check"
                 class="text-amber-400 shrink-0"
               />
@@ -176,7 +209,7 @@ function cancel() {
 
         <!-- Insufficient credits warning -->
         <p
-          v-if="selectedTargetIndex !== null && !canTransfer && maxTransferable > 0"
+          v-if="selectedTarget !== null && !canTransfer && maxTransferable > 0"
           class="text-xs text-red-400 flex items-center gap-1.5"
         >
           <UIcon name="i-lucide-alert-circle" />

@@ -43,10 +43,11 @@ export function useUpkeep() {
     return repeatable * research
   }
 
-  // CG production (gross, from planets)
+  // CG production (gross, from planets + stars)
   const effectiveCgProduction = computed(() => {
     const { tradeConversion } = useTrade()
-    return cgPerSecond.value + tradeConversion.value.consumerGoods
+    const { totalStarCg } = useGalaxy()
+    return cgPerSecond.value + totalStarCg.value + tradeConversion.value.consumerGoods
   })
 
   // CG consumption: baseCgConsumption × empirePressure × maintenanceReduction + megastructure CG upkeep
@@ -88,12 +89,15 @@ export function useUpkeep() {
     return upkeep
   })
 
-  // Net ₢/s = gross production × cgThrottle + trade conversion - maintenance - mega upkeep
+  // Net ₢/s = (planet production × cgThrottle) + star income + trade - planet maintenance - system maintenance - mega upkeep
   const netCreditsPerSecond = computed(() => {
     const { tradeConversion } = useTrade()
+    const { totalStarCredits, totalSystemMaintenance } = useGalaxy()
     return grossCreditsPerSecond.value * cgThrottle.value
+      + totalStarCredits.value
       + tradeConversion.value.credits
       - totalMaintenance.value
+      - totalSystemMaintenance.value
       - megaCreditsUpkeep.value
     // Can go negative! Empire running at a loss.
   })

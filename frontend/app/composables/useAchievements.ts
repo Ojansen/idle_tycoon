@@ -18,15 +18,29 @@ const achievements: AchievementDefinition[] = [
   { id: 'credits_1q', name: 'Quadrillionaire', description: 'Earn 1Qa total credits', icon: 'i-lucide-banknote', category: 'Credits', check: s => s.totalCreditsEarned >= 1e15 },
 
   // Planets
-  { id: 'first_colony', name: 'First Colony', description: 'Colonize your first planet beyond the homeworld', icon: 'i-lucide-globe', category: 'Planets', check: s => s.planets.length >= 2 },
-  { id: 'five_planets', name: 'Interstellar Empire', description: 'Have 5 planets under your control', icon: 'i-lucide-orbit', category: 'Planets', check: s => s.planets.length >= 5 },
+  {
+    id: 'first_colony',
+    name: 'First Colony',
+    description: 'Colonize your first planet beyond the homeworld',
+    icon: 'i-lucide-globe',
+    category: 'Planets',
+    check: (s) => s.systems.filter(sys => sys.status === 'claimed').reduce((n, sys) => n + sys.planets.length, 0) >= 2
+  },
+  {
+    id: 'five_planets',
+    name: 'Interstellar Empire',
+    description: 'Have 5 planets under your control',
+    icon: 'i-lucide-orbit',
+    category: 'Planets',
+    check: (s) => s.systems.filter(sys => sys.status === 'claimed').reduce((n, sys) => n + sys.planets.length, 0) >= 5
+  },
   {
     id: 'division_10',
     name: 'Master Division',
     description: 'Upgrade any division to level 10',
     icon: 'i-lucide-building-2',
     category: 'Planets',
-    check: (s) => s.planets.some(p => p.divisions.some(d => d !== null && d.level >= 10))
+    check: (s) => s.systems.some(sys => sys.planets.some(p => p.divisions.some(d => d !== null && d.level >= 10)))
   },
   {
     id: 'full_planet',
@@ -34,7 +48,7 @@ const achievements: AchievementDefinition[] = [
     description: 'Fill all division slots on a planet',
     icon: 'i-lucide-check-circle',
     category: 'Planets',
-    check: (s) => s.planets.some(p => p.divisions.length > 0 && p.divisions.every(d => d !== null))
+    check: (s) => s.systems.some(sys => sys.planets.some(p => p.divisions.length > 0 && p.divisions.every(d => d !== null)))
   },
 
   // Kardashev

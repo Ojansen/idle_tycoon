@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PlanetPolicy } from '~/types/planet'
 
-const props = defineProps<{ planetIndex: number }>()
+const props = defineProps<{ systemIndex: number; planetIndex: number }>()
 
 const { state } = useGameState()
 const { getPlanetDef, getPlanetType, getPlanetSize, getPlanetTrait, getDivision } = usePlanetConfig()
@@ -9,10 +9,9 @@ const { getPlanetHousingCap, getPlanetTotalLevels, getPlanetMaxLevels, getPlanet
 const { setPlanetPolicy, upgradeDivision, getDivisionUpgradeCost, canUpgradeDivision, assignDivision, getAssignCost } = usePlanetActions()
 const { formatNumber } = useNumberFormat()
 
-const planet = computed(() => state.value.planets[props.planetIndex])
-const def = computed(() => planet.value ? getPlanetDef(planet.value.definitionId) : undefined)
-const planetType = computed(() => def.value ? getPlanetType(def.value.type) : undefined)
-const planetSize = computed(() => def.value ? getPlanetSize(def.value.size) : undefined)
+const planet = computed(() => state.value.systems[props.systemIndex]?.planets[props.planetIndex])
+const planetType = computed(() => planet.value ? getPlanetType(planet.value.type) : undefined)
+const planetSize = computed(() => planet.value ? getPlanetSize(planet.value.size) : undefined)
 
 const housingCap = computed(() => planet.value ? getPlanetHousingCap(planet.value) : 0)
 const totalLevels = computed(() => planet.value ? getPlanetTotalLevels(planet.value) : 0)
@@ -22,13 +21,13 @@ const jobStats = computed(() => planet.value ? getPlanetJobStats(planet.value) :
 const atLevelCap = computed(() => totalLevels.value >= maxLevels.value)
 
 const maintenanceCost = computed(() => {
-  if (!def.value || !planetType.value) return 0
-  return def.value.maintenanceCost * planetType.value.maintenanceModifier
+  // Planet maintenance is handled at system level now
+  return 0
 })
 
 const traits = computed(() => {
-  if (!def.value) return []
-  return def.value.traits.map(id => getPlanetTrait(id)).filter(Boolean)
+  if (!planet.value) return []
+  return planet.value.traits.map(id => getPlanetTrait(id)).filter(Boolean)
 })
 
 // Planet type bonuses — only show non-1.0 values
@@ -117,7 +116,7 @@ const sizeLabel = computed(() => {
 </script>
 
 <template>
-  <div v-if="planet && def && planetType && planetSize"
+  <div v-if="planet && planetType && planetSize"
     class="rounded-xl overflow-hidden border"
     :class="borderMap[planetType.color] || 'border-white/10'"
   >
@@ -210,10 +209,10 @@ const sizeLabel = computed(() => {
                 :key="dt"
                 class="w-full flex items-center justify-between px-2 py-1.5 rounded text-xs hover:bg-white/5"
                 :class="divColorMap[dt]"
-                @click="assignDivision(planetIndex, i, dt); openSlot = null"
+                @click="assignDivision(systemIndex, planetIndex, i, dt); openSlot = null"
               >
                 <span>{{ getDivision(dt)?.name ?? dt }}</span>
-                <span class="text-zinc-500">₢{{ formatNumber(getAssignCost(planetIndex, i, dt)) }}</span>
+                <span class="text-zinc-500">₢{{ formatNumber(getAssignCost(systemIndex, planetIndex, i, dt)) }}</span>
               </button>
             </div>
           </div>
@@ -231,10 +230,10 @@ const sizeLabel = computed(() => {
             </div>
             <button
               class="text-[11px] px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-zinc-300 disabled:opacity-30"
-              :disabled="!canUpgradeDivision(planetIndex, i)"
-              @click="upgradeDivision(planetIndex, i)"
+              :disabled="!canUpgradeDivision(systemIndex, planetIndex, i)"
+              @click="upgradeDivision(systemIndex, planetIndex, i)"
             >
-              ₢{{ formatNumber(getDivisionUpgradeCost(planetIndex, i)) }}
+              ₢{{ formatNumber(getDivisionUpgradeCost(systemIndex, planetIndex, i)) }}
             </button>
           </div>
         </div>
@@ -250,13 +249,13 @@ const sizeLabel = computed(() => {
             :class="planet.policy === p.id
               ? 'bg-violet-500/20 text-violet-300 border border-violet-500/40'
               : 'text-zinc-600 hover:text-zinc-300 border border-transparent'"
-            @click="setPlanetPolicy(planetIndex, p.id)"
+            @click="setPlanetPolicy(systemIndex, planetIndex, p.id)"
           >
             {{ p.label }}
           </button>
         </div>
         <button
-          v-if="state.planets.length > 1"
+          v-if="state.systems.filter(s => s.status === 'claimed').reduce((n, s) => n + s.planets.length, 0) > 1"
           class="text-[11px] text-zinc-500 hover:text-zinc-300"
           @click="showTransfer = true"
         >Transfer</button>
@@ -264,6 +263,6 @@ const sizeLabel = computed(() => {
     </div>
 
     <!-- Pop Transfer Modal -->
-    <PlanetPopTransferModal v-model:open="showTransfer" :from-planet-index="planetIndex" />
+    <PlanetPopTransferModal v-model:open="showTransfer" :from-system-index="systemIndex" :from-planet-index="planetIndex" />
   </div>
 </template>
