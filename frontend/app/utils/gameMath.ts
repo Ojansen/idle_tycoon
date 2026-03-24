@@ -46,25 +46,18 @@ export function calcUpkeepMultiplier(owned: number): number {
   return Math.pow(calcBuildingMultiplier(owned), UPKEEP_DAMPENING)
 }
 
-// ── Empire size (composite metric — buildings, megastructures, pops) ──
-export const EMPIRE_SIZE_PER_BUILDING = 0.5
-export const EMPIRE_SIZE_PER_MEGASTRUCTURE = 5
-export const EMPIRE_SIZE_PER_POP_RATE = 0.01  // 1 empire size per 100 autoclick/s
+// ── Empire size (Stellaris-style: sum of stuff) ──
+export const BASE_ADMIN_CAP = 10
+export const SPRAWL_PENALTY_PER_POINT = 0.02  // +2% maintenance per point over cap
 
-export function calcEmpireSize(totalBuildings: number, completedMegastructures: number, autoclickPerSecond: number): number {
-  return totalBuildings * EMPIRE_SIZE_PER_BUILDING
-    + completedMegastructures * EMPIRE_SIZE_PER_MEGASTRUCTURE
-    + autoclickPerSecond * EMPIRE_SIZE_PER_POP_RATE
+export function calcEmpireSize(claimedSystems: number, colonizedPlanets: number, totalDivisionLevels: number, totalPops: number): number {
+  return claimedSystems + colonizedPlanets + totalDivisionLevels + Math.floor(totalPops)
 }
 
-// ── Empire scale pressure on CG consumption (logarithmic) ──
-// Grows steadily but never explodes — suitable for idle games scaling to 10k+ buildings
-export const EMPIRE_PRESSURE_THRESHOLD = 25    // empire size below this = no pressure
-export const EMPIRE_PRESSURE_LOG_SCALE = 0.15  // controls steepness of log curve
-
-export function calcEmpirePressure(empireSize: number): number {
-  if (empireSize <= EMPIRE_PRESSURE_THRESHOLD) return 1
-  return 1 + EMPIRE_PRESSURE_LOG_SCALE * Math.log(empireSize / EMPIRE_PRESSURE_THRESHOLD)
+// Sprawl penalty: maintenance multiplier when over admin cap
+export function calcSprawlPenalty(empireSize: number, adminCap: number): number {
+  const over = Math.max(0, empireSize - adminCap)
+  return 1 + over * SPRAWL_PENALTY_PER_POINT
 }
 
 // ── Building cost (geometric sum with multipliers) ──

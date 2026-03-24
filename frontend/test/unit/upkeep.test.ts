@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calcBuildingMultiplier, calcUpkeepMultiplier, calcEmpirePressure, calcEmpireSize, EMPIRE_PRESSURE_THRESHOLD } from '../../app/utils/gameMath'
+import { calcBuildingMultiplier, calcUpkeepMultiplier, calcEmpireSize, calcSprawlPenalty, BASE_ADMIN_CAP } from '../../app/utils/gameMath'
 
 // ── Building data with CG upkeep (mirrors useGameConfig — graduated values) ──
 
@@ -78,10 +78,6 @@ function calcCgConsumption(owned: Record<string, number>, reductionMult = 1, app
     total += count * b.cgUpkeep * calcUpkeepMultiplier(count)
   }
   total *= reductionMult
-  if (applyEmpirePressure) {
-    const empireSize = calcEmpireSize(calcTotalBuildings(owned), 0, 0)
-    total *= calcEmpirePressure(empireSize)
-  }
   return total
 }
 
@@ -391,96 +387,38 @@ describe('CG upkeep — dampening', () => {
   })
 })
 
-describe('Empire size calculation', () => {
-  it('buildings contribute 0.5 each', () => {
-    expect(calcEmpireSize(100, 0, 0)).toBe(50)
-    expect(calcEmpireSize(200, 0, 0)).toBe(100)
+describe('Empire size (Stellaris-style)', () => {
+  it('sums systems + planets + division levels + pops', () => {
+    expect(calcEmpireSize(3, 2, 10, 5)).toBe(20) // 3+2+10+5
+    expect(calcEmpireSize(1, 1, 3, 2)).toBe(7)
   })
 
-  it('megastructures contribute 5 each', () => {
-    expect(calcEmpireSize(0, 3, 0)).toBe(15)
-    expect(calcEmpireSize(100, 3, 0)).toBe(65)
-  })
-
-  it('pops contribute 1 per 100 autoclick/s', () => {
-    expect(calcEmpireSize(0, 0, 500)).toBe(5)
-    expect(calcEmpireSize(100, 0, 500)).toBe(55)
-  })
-
-  it('all sources combined', () => {
-    expect(calcEmpireSize(100, 3, 500)).toBe(70)
+  it('floors pops', () => {
+    expect(calcEmpireSize(1, 1, 3, 2.9)).toBe(7) // floor(2.9) = 2
   })
 
   it('zero inputs = zero size', () => {
-    expect(calcEmpireSize(0, 0, 0)).toBe(0)
+    expect(calcEmpireSize(0, 0, 0, 0)).toBe(0)
   })
 })
 
-describe('Empire scale pressure on CG consumption (logarithmic)', () => {
-  it('no pressure below threshold (grace period)', () => {
-    expect(calcEmpirePressure(0)).toBe(1)
-    expect(calcEmpirePressure(10)).toBe(1)
-    expect(calcEmpirePressure(EMPIRE_PRESSURE_THRESHOLD)).toBe(1)
+describe('Sprawl penalty', () => {
+  it('no penalty at or under admin cap', () => {
+    expect(calcSprawlPenalty(5, 10)).toBe(1)
+    expect(calcSprawlPenalty(10, 10)).toBe(1)
   })
 
-  it('pressure increases above threshold', () => {
-    expect(calcEmpirePressure(50)).toBeGreaterThan(1)
-    expect(calcEmpirePressure(100)).toBeGreaterThan(calcEmpirePressure(50))
-    expect(calcEmpirePressure(200)).toBeGreaterThan(calcEmpirePressure(100))
+  it('+2% maintenance per point over cap', () => {
+    expect(calcSprawlPenalty(15, 10)).toBeCloseTo(1.10) // 5 over × 0.02 = +10%
+    expect(calcSprawlPenalty(20, 10)).toBeCloseTo(1.20) // 10 over × 0.02 = +20%
+    expect(calcSprawlPenalty(60, 10)).toBeCloseTo(2.0)  // 50 over × 0.02 = +100%
   })
 
-  it('pressure is gradual just above threshold', () => {
-    const at26 = calcEmpirePressure(26)
-    expect(at26).toBeGreaterThan(1)
-    expect(at26).toBeLessThan(1.01)
-  })
-
-  it('pressure values match logarithmic formula', () => {
-    expect(calcEmpirePressure(50)).toBeCloseTo(1 + 0.15 * Math.log(50 / 25), 5)
-    expect(calcEmpirePressure(100)).toBeCloseTo(1 + 0.15 * Math.log(100 / 25), 5)
-    expect(calcEmpirePressure(200)).toBeCloseTo(1 + 0.15 * Math.log(200 / 25), 5)
-    expect(calcEmpirePressure(5000)).toBeCloseTo(1 + 0.15 * Math.log(5000 / 25), 5)
-  })
-
-  it('scales gracefully at large empire sizes (idle game 10k+ buildings)', () => {
-    // 10k buildings → empire size ~5000 → pressure should be under +100%
-    expect(calcEmpirePressure(5000)).toBeLessThan(2.0)
-    expect(calcEmpirePressure(5000)).toBeGreaterThan(1.5)
-  })
-
-  it('empire pressure increases CG consumption', () => {
-    const owned = { mining_drone: 50, solar_array: 50, consumer_factory: 5 }
-    const baseConsumption = calcCgConsumption(owned)
-    const pressuredConsumption = calcCgConsumption(owned, 1, true)
-    // empire size = 105 * 0.5 = 52.5 > threshold
-    expect(pressuredConsumption).toBeGreaterThan(baseConsumption)
-  })
-
-  it('small empires are unaffected by pressure', () => {
-    const owned = { mining_drone: 5, solar_array: 5, consumer_factory: 1 }
-    const baseConsumption = calcCgConsumption(owned)
-    const pressuredConsumption = calcCgConsumption(owned, 1, true)
-    // empire size = 11 * 0.5 = 5.5 < threshold
-    expect(pressuredConsumption).toBe(baseConsumption)
-  })
-
-  it('balanced mid-game build starts feeling pressure', () => {
-    const owned = {
-      mining_drone: 25, solar_array: 25, corporate_drone: 10,
-      consumer_factory: 5,
-      asteroid_mine: 15, fusion_reactor: 15, executive_assistant: 5,
-      industrial_complex: 3
-    }
-    const cgProd = calcCgProduction(owned)
-    const cgConsumptionBase = calcCgConsumption(owned)
-    const cgConsumptionPressured = calcCgConsumption(owned, 1, true)
-    const totalBldgs = calcTotalBuildings(owned)
-    const empireSize = calcEmpireSize(totalBldgs, 0, 0)
-
-    // Without pressure, CG should be fine
-    expect(cgProd).toBeGreaterThan(cgConsumptionBase)
-    // 103 buildings → empire size 51.5 > threshold
-    expect(empireSize).toBeGreaterThan(EMPIRE_PRESSURE_THRESHOLD)
-    expect(cgConsumptionPressured).toBeGreaterThan(cgConsumptionBase)
+  it('scales linearly', () => {
+    const p1 = calcSprawlPenalty(20, 10)
+    const p2 = calcSprawlPenalty(30, 10)
+    expect(p2 - p1).toBeCloseTo(0.2) // 10 more points × 0.02
   })
 })
+
+// Old empire pressure tests removed — replaced by Stellaris-style sprawl penalty above

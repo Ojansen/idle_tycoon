@@ -2,7 +2,7 @@
 import { CurveType } from '@unovis/ts'
 
 const { creditsPerSecond } = useGameState()
-const { netCreditsPerSecond, effectiveCgProduction, totalCgConsumption, cgThrottle, hasUpkeep, getFullUpkeepReduction, empirePressure, empireSize, totalMaintenance } = useUpkeep()
+const { netCreditsPerSecond, effectiveCgProduction, totalCgConsumption, cgThrottle, hasUpkeep, getFullUpkeepReduction, empireSize, adminCap, sprawlPenalty, totalMaintenanceWithSprawl } = useUpkeep()
 const { tradeConversion } = useTrade()
 const { cgChartData, growthChartData } = useProductionHistory()
 const { formatNumber } = useNumberFormat()
@@ -13,7 +13,7 @@ const upkeepReduction = computed(() => {
   return Math.round((1 - reduction) * 100)
 })
 
-const empirePressurePct = computed(() => Math.round((empirePressure.value - 1) * 100))
+const sprawlPct = computed(() => Math.round((sprawlPenalty.value - 1) * 100))
 
 const cgCategories = {
   production: { name: 'Production', color: '#4ade80', label: 'Production' },
@@ -40,7 +40,7 @@ const growthCategories = {
           <div class="text-xs text-zinc-500">Gross Production</div>
         </div>
         <div>
-          <div class="text-sm font-bold text-red-400">-₢{{ formatNumber(totalMaintenance) }}/s</div>
+          <div class="text-sm font-bold text-red-400">-₢{{ formatNumber(totalMaintenanceWithSprawl) }}/s</div>
           <div class="text-xs text-zinc-500">Maintenance</div>
         </div>
         <div>
@@ -101,8 +101,8 @@ const growthCategories = {
       <p v-if="tradeConversion.consumerGoods > 0" class="text-xs text-violet-400/80">
         Trade contributing +{{ formatNumber(tradeConversion.consumerGoods) }} CG/s
       </p>
-      <p v-if="empirePressurePct > 0" class="text-xs text-amber-500/80">
-        Empire scale pressure: +{{ empirePressurePct }}% CG demand (size {{ Math.round(empireSize) }}). Invest in efficiency research and prestige upgrades.
+      <p v-if="sprawlPct > 0" class="text-xs text-amber-500/80">
+        Empire sprawl: +{{ sprawlPct }}% maintenance (size {{ empireSize }} / {{ adminCap }} cap). Invest in admin research to increase cap.
       </p>
       <p v-if="cgThrottle < 1" class="text-xs text-orange-400/80">
         CG deficit is throttling credit and pop production.
