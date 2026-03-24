@@ -6,7 +6,9 @@ const { sample: sampleHistory } = useProductionHistory()
 
 // Game tick - 100ms
 useIntervalFn(() => {
-  try { tick() } catch (e) { console.error('tick error:', e) }
+  if (state.value.setupComplete) {
+    try { tick() } catch (e) { console.error('tick error:', e) }
+  }
 }, 100)
 
 // Achievement check + production history sampling - every 1s
