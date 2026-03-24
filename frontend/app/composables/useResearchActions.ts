@@ -138,7 +138,7 @@ export function useResearchActions() {
    * Advance active research by investing rpPerSecond * dt * speedMult RP.
    * No credits are drained. Research completes when rpInvested >= researchCost.
    */
-  function tickResearch(dt: number, rpPerSecond: number): void {
+  function tickResearch(dt: number, rpPerSecond: number, sprawlMult: number = 1): void {
     const active = state.value.activeResearch
     if (!active) return
 
@@ -154,7 +154,7 @@ export function useResearchActions() {
       const totalCost = getRepeatableResearchCost(repId)
       const newRpInvested = active.rpInvested + rpGain
 
-      if (newRpInvested >= totalCost) {
+      if (newRpInvested >= totalCost * sprawlMult) {
         state.value.repeatableResearch[repId] = (state.value.repeatableResearch[repId] || 0) + 1
         state.value.activeResearch = null
         toast.success({ title: 'Research Complete!', message: `${def.name} (Lv ${state.value.repeatableResearch[repId]})` })
@@ -169,7 +169,7 @@ export function useResearchActions() {
 
     const newRpInvested = active.rpInvested + rpGain
 
-    if (newRpInvested >= def.researchCost) {
+    if (newRpInvested >= def.researchCost * sprawlMult) {
       state.value.completedResearch.push(active.techId)
       state.value.activeResearch = null
       toast.success({ title: 'Research Complete!', message: def.name })

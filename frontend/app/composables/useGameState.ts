@@ -177,9 +177,10 @@ export function useGameState() {
     // Research points accumulation (planets + neutron stars)
     state.value.researchPoints += (grossRpPerSecond.value + totalStarRp.value) * dt
 
-    // Research & megastructure progress
+    // Research & megastructure progress (sprawl increases research costs)
+    const { sprawlPenalty } = useUpkeep()
     const { tickResearch, tickMegastructures } = useResearchActions()
-    tickResearch(dt, grossRpPerSecond.value + totalStarRp.value)
+    tickResearch(dt, grossRpPerSecond.value + totalStarRp.value, sprawlPenalty.value)
     tickMegastructures(dt)
 
     if (kardashevLevel.value > state.value.kardashevHighWaterMark) {

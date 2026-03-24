@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calcBuildingMultiplier, calcUpkeepMultiplier, calcEmpireSize, calcSprawlPenalty, BASE_ADMIN_CAP } from '../../app/utils/gameMath'
+import { calcBuildingMultiplier, calcUpkeepMultiplier, calcEmpireSize, calcSprawlPenalty, EMPIRE_SIZE_THRESHOLD } from '../../app/utils/gameMath'
 
 // ── Building data with CG upkeep (mirrors useGameConfig — graduated values) ──
 
@@ -387,14 +387,16 @@ describe('CG upkeep — dampening', () => {
   })
 })
 
-describe('Empire size (Stellaris-style)', () => {
-  it('sums systems + planets + division levels + pops', () => {
-    expect(calcEmpireSize(3, 2, 10, 5)).toBe(20) // 3+2+10+5
-    expect(calcEmpireSize(1, 1, 3, 2)).toBe(7)
+describe('Empire size (Stellaris-style weighted)', () => {
+  it('planets=10, megas=5, divLevels=0.5, 100pops=1', () => {
+    // 3 planets(30) + 2 megas(10) + 20 divLevels(10) + 500 pops(5) = 55
+    expect(calcEmpireSize(3, 2, 20, 500)).toBe(55)
   })
 
-  it('floors pops', () => {
-    expect(calcEmpireSize(1, 1, 3, 2.9)).toBe(7) // floor(2.9) = 2
+  it('pops counted per 100 (floored)', () => {
+    expect(calcEmpireSize(0, 0, 0, 99)).toBe(0)   // floor(99/100) = 0
+    expect(calcEmpireSize(0, 0, 0, 100)).toBe(1)  // floor(100/100) = 1
+    expect(calcEmpireSize(0, 0, 0, 250)).toBe(2)  // floor(250/100) = 2
   })
 
   it('zero inputs = zero size', () => {
@@ -403,21 +405,21 @@ describe('Empire size (Stellaris-style)', () => {
 })
 
 describe('Sprawl penalty', () => {
-  it('no penalty at or under admin cap', () => {
-    expect(calcSprawlPenalty(5, 10)).toBe(1)
-    expect(calcSprawlPenalty(10, 10)).toBe(1)
+  it('no penalty at or under threshold (100)', () => {
+    expect(calcSprawlPenalty(50)).toBe(1)
+    expect(calcSprawlPenalty(100)).toBe(1)
   })
 
-  it('+2% maintenance per point over cap', () => {
-    expect(calcSprawlPenalty(15, 10)).toBeCloseTo(1.10) // 5 over × 0.02 = +10%
-    expect(calcSprawlPenalty(20, 10)).toBeCloseTo(1.20) // 10 over × 0.02 = +20%
-    expect(calcSprawlPenalty(60, 10)).toBeCloseTo(2.0)  // 50 over × 0.02 = +100%
+  it('+0.4% per point over threshold', () => {
+    expect(calcSprawlPenalty(110)).toBeCloseTo(1.04)  // 10 over × 0.004
+    expect(calcSprawlPenalty(150)).toBeCloseTo(1.20)  // 50 over × 0.004
+    expect(calcSprawlPenalty(350)).toBeCloseTo(2.0)   // 250 over × 0.004
   })
 
   it('scales linearly', () => {
-    const p1 = calcSprawlPenalty(20, 10)
-    const p2 = calcSprawlPenalty(30, 10)
-    expect(p2 - p1).toBeCloseTo(0.2) // 10 more points × 0.02
+    const p1 = calcSprawlPenalty(120)
+    const p2 = calcSprawlPenalty(130)
+    expect(p2 - p1).toBeCloseTo(0.04) // 10 points × 0.004
   })
 })
 

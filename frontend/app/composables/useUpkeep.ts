@@ -1,27 +1,31 @@
-import { calcEmpireSize, calcSprawlPenalty, BASE_ADMIN_CAP } from '~/utils/gameMath'
+import { calcEmpireSize, calcSprawlPenalty, EMPIRE_SIZE_THRESHOLD } from '~/utils/gameMath'
 
 export function useUpkeep() {
   const { state, creditsPerSecond, cgPerSecond, getRepeatableMultiplier } = useGameState()
   const { megastructures } = useResearchConfig()
   const { totalPops, totalDivisionLevels, totalMaintenance, baseCgConsumption, grossCreditsPerSecond } = usePlanets()
 
-  // ── Empire Size (Stellaris-style: simple sum) ──
-
-  const claimedSystemCount = computed(() =>
-    (state.value.systems ?? []).filter(s => s.status === 'claimed').length
-  )
+  // ── Empire Size (Stellaris-style: weighted sources) ──
 
   const colonizedPlanetCount = computed(() =>
     (state.value.systems ?? []).reduce((n, s) => n + (s.status === 'claimed' ? s.planets.length : 0), 0)
   )
 
+  const completedMegastructureCount = computed(() => {
+    let count = 0
+    for (const progress of Object.values(state.value.megastructures)) {
+      if (progress.completed) count++
+    }
+    return count
+  })
+
   const empireSize = computed(() =>
-    calcEmpireSize(claimedSystemCount.value, colonizedPlanetCount.value, totalDivisionLevels.value, totalPops.value)
+    calcEmpireSize(colonizedPlanetCount.value, completedMegastructureCount.value, totalDivisionLevels.value, totalPops.value)
   )
 
-  const adminCap = computed(() => BASE_ADMIN_CAP) // TODO: increase via research/perks
+  const adminCap = computed(() => EMPIRE_SIZE_THRESHOLD)
 
-  const sprawlPenalty = computed(() => calcSprawlPenalty(empireSize.value, adminCap.value))
+  const sprawlPenalty = computed(() => calcSprawlPenalty(empireSize.value))
 
   // ── Upkeep reduction from research/repeatables ──
 

@@ -46,18 +46,29 @@ export function calcUpkeepMultiplier(owned: number): number {
   return Math.pow(calcBuildingMultiplier(owned), UPKEEP_DAMPENING)
 }
 
-// ── Empire size (Stellaris-style: sum of stuff) ──
-export const BASE_ADMIN_CAP = 10
-export const SPRAWL_PENALTY_PER_POINT = 0.02  // +2% maintenance per point over cap
+// ── Empire size (Stellaris-style: weighted sources) ──
+// Threshold above which penalties apply
+export const EMPIRE_SIZE_THRESHOLD = 100
+// +0.4% research and maintenance cost per point over threshold
+export const SPRAWL_PENALTY_RATE = 0.004
 
-export function calcEmpireSize(claimedSystems: number, colonizedPlanets: number, totalDivisionLevels: number, totalPops: number): number {
-  return claimedSystems + colonizedPlanets + totalDivisionLevels + Math.floor(totalPops)
+// Weights per source (from Stellaris docs, adapted)
+export const EMPIRE_SIZE_PER_PLANET = 10
+export const EMPIRE_SIZE_PER_MEGASTRUCTURE = 5
+export const EMPIRE_SIZE_PER_DIVISION_LEVEL = 0.5
+export const EMPIRE_SIZE_PER_100_POPS = 1
+
+export function calcEmpireSize(colonizedPlanets: number, completedMegastructures: number, totalDivisionLevels: number, totalPops: number): number {
+  return colonizedPlanets * EMPIRE_SIZE_PER_PLANET
+    + completedMegastructures * EMPIRE_SIZE_PER_MEGASTRUCTURE
+    + totalDivisionLevels * EMPIRE_SIZE_PER_DIVISION_LEVEL
+    + Math.floor(totalPops / 100) * EMPIRE_SIZE_PER_100_POPS
 }
 
-// Sprawl penalty: maintenance multiplier when over admin cap
-export function calcSprawlPenalty(empireSize: number, adminCap: number): number {
-  const over = Math.max(0, empireSize - adminCap)
-  return 1 + over * SPRAWL_PENALTY_PER_POINT
+// Sprawl penalty: cost multiplier when over threshold
+export function calcSprawlPenalty(empireSize: number): number {
+  const over = Math.max(0, empireSize - EMPIRE_SIZE_THRESHOLD)
+  return 1 + over * SPRAWL_PENALTY_RATE
 }
 
 // ── Building cost (geometric sum with multipliers) ──
