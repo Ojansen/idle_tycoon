@@ -57,6 +57,14 @@ const traits: TraitDefinition[] = [
     bonus: { stat: 'maintenanceReduction', value: 0.80, label: '-20% Maintenance' },
     malus: { stat: 'cgMultiplier', value: 0.90, label: '-10% Consumer Goods/s' }
   },
+  {
+    id: 'research_consortium',
+    name: 'Research Consortium',
+    description: 'Your megacorp prioritizes R&D over revenue.',
+    icon: 'i-lucide-flask-conical',
+    bonus: { stat: 'researchMultiplier', value: 1.30, label: '+30% Research' },
+    malus: { stat: 'creditsMultiplier', value: 0.85, label: '-15% Credits/s' }
+  },
 ]
 
 export function useTraits() {

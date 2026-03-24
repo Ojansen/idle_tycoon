@@ -2,8 +2,10 @@
 const { state, creditsPerSecond, cgPerSecond } = useGameState()
 const { netCreditsPerSecond, effectiveCgProduction, totalCgConsumption, cgThrottle, hasUpkeep } = useUpkeep()
 const { convertedTradeValue } = useTrade()
-const { totalPops } = usePlanets()
+const { totalPops, grossRpPerSecond } = usePlanets()
 const { formatNumber } = useNumberFormat()
+
+const hasResearch = computed(() => grossRpPerSecond.value > 0)
 
 const hasTradeValue = computed(() => convertedTradeValue.value > 0)
 
@@ -52,6 +54,13 @@ const statusColor: Record<string, string> = {
       <div v-if="hasTradeValue" class="flex items-center gap-1.5 shrink-0">
         <UIcon name="i-lucide-handshake" class="text-violet-400 text-sm" />
         <span class="text-violet-300 font-semibold">{{ formatNumber(convertedTradeValue) }}/s</span>
+      </div>
+
+      <!-- Research Points -->
+      <div v-if="hasResearch" class="flex items-center gap-1.5 shrink-0">
+        <UIcon name="i-lucide-flask-conical" class="text-purple-400 text-sm" />
+        <span class="text-purple-300 font-semibold">{{ formatNumber(grossRpPerSecond) }}/s</span>
+        <span class="text-zinc-500 hidden sm:inline">RP</span>
       </div>
 
       <!-- Pops & Planets -->

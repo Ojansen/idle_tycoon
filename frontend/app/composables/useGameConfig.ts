@@ -44,6 +44,7 @@ const prestigeUpgrades: PrestigeUpgradeDefinition[] = [
   },
   { id: 'efficient_logistics', name: 'Efficient Logistics', description: '1.5x Consumer Goods/s — optimized supply chains', cost: 500, effect: { type: 'cgMultiplier', value: 1.5 }, requiredKardashev: 0 },
   { id: 'trade_networks', name: 'Trade Networks', description: '1.5x Trade capacity — establish interstellar trade routes', cost: 500, effect: { type: 'tradeMultiplier', value: 1.5 }, requiredKardashev: 0 },
+  { id: 'rd_funding', name: 'R&D Funding', description: '1.5x Research output', cost: 500, effect: { type: 'researchMultiplier', value: 1.5 }, requiredKardashev: 0 },
   // ── Tier 1: Requires Type I ──
   {
     id: 'corporate_synergy',
@@ -71,6 +72,7 @@ const prestigeUpgrades: PrestigeUpgradeDefinition[] = [
   },
   { id: 'interstellar_supply', name: 'Interstellar Supply Lines', description: '2x Consumer Goods/s — interplanetary logistics network', cost: 5000, effect: { type: 'cgMultiplier', value: 2 }, requiredKardashev: 1 },
   { id: 'trade_empires', name: 'Trade Empires', description: '2x Trade capacity — galactic trade empire infrastructure', cost: 5000, effect: { type: 'tradeMultiplier', value: 2 }, requiredKardashev: 1 },
+  { id: 'advanced_labs', name: 'Advanced Laboratories', description: '2x Research output', cost: 5000, effect: { type: 'researchMultiplier', value: 2 }, requiredKardashev: 1 },
   // ── Tier 2: Requires Type II ──
   {
     id: 'bulk_contracts',
@@ -208,6 +210,16 @@ const repeatablePrestigeUpgrades: RepeatablePrestigeUpgrade[] = [
     costScale: 2.0,
     maxLevel: 20,
     effect: { type: 'maintenanceReduction', valuePerLevel: 0.97 }
+  },
+  {
+    id: 'research_output',
+    name: 'Research Output',
+    description: '+10% Research per level',
+    icon: 'i-lucide-flask-conical',
+    baseCost: 100,
+    costScale: 1.8,
+    maxLevel: 30,
+    effect: { type: 'researchMultiplier', valuePerLevel: 1.10 }
   },
 ]
 

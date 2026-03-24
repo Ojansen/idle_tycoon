@@ -25,7 +25,7 @@ export function useGameActions() {
       seed: 0,
       tier: 0,
       status: 'claimed' as const,
-      stars: [{ type: 'yellow_dwarf' as const, output: { credits: 3, cg: 0, trade: 0, researchSpeed: 0 }, maintenanceCost: 0 }],
+      stars: [{ type: 'yellow_dwarf' as const, output: { credits: 3, cg: 0, trade: 0, rp: 0 }, maintenanceCost: 0 }],
       planets: [{
         definitionId: 'homeworld',
         name: 'Terra Nova',
@@ -61,6 +61,7 @@ export function useGameActions() {
       // Reset
       credits: 0,
       totalCreditsEarned: 0,
+      researchPoints: 0,
       systems: [homeSystem],
       lastDiscoveryTime: now,
       // Kept

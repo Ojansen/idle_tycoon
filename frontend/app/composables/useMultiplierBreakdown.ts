@@ -19,6 +19,7 @@ const statMeta: { stat: TraitStat; label: string; icon: string; hasPrestige: boo
   { stat: 'cgMultiplier', label: 'Consumer Goods/s', icon: 'i-lucide-package', hasPrestige: true },
   { stat: 'divisionCostMultiplier', label: 'Division Costs', icon: 'i-lucide-tags', hasPrestige: true },
   { stat: 'tradeMultiplier', label: 'Trade Capacity', icon: 'i-lucide-handshake', hasPrestige: true },
+  { stat: 'researchMultiplier', label: 'Research Output', icon: 'i-lucide-flask-conical', hasPrestige: true },
   { stat: 'maintenanceReduction', label: 'Maintenance Costs', icon: 'i-lucide-trending-down', hasPrestige: false }
 ]
 
@@ -38,7 +39,7 @@ export function useMultiplierBreakdown() {
       if (trait !== 1) sources.push({ label: 'Traits', value: trait })
 
       if (meta.hasPrestige) {
-        const prestige = getPrestigeMultiplier(meta.stat as 'creditsMultiplier' | 'workerOutputMultiplier' | 'divisionCostMultiplier' | 'cgMultiplier' | 'tradeMultiplier')
+        const prestige = getPrestigeMultiplier(meta.stat as 'creditsMultiplier' | 'workerOutputMultiplier' | 'divisionCostMultiplier' | 'cgMultiplier' | 'tradeMultiplier' | 'researchMultiplier')
         if (prestige !== 1) sources.push({ label: 'Prestige', value: prestige })
       }
 

@@ -3,7 +3,6 @@ import type { ResearchDefinition } from '~/types/game'
 
 const props = defineProps<{ tech: ResearchDefinition }>()
 
-const { state } = useGameState()
 const { formatNumber } = useNumberFormat()
 const {
   isResearchComplete,
@@ -11,11 +10,10 @@ const {
   isResearching,
   activeResearchDef,
   researchProgress,
-  creditsDrainPerSecond,
-  getResearchSpeedMultiplier,
   startResearch
 } = useResearchActions()
 const { researchTree } = useResearchConfig()
+const { state } = useGameState()
 
 const isComplete = computed(() => isResearchComplete(props.tech.id))
 const isActive = computed(() => isResearching.value && activeResearchDef.value?.id === props.tech.id)
@@ -27,25 +25,10 @@ const missingPrereqs = computed(() =>
     .map(id => researchTree.find(r => r.id === id)?.name ?? id)
 )
 
-const eta = computed(() => {
-  if (!isActive.value || !activeResearchDef.value) return 0
-  const active = state.value.activeResearch!
-  const def = activeResearchDef.value
-  const remaining = ('researchTime' in def ? def.researchTime : def.baseResearchTime) - active.elapsed
-  return Math.max(0, remaining / getResearchSpeedMultiplier())
+const rpInvested = computed(() => {
+  if (!isActive.value) return 0
+  return state.value.activeResearch?.rpInvested ?? 0
 })
-
-function formatTime(seconds: number): string {
-  if (seconds < 60) return `${Math.ceil(seconds)}s`
-  if (seconds < 3600) {
-    const m = Math.floor(seconds / 60)
-    const s = Math.ceil(seconds % 60)
-    return `${m}m ${s}s`
-  }
-  const h = Math.floor(seconds / 3600)
-  const m = Math.ceil((seconds % 3600) / 60)
-  return `${h}h ${m}m`
-}
 
 function effectLabel(effect: ResearchDefinition['effects'][number]): string {
   if (effect.type === 'multiplier') return `${effect.stat.replace(/Multiplier$/, '')} x${effect.value}`
@@ -95,13 +78,16 @@ function effectLabel(effect: ResearchDefinition['effects'][number]): string {
       </div>
     </div>
 
-    <!-- Active: progress bar + drain info -->
+    <!-- Active: progress bar + RP invested info -->
     <template v-if="isActive">
       <div class="mt-3 space-y-1.5">
         <UProgress :value="researchProgress * 100" size="xs" color="secondary" />
         <div class="flex justify-between text-xs text-zinc-400">
-          <span class="text-violet-300">-₢{{ formatNumber(creditsDrainPerSecond) }}/s</span>
-          <span>ETA {{ formatTime(eta) }}</span>
+          <span class="text-violet-300">
+            <UIcon name="i-lucide-flask-conical" class="align-middle" />
+            {{ formatNumber(rpInvested) }} / {{ formatNumber(tech.researchCost) }} RP
+          </span>
+          <span>{{ Math.round(researchProgress * 100) }}%</span>
         </div>
       </div>
     </template>
@@ -124,9 +110,9 @@ function effectLabel(effect: ResearchDefinition['effects'][number]): string {
     <!-- Available: cost + research button -->
     <template v-else-if="isAvailable">
       <div class="mt-2 flex items-center justify-between gap-2">
-        <div class="text-xs text-zinc-400 space-x-2">
-          <span><UIcon name="i-lucide-coins" class="align-middle text-amber-400" /> ₢{{ formatNumber(tech.creditsCost) }}</span>
-          <span><UIcon name="i-lucide-clock" class="align-middle text-zinc-500" /> {{ formatTime(tech.researchTime) }}</span>
+        <div class="text-xs text-zinc-400">
+          <UIcon name="i-lucide-flask-conical" class="align-middle text-violet-400" />
+          {{ formatNumber(tech.researchCost) }} RP
         </div>
         <UButton
           size="xs"

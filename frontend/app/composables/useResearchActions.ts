@@ -97,9 +97,8 @@ export function useResearchActions() {
   function startResearch(techId: string): boolean {
     if (!isResearchAvailable(techId)) return false
     if (state.value.activeResearch !== null) return false
-    if (state.value.credits <= 0) return false
 
-    state.value.activeResearch = { techId, elapsed: 0, creditsSpent: 0 }
+    state.value.activeResearch = { techId, rpInvested: 0 }
     return true
   }
 
@@ -123,29 +122,28 @@ export function useResearchActions() {
     const def = repeatableResearchDefs.find(r => r.id === repId)
     if (!def) return Infinity
     const level = getRepeatableResearchLevel(repId)
-    return Math.floor(def.baseCreditsCost * Math.pow(def.costScale, level))
-  }
-
-  function getRepeatableResearchTime(repId: string): number {
-    const def = repeatableResearchDefs.find(r => r.id === repId)
-    if (!def) return Infinity
-    const level = getRepeatableResearchLevel(repId)
-    return def.baseResearchTime * Math.pow(def.timeScale, level)
+    return Math.floor(def.baseResearchCost * Math.pow(def.costScale, level))
   }
 
   function startRepeatableResearch(repId: string): boolean {
     if (state.value.activeResearch !== null) return false
     const def = repeatableResearchDefs.find(r => r.id === repId)
     if (!def) return false
-    if (state.value.credits <= 0) return false
 
-    state.value.activeResearch = { techId: `rep:${repId}`, elapsed: 0, creditsSpent: 0 }
+    state.value.activeResearch = { techId: `rep:${repId}`, rpInvested: 0 }
     return true
   }
 
-  function tickResearch(dt: number): void {
+  /**
+   * Advance active research by investing rpPerSecond * dt * speedMult RP.
+   * No credits are drained. Research completes when rpInvested >= researchCost.
+   */
+  function tickResearch(dt: number, rpPerSecond: number): void {
     const active = state.value.activeResearch
     if (!active) return
+
+    const speedMult = getResearchSpeedMultiplier()
+    const rpGain = rpPerSecond * dt * speedMult
 
     // Handle repeatable research (techId starts with 'rep:')
     if (active.techId.startsWith('rep:')) {
@@ -153,29 +151,15 @@ export function useResearchActions() {
       const def = repeatableResearchDefs.find(r => r.id === repId)
       if (!def) return
 
-      const totalTime = getRepeatableResearchTime(repId)
       const totalCost = getRepeatableResearchCost(repId)
-      const drainRate = totalCost / totalTime
-      const drain = drainRate * dt
+      const newRpInvested = active.rpInvested + rpGain
 
-      if (state.value.credits < drain) return
-
-      state.value.credits -= drain
-
-      const speedMult = getResearchSpeedMultiplier()
-      const newElapsed = active.elapsed + dt * speedMult
-      const newCreditsSpent = active.creditsSpent + drain
-
-      if (newElapsed >= totalTime) {
+      if (newRpInvested >= totalCost) {
         state.value.repeatableResearch[repId] = (state.value.repeatableResearch[repId] || 0) + 1
         state.value.activeResearch = null
         toast.success({ title: 'Research Complete!', message: `${def.name} (Lv ${state.value.repeatableResearch[repId]})` })
       } else {
-        state.value.activeResearch = {
-          techId: active.techId,
-          elapsed: newElapsed,
-          creditsSpent: newCreditsSpent
-        }
+        state.value.activeResearch = { techId: active.techId, rpInvested: newRpInvested }
       }
       return
     }
@@ -183,28 +167,15 @@ export function useResearchActions() {
     const def = researchTree.find(r => r.id === active.techId)
     if (!def) return
 
-    const drainRate = def.creditsCost / def.researchTime
-    const drain = drainRate * dt
+    const newRpInvested = active.rpInvested + rpGain
 
-    if (state.value.credits < drain) return
-
-    state.value.credits -= drain
-
-    const speedMult = getResearchSpeedMultiplier()
-    const newElapsed = active.elapsed + dt * speedMult
-    const newCreditsSpent = active.creditsSpent + drain
-
-    if (newElapsed >= def.researchTime) {
+    if (newRpInvested >= def.researchCost) {
       state.value.completedResearch.push(active.techId)
       state.value.activeResearch = null
       toast.success({ title: 'Research Complete!', message: def.name })
     } else {
       // Replace object to trigger Vue reactivity
-      state.value.activeResearch = {
-        techId: active.techId,
-        elapsed: newElapsed,
-        creditsSpent: newCreditsSpent
-      }
+      state.value.activeResearch = { techId: active.techId, rpInvested: newRpInvested }
     }
   }
 
@@ -236,10 +207,15 @@ export function useResearchActions() {
     }
 
     if (progress.completed) return 'complete'
+    // stageElapsed < 0 means awaiting payment for next stage
     if (progress.stageElapsed < 0) return 'awaiting_stage'
     return 'building'
   }
 
+  /**
+   * Pay credits and immediately complete stage 1 (stageElapsed is unused but
+   * kept in state for compatibility; set to 0 on active stage).
+   */
   function startMegastructure(megaId: string): boolean {
     if (!isMegastructureAvailable(megaId)) return false
 
@@ -250,15 +226,20 @@ export function useResearchActions() {
 
     state.value.credits -= def.creditsCostPerStage
 
-    state.value.megastructures[megaId] = {
-      currentStage: 0,
-      stageElapsed: 0,
-      completed: false
+    const newStage = 1
+    if (newStage >= def.stages) {
+      state.value.megastructures[megaId] = { currentStage: newStage, stageElapsed: 0, completed: true }
+      toast.success({ title: 'Megastructure Complete!', message: def.name })
+    } else {
+      state.value.megastructures[megaId] = { currentStage: newStage, stageElapsed: -1, completed: false }
     }
 
     return true
   }
 
+  /**
+   * Pay credits and immediately advance to the next stage.
+   */
   function startNextMegastructureStage(megaId: string): boolean {
     if (getMegastructureState(megaId) !== 'awaiting_stage') return false
 
@@ -269,33 +250,25 @@ export function useResearchActions() {
 
     state.value.credits -= def.creditsCostPerStage
 
-    state.value.megastructures[megaId]!.stageElapsed = 0
+    const currentStage = state.value.megastructures[megaId]!.currentStage
+    const newStage = currentStage + 1
+
+    if (newStage >= def.stages) {
+      state.value.megastructures[megaId] = { currentStage: newStage, stageElapsed: 0, completed: true }
+      toast.success({ title: 'Megastructure Complete!', message: def.name })
+    } else {
+      state.value.megastructures[megaId] = { currentStage: newStage, stageElapsed: -1, completed: false }
+    }
 
     return true
   }
 
-  function tickMegastructures(dt: number): void {
-    for (const [megaId, progress] of Object.entries(state.value.megastructures)) {
-      if (progress.completed) continue
-      if (progress.stageElapsed < 0) continue
-
-      const def = megastructures.find(m => m.id === megaId)
-      if (!def) continue
-
-      const newElapsed = progress.stageElapsed + dt
-
-      if (newElapsed >= def.buildTimePerStage) {
-        const newStage = progress.currentStage + 1
-        if (newStage >= def.stages) {
-          state.value.megastructures[megaId] = { currentStage: newStage, stageElapsed: 0, completed: true }
-          toast.success({ title: 'Megastructure Complete!', message: def.name })
-        } else {
-          state.value.megastructures[megaId] = { currentStage: newStage, stageElapsed: -1, completed: false }
-        }
-      } else {
-        state.value.megastructures[megaId] = { ...progress, stageElapsed: newElapsed }
-      }
-    }
+  /**
+   * No-op tick — megastructures now complete instantly on payment.
+   * Kept in the public API so callers don't need to change.
+   */
+  function tickMegastructures(_dt: number): void {
+    // Stages are instant; nothing to advance here.
   }
 
   // ---------------------------------------------------------------------------
@@ -323,22 +296,11 @@ export function useResearchActions() {
     if (!active || !activeResearchDef.value) return 0
     if (active.techId.startsWith('rep:')) {
       const repId = active.techId.slice(4)
-      const totalTime = getRepeatableResearchTime(repId)
-      return Math.min(active.elapsed / totalTime, 1)
+      const totalCost = getRepeatableResearchCost(repId)
+      return Math.min(active.rpInvested / totalCost, 1)
     }
-    const def = activeResearchDef.value as { researchTime: number }
-    return Math.min(active.elapsed / def.researchTime, 1)
-  })
-
-  const creditsDrainPerSecond = computed(() => {
-    const active = state.value.activeResearch
-    if (!active || !activeResearchDef.value) return 0
-    if (active.techId.startsWith('rep:')) {
-      const repId = active.techId.slice(4)
-      return getRepeatableResearchCost(repId) / getRepeatableResearchTime(repId)
-    }
-    const def = activeResearchDef.value as { creditsCost: number; researchTime: number }
-    return def.creditsCost / def.researchTime
+    const def = activeResearchDef.value as { researchCost: number }
+    return Math.min(active.rpInvested / def.researchCost, 1)
   })
 
   // ---------------------------------------------------------------------------
@@ -357,7 +319,6 @@ export function useResearchActions() {
     isAllFixedResearchComplete,
     getRepeatableResearchLevel,
     getRepeatableResearchCost,
-    getRepeatableResearchTime,
     startRepeatableResearch,
     // Megastructure queries
     isMegastructureAvailable,
@@ -371,6 +332,5 @@ export function useResearchActions() {
     allFixedResearchComplete,
     activeResearchDef,
     researchProgress,
-    creditsDrainPerSecond
   }
 }

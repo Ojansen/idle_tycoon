@@ -2,7 +2,7 @@
 
 export type PlanetType = 'volcanic' | 'garden' | 'ocean' | 'desert' | 'ice' | 'barren' | 'gaia'
 export type PlanetSize = 'small' | 'medium' | 'large'
-export type DivisionType = 'mining' | 'industrial' | 'commerce' | 'administrative'
+export type DivisionType = 'mining' | 'industrial' | 'commerce' | 'administrative' | 'research'
 export type PlanetPolicy = 'balanced' | 'prioritize_production' | 'prioritize_cg' | 'prioritize_trade'
 
 // ── Planet Type Definitions (static bonuses per planet type) ──
@@ -59,7 +59,7 @@ export interface DivisionDefinition {
   icon: string
   color: string
   description: string
-  resource: 'credits' | 'consumer_goods' | 'trade' | 'housing'
+  resource: 'credits' | 'consumer_goods' | 'trade' | 'housing' | 'research'
   baseProd: number           // output per pop per level (or housing per level for Admin)
   baseUpgradeCost: number    // ₢ cost for level 1→2
   costMultiplier: number     // geometric scaling per level

@@ -26,6 +26,7 @@ export function usePlanets(): {
   totalDivisionLevels: ComputedRef<number>
   grossCreditsPerSecond: ComputedRef<number>
   grossCgPerSecond: ComputedRef<number>
+  grossRpPerSecond: ComputedRef<number>
   rawTradeValue: ComputedRef<number>
   totalMaintenance: ComputedRef<number>
   baseCgConsumption: ComputedRef<number>
@@ -33,13 +34,14 @@ export function usePlanets(): {
   getPlanetEfficiency: (planet: PlanetState) => number
   getPlanetTotalLevels: (planet: PlanetState) => number
   getPlanetMaxLevels: (planet: PlanetState) => number
-  getPlanetProduction: (planet: PlanetState) => { credits: number; cg: number; trade: number }
+  getPlanetProduction: (planet: PlanetState) => { credits: number; cg: number; trade: number; research: number }
   getPlanetPopDistribution: (planet: PlanetState) => number[]
   getPlanetJobStats: (planet: PlanetState) => PlanetJobStats
   getPlanetTypeBonus: (planet: PlanetState, stat: 'credits' | 'cg' | 'popGrowth') => number
   getPlanetTraitModifier: (planet: PlanetState, stat: 'credits' | 'cg' | 'popGrowth' | 'maintenance' | 'trade') => number
   tickPopGrowth: (dt: number, cgAvailability: number) => void
   getMultiplierStack: (stat: 'creditsMultiplier' | 'cgMultiplier' | 'tradeMultiplier') => number
+  getResearchMultiplierStack: () => number
 } {
   const { state, getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
   const { getPlanetDef, getPlanetType, getPlanetSize, getPlanetTrait, getDivision } = usePlanetConfig()
@@ -74,6 +76,14 @@ export function usePlanets(): {
       * getAscensionMultiplier('workerOutputMultiplier')
       * getRepeatableMultiplier('workerOutputMultiplier')
       * getResearchMultiplier('workerOutputMultiplier')
+  }
+
+  function getResearchMultiplierStack(): number {
+    return getPrestigeMultiplier('researchMultiplier')
+      * getTraitMultiplier('researchMultiplier')
+      * getAscensionMultiplier('researchMultiplier')
+      * getRepeatableMultiplier('researchMultiplier')
+      * getResearchMultiplier('researchMultiplier')
   }
 
   function getPopGrowthMultiplier(): number {
@@ -168,10 +178,10 @@ export function usePlanets(): {
 
   // ── Production per planet ──
 
-  function getPlanetProduction(planet: PlanetState): { credits: number; cg: number; trade: number } {
+  function getPlanetProduction(planet: PlanetState): { credits: number; cg: number; trade: number; research: number } {
     const efficiency = getPlanetEfficiency(planet)
     const popDist = getPlanetPopDistribution(planet)
-    const result = { credits: 0, cg: 0, trade: 0 }
+    const result = { credits: 0, cg: 0, trade: 0, research: 0 }
 
     for (let i = 0; i < planet.divisions.length; i++) {
       const div = planet.divisions[i]
@@ -191,6 +201,7 @@ export function usePlanets(): {
       if (div.type === 'mining') result.credits += output
       else if (div.type === 'industrial') result.cg += output
       else if (div.type === 'commerce') result.trade += output
+      else if (div.type === 'research') result.research += output
     }
 
     return result
@@ -240,6 +251,14 @@ export function usePlanets(): {
       total += planet.pops * 0.05
     }
     return total
+  })
+
+  const grossRpPerSecond = computed(() => {
+    let total = 0
+    for (const planet of getAllPlanets()) {
+      total += getPlanetProduction(planet).research
+    }
+    return total * getResearchMultiplierStack()
   })
 
   const totalMaintenance = computed(() => {
@@ -315,6 +334,7 @@ export function usePlanets(): {
     totalDivisionLevels,
     grossCreditsPerSecond,
     grossCgPerSecond,
+    grossRpPerSecond,
     rawTradeValue,
     totalMaintenance,
     baseCgConsumption,
@@ -329,5 +349,6 @@ export function usePlanets(): {
     getPlanetTraitModifier,
     tickPopGrowth,
     getMultiplierStack,
+    getResearchMultiplierStack,
   }
 }

@@ -17,6 +17,7 @@ const PERK_TEMPLATES: PerkTemplate[] = [
   { stat: 'divisionCostMultiplier', name: 'Efficient Bureaucracy',  desc: '-{pct}% division costs',     baseValue: 0.85, scaleFactor: 1.3 },
   { stat: 'maintenanceReduction',   name: 'Lean Operations',        desc: '-{pct}% maintenance',        baseValue: 0.85, scaleFactor: 1.3 },
   { stat: 'allProductionMultiplier',name: 'Universal Optimization', desc: '+{pct}% all production',     baseValue: 1.10, scaleFactor: 1.5 },
+  { stat: 'researchMultiplier',     name: 'Scientific Mastery',    desc: '+{pct}% research output',    baseValue: 1.25, scaleFactor: 1.5 },
 ]
 
 function computePerkValue(template: PerkTemplate, tier: number): number {

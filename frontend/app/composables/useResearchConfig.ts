@@ -11,8 +11,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-workflow',
     branch: 'industry',
     tier: 0,
-    creditsCost: 6000,
-    researchTime: 30,
+    researchCost: 6000,
     prerequisites: [],
     effects: [{ type: 'multiplier', stat: 'creditsMultiplier', value: 1.15 }],
     unlockKardashev: 0
@@ -24,8 +23,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-package-check',
     branch: 'industry',
     tier: 0,
-    creditsCost: 500,
-    researchTime: 30,
+    researchCost: 500,
     prerequisites: [],
     effects: [{ type: 'multiplier', stat: 'cgMultiplier', value: 1.15 }],
     unlockKardashev: 0
@@ -37,8 +35,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-package-2',
     branch: 'industry',
     tier: 1,
-    creditsCost: 250000,
-    researchTime: 60,
+    researchCost: 250000,
     prerequisites: ['ind_automation'],
     effects: [{ type: 'multiplier', stat: 'creditsMultiplier', value: 1.25 }],
     unlockKardashev: 1
@@ -50,8 +47,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-factory',
     branch: 'industry',
     tier: 1,
-    creditsCost: 5e4,
-    researchTime: 120,
+    researchCost: 5e4,
     prerequisites: ['ind_supply_chains'],
     effects: [{ type: 'multiplier', stat: 'cgMultiplier', value: 1.25 }],
     unlockKardashev: 1
@@ -63,8 +59,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-microscope',
     branch: 'industry',
     tier: 2,
-    creditsCost: 2500000,
-    researchTime: 120,
+    researchCost: 2500000,
     prerequisites: ['ind_logistics'],
     effects: [{ type: 'multiplier', stat: 'divisionCostMultiplier', value: 0.85 }],
     unlockKardashev: 1
@@ -76,8 +71,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-building',
     branch: 'industry',
     tier: 3,
-    creditsCost: 4e10,
-    researchTime: 180,
+    researchCost: 4e10,
     prerequisites: ['ind_nanofab'],
     effects: [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 1.2 },
@@ -92,8 +86,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-microscope',
     branch: 'industry',
     tier: 3,
-    creditsCost: 5e13,
-    researchTime: 600,
+    researchCost: 5e13,
     prerequisites: ['ind_mass_production'],
     effects: [
       { type: 'multiplier', stat: 'cgMultiplier', value: 1.5 },
@@ -108,8 +101,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-atom',
     branch: 'industry',
     tier: 4,
-    creditsCost: 6e20,
-    researchTime: 300,
+    researchCost: 6e20,
     prerequisites: ['ind_megascale'],
     effects: [
       { type: 'multiplier', stat: 'divisionCostMultiplier', value: 0.75 },
@@ -124,8 +116,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-sparkles',
     branch: 'industry',
     tier: 5,
-    creditsCost: 1.2e31,
-    researchTime: 600,
+    researchCost: 1.2e31,
     prerequisites: ['ind_matter_prog'],
     effects: [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 2.0 },
@@ -141,8 +132,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-wand-sparkles',
     branch: 'industry',
     tier: 5,
-    creditsCost: 5e29,
-    researchTime: 1800,
+    researchCost: 5e29,
     prerequisites: ['ind_nano_assembly'],
     effects: [
       { type: 'multiplier', stat: 'cgMultiplier', value: 2.0 },
@@ -159,8 +149,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-handshake',
     branch: 'industry',
     tier: 0,
-    creditsCost: 4000,
-    researchTime: 30,
+    researchCost: 4000,
     prerequisites: [],
     effects: [{ type: 'multiplier', stat: 'tradeMultiplier', value: 1.15 }],
     unlockKardashev: 0
@@ -172,8 +161,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-package-check',
     branch: 'industry',
     tier: 1,
-    creditsCost: 1e5,
-    researchTime: 60,
+    researchCost: 1e5,
     prerequisites: ['trade_fundamentals'],
     effects: [{ type: 'multiplier', stat: 'tradeMultiplier', value: 1.10 }],
     unlockKardashev: 1
@@ -185,8 +173,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-zap',
     branch: 'industry',
     tier: 1,
-    creditsCost: 1e5,
-    researchTime: 60,
+    researchCost: 1e5,
     prerequisites: ['trade_fundamentals'],
     effects: [{ type: 'multiplier', stat: 'tradeMultiplier', value: 1.10 }],
     unlockKardashev: 1
@@ -198,8 +185,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-scale',
     branch: 'industry',
     tier: 2,
-    creditsCost: 2e6,
-    researchTime: 120,
+    researchCost: 2e6,
     prerequisites: ['trade_consumer_policy', 'trade_energy_policy'],
     effects: [{ type: 'multiplier', stat: 'tradeMultiplier', value: 1.25 }],
     unlockKardashev: 2
@@ -211,8 +197,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-crown',
     branch: 'industry',
     tier: 3,
-    creditsCost: 5e10,
-    researchTime: 180,
+    researchCost: 5e10,
     prerequisites: ['trade_balanced_policy'],
     effects: [{ type: 'multiplier', stat: 'tradeMultiplier', value: 1.50 }],
     unlockKardashev: 3
@@ -228,8 +213,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-activity',
     branch: 'energy',
     tier: 0,
-    creditsCost: 5000,
-    researchTime: 30,
+    researchCost: 5000,
     prerequisites: [],
     effects: [{ type: 'multiplier', stat: 'creditsMultiplier', value: 1.15 }],
     unlockKardashev: 0
@@ -241,8 +225,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-flame',
     branch: 'energy',
     tier: 1,
-    creditsCost: 200000,
-    researchTime: 60,
+    researchCost: 200000,
     prerequisites: ['nrg_grid_opt'],
     effects: [{ type: 'multiplier', stat: 'creditsMultiplier', value: 1.25 }],
     unlockKardashev: 1
@@ -254,8 +237,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-flask-conical',
     branch: 'energy',
     tier: 2,
-    creditsCost: 2000000,
-    researchTime: 120,
+    researchCost: 2000000,
     prerequisites: ['nrg_fusion_adv'],
     effects: [{ type: 'multiplier', stat: 'creditsMultiplier', value: 1.3 }],
     unlockKardashev: 1
@@ -267,8 +249,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-zap',
     branch: 'energy',
     tier: 3,
-    creditsCost: 3e10,
-    researchTime: 180,
+    researchCost: 3e10,
     prerequisites: ['nrg_antimatter'],
     effects: [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 1.5 },
@@ -283,8 +264,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-orbit',
     branch: 'energy',
     tier: 4,
-    creditsCost: 5e20,
-    researchTime: 300,
+    researchCost: 5e20,
     prerequisites: ['nrg_zero_point'],
     effects: [{ type: 'multiplier', stat: 'creditsMultiplier', value: 1.75 }],
     unlockKardashev: 3
@@ -296,8 +276,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-refresh-cw',
     branch: 'energy',
     tier: 5,
-    creditsCost: 1e31,
-    researchTime: 600,
+    researchCost: 1e31,
     prerequisites: ['nrg_vacuum'],
     effects: [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 2.0 },
@@ -312,8 +291,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-star',
     branch: 'energy',
     tier: 6,
-    creditsCost: 1.5e41,
-    researchTime: 900,
+    researchCost: 1.5e41,
     prerequisites: ['nrg_entropy_rev'],
     effects: [{ type: 'multiplier', stat: 'creditsMultiplier', value: 3.0 }],
     unlockKardashev: 5
@@ -327,8 +305,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-gauge',
     branch: 'energy',
     tier: 3,
-    creditsCost: 5e10,
-    researchTime: 120,
+    researchCost: 5e10,
     prerequisites: ['nrg_antimatter'],
     effects: [{ type: 'maintenanceReduction', value: 0.9 }],
     unlockKardashev: 2
@@ -340,8 +317,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-cable',
     branch: 'energy',
     tier: 4,
-    creditsCost: 8e10,
-    researchTime: 240,
+    researchCost: 8e10,
     prerequisites: ['nrg_efficiency_I', 'nrg_zero_point'],
     effects: [{ type: 'maintenanceReduction', value: 0.85 }],
     unlockKardashev: 2
@@ -353,8 +329,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-snowflake',
     branch: 'energy',
     tier: 5,
-    creditsCost: 5e11,
-    researchTime: 480,
+    researchCost: 5e11,
     prerequisites: ['nrg_efficiency_II'],
     effects: [{ type: 'maintenanceReduction', value: 0.8 }],
     unlockKardashev: 2
@@ -370,8 +345,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-graduation-cap',
     branch: 'society',
     tier: 0,
-    creditsCost: 5500,
-    researchTime: 30,
+    researchCost: 5500,
     prerequisites: [],
     effects: [{ type: 'multiplier', stat: 'workerOutputMultiplier', value: 1.25 }],
     unlockKardashev: 0
@@ -383,8 +357,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-cpu',
     branch: 'society',
     tier: 1,
-    creditsCost: 220000,
-    researchTime: 60,
+    researchCost: 220000,
     prerequisites: ['soc_education'],
     effects: [
       { type: 'multiplier', stat: 'workerOutputMultiplier', value: 1.3 },
@@ -399,8 +372,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-network',
     branch: 'society',
     tier: 2,
-    creditsCost: 2200000,
-    researchTime: 120,
+    researchCost: 2200000,
     prerequisites: ['soc_cybernetics'],
     effects: [{ type: 'multiplier', stat: 'workerOutputMultiplier', value: 1.5 }],
     unlockKardashev: 1
@@ -412,8 +384,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-users',
     branch: 'society',
     tier: 3,
-    creditsCost: 3.5e10,
-    researchTime: 180,
+    researchCost: 3.5e10,
     prerequisites: ['soc_hive_mind'],
     effects: [
       { type: 'multiplier', stat: 'workerOutputMultiplier', value: 1.5 },
@@ -428,8 +399,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-brain',
     branch: 'society',
     tier: 4,
-    creditsCost: 5.5e20,
-    researchTime: 300,
+    researchCost: 5.5e20,
     prerequisites: ['soc_uplift'],
     effects: [
       { type: 'multiplier', stat: 'workerOutputMultiplier', value: 2.0 },
@@ -444,8 +414,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-eye',
     branch: 'society',
     tier: 5,
-    creditsCost: 1.1e31,
-    researchTime: 600,
+    researchCost: 1.1e31,
     prerequisites: ['soc_transcend'],
     effects: [{ type: 'multiplier', stat: 'workerOutputMultiplier', value: 3.0 }],
     unlockKardashev: 4
@@ -461,8 +430,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-search',
     branch: 'exotic',
     tier: 0,
-    creditsCost: 180000,
-    researchTime: 45,
+    researchCost: 180000,
     prerequisites: [],
     effects: [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 1.1 },
@@ -477,8 +445,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-circle-dashed',
     branch: 'exotic',
     tier: 1,
-    creditsCost: 2.5e10,
-    researchTime: 90,
+    researchCost: 2.5e10,
     prerequisites: ['exo_xeno_arch'],
     effects: [{ type: 'researchSpeed', value: 1.25 }],
     unlockKardashev: 2
@@ -490,8 +457,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-moon',
     branch: 'exotic',
     tier: 2,
-    creditsCost: 5e10,
-    researchTime: 150,
+    researchCost: 5e10,
     prerequisites: ['exo_wormholes'],
     effects: [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 1.5 },
@@ -506,8 +472,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-layers',
     branch: 'exotic',
     tier: 3,
-    creditsCost: 4.5e20,
-    researchTime: 240,
+    researchCost: 4.5e20,
     prerequisites: ['exo_dark_matter'],
     effects: [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 1.5 },
@@ -522,8 +487,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-timer',
     branch: 'exotic',
     tier: 4,
-    creditsCost: 8e20,
-    researchTime: 480,
+    researchCost: 8e20,
     prerequisites: ['exo_dimension'],
     effects: [
       { type: 'researchSpeed', value: 1.5 },
@@ -538,8 +502,7 @@ const researchTree: ResearchDefinition[] = [
     icon: 'i-lucide-wand',
     branch: 'exotic',
     tier: 5,
-    creditsCost: 1.5e31,
-    researchTime: 900,
+    researchCost: 1.5e31,
     prerequisites: ['exo_time_manip', 'nrg_omega'],
     effects: [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 3.0 },
@@ -557,7 +520,6 @@ const megastructures: MegastructureDefinition[] = [
     icon: 'i-lucide-hammer',
     stages: 3,
     creditsCostPerStage: 50e9,
-    buildTimePerStage: 120,
     requiredResearch: ['ind_megascale'],
     unlockKardashev: 2,
     effects: [
@@ -574,7 +536,6 @@ const megastructures: MegastructureDefinition[] = [
     icon: 'i-lucide-brain-circuit',
     stages: 4,
     creditsCostPerStage: 200e9,
-    buildTimePerStage: 180,
     requiredResearch: ['nrg_zero_point'],
     unlockKardashev: 2,
     effects: [
@@ -590,7 +551,6 @@ const megastructures: MegastructureDefinition[] = [
     icon: 'i-lucide-anvil',
     stages: 3,
     creditsCostPerStage: 10e15,
-    buildTimePerStage: 240,
     requiredResearch: ['exo_dark_matter'],
     unlockKardashev: 3,
     effects: [
@@ -607,7 +567,6 @@ const megastructures: MegastructureDefinition[] = [
     icon: 'i-lucide-server',
     stages: 5,
     creditsCostPerStage: 100e15,
-    buildTimePerStage: 300,
     requiredResearch: ['ind_matter_prog', 'nrg_vacuum'],
     unlockKardashev: 3,
     effects: [
@@ -624,7 +583,6 @@ const megastructures: MegastructureDefinition[] = [
     icon: 'i-lucide-dna',
     stages: 4,
     creditsCostPerStage: 5e24,
-    buildTimePerStage: 480,
     requiredResearch: ['ind_reality_fab'],
     unlockKardashev: 4,
     effects: [
@@ -641,7 +599,6 @@ const megastructures: MegastructureDefinition[] = [
     icon: 'i-lucide-globe',
     stages: 5,
     creditsCostPerStage: 50e24,
-    buildTimePerStage: 600,
     requiredResearch: ['nrg_entropy_rev', 'exo_dimension'],
     unlockKardashev: 4,
     effects: [
@@ -658,7 +615,6 @@ const megastructures: MegastructureDefinition[] = [
     icon: 'i-lucide-infinity',
     stages: 6,
     creditsCostPerStage: 1e33,
-    buildTimePerStage: 900,
     requiredResearch: ['exo_reality'],
     unlockKardashev: 5,
     effects: [
@@ -675,7 +631,6 @@ const megastructures: MegastructureDefinition[] = [
     icon: 'i-lucide-hexagon',
     stages: 10,
     creditsCostPerStage: 1e36,
-    buildTimePerStage: 1200,
     requiredResearch: ['exo_reality', 'ind_reality_fab', 'nrg_omega', 'soc_omega'],
     unlockKardashev: 5,
     effects: [
@@ -692,7 +647,6 @@ const megastructures: MegastructureDefinition[] = [
     icon: 'i-lucide-copy',
     stages: 5,
     creditsCostPerStage: 1e27,
-    buildTimePerStage: 480,
     requiredResearch: ['ind_nano_assembly'],
     unlockKardashev: 4,
     effects: [
@@ -709,7 +663,6 @@ const megastructures: MegastructureDefinition[] = [
     icon: 'i-lucide-sparkles',
     stages: 8,
     creditsCostPerStage: 1e36,
-    buildTimePerStage: 900,
     requiredResearch: ['ind_reality_forge'],
     unlockKardashev: 5,
     effects: [
@@ -726,7 +679,6 @@ const megastructures: MegastructureDefinition[] = [
     icon: 'i-lucide-flame',
     stages: 8,
     creditsCostPerStage: 5e39,
-    buildTimePerStage: 600,
     requiredResearch: ['ind_reality_fab'],
     unlockKardashev: 6,
     effects: [
@@ -744,7 +696,6 @@ const megastructures: MegastructureDefinition[] = [
     icon: 'i-lucide-clock',
     stages: 10,
     creditsCostPerStage: 1e42,
-    buildTimePerStage: 900,
     requiredResearch: ['exo_reality'],
     unlockKardashev: 6,
     effects: [
@@ -758,14 +709,15 @@ const megastructures: MegastructureDefinition[] = [
 ]
 
 const repeatableResearch: RepeatableResearchDefinition[] = [
-  { id: 'rep_credits', name: 'Advanced Revenue Systems', description: '+5% ₢ production per level', icon: 'i-lucide-banknote', branch: 'industry', baseCreditsCost: 1e4, costScale: 1.5, baseResearchTime: 30, timeScale: 1.2, effect: { stat: 'creditsMultiplier', valuePerLevel: 1.05 } },
-  { id: 'rep_cg', name: 'Logistics Optimization', description: '+5% CG production per level', icon: 'i-lucide-package', branch: 'industry', baseCreditsCost: 1e4, costScale: 1.5, baseResearchTime: 30, timeScale: 1.2, effect: { stat: 'cgMultiplier', valuePerLevel: 1.05 } },
-  { id: 'rep_workers', name: 'Workforce Enhancement', description: '+5% worker output per level', icon: 'i-lucide-users', branch: 'society', baseCreditsCost: 1.5e4, costScale: 1.5, baseResearchTime: 35, timeScale: 1.2, effect: { stat: 'workerOutputMultiplier', valuePerLevel: 1.05 } },
-  { id: 'rep_trade', name: 'Trade Optimization', description: '+5% trade value per level', icon: 'i-lucide-handshake', branch: 'industry', baseCreditsCost: 1e4, costScale: 1.5, baseResearchTime: 30, timeScale: 1.2, effect: { stat: 'tradeMultiplier', valuePerLevel: 1.05 } },
-  { id: 'rep_growth', name: 'Colonial Genetics', description: '+3% pop growth per level', icon: 'i-lucide-trending-up', branch: 'society', baseCreditsCost: 1.2e4, costScale: 1.5, baseResearchTime: 35, timeScale: 1.2, effect: { stat: 'popGrowthMultiplier', valuePerLevel: 1.03 } },
-  { id: 'rep_division_cost', name: 'Construction Efficiency', description: '-3% division costs per level', icon: 'i-lucide-hard-hat', branch: 'industry', baseCreditsCost: 1.5e4, costScale: 1.6, baseResearchTime: 40, timeScale: 1.2, effect: { stat: 'divisionCostMultiplier', valuePerLevel: 0.97 } },
-  { id: 'rep_maintenance', name: 'Maintenance Protocols', description: '-3% maintenance per level', icon: 'i-lucide-wrench', branch: 'energy', baseCreditsCost: 1.5e4, costScale: 1.6, baseResearchTime: 40, timeScale: 1.2, effect: { stat: 'maintenanceReduction', valuePerLevel: 0.97 } },
-  { id: 'rep_exotic', name: 'Exotic Insights', description: '+2% all production per level', icon: 'i-lucide-sparkles', branch: 'exotic', baseCreditsCost: 5e4, costScale: 2.0, baseResearchTime: 60, timeScale: 1.3, effect: { stat: 'allProductionMultiplier', valuePerLevel: 1.02 } },
+  { id: 'rep_credits', name: 'Advanced Revenue Systems', description: '+5% ₢ production per level', icon: 'i-lucide-banknote', branch: 'industry', baseResearchCost: 1e4, costScale: 1.5, effect: { stat: 'creditsMultiplier', valuePerLevel: 1.05 } },
+  { id: 'rep_cg', name: 'Logistics Optimization', description: '+5% CG production per level', icon: 'i-lucide-package', branch: 'industry', baseResearchCost: 1e4, costScale: 1.5, effect: { stat: 'cgMultiplier', valuePerLevel: 1.05 } },
+  { id: 'rep_workers', name: 'Workforce Enhancement', description: '+5% worker output per level', icon: 'i-lucide-users', branch: 'society', baseResearchCost: 1.5e4, costScale: 1.5, effect: { stat: 'workerOutputMultiplier', valuePerLevel: 1.05 } },
+  { id: 'rep_trade', name: 'Trade Optimization', description: '+5% trade value per level', icon: 'i-lucide-handshake', branch: 'industry', baseResearchCost: 1e4, costScale: 1.5, effect: { stat: 'tradeMultiplier', valuePerLevel: 1.05 } },
+  { id: 'rep_growth', name: 'Colonial Genetics', description: '+3% pop growth per level', icon: 'i-lucide-trending-up', branch: 'society', baseResearchCost: 1.2e4, costScale: 1.5, effect: { stat: 'popGrowthMultiplier', valuePerLevel: 1.03 } },
+  { id: 'rep_division_cost', name: 'Construction Efficiency', description: '-3% division costs per level', icon: 'i-lucide-hard-hat', branch: 'industry', baseResearchCost: 1.5e4, costScale: 1.6, effect: { stat: 'divisionCostMultiplier', valuePerLevel: 0.97 } },
+  { id: 'rep_maintenance', name: 'Maintenance Protocols', description: '-3% maintenance per level', icon: 'i-lucide-wrench', branch: 'energy', baseResearchCost: 1.5e4, costScale: 1.6, effect: { stat: 'maintenanceReduction', valuePerLevel: 0.97 } },
+  { id: 'rep_exotic', name: 'Exotic Insights', description: '+2% all production per level', icon: 'i-lucide-sparkles', branch: 'exotic', baseResearchCost: 5e4, costScale: 2.0, effect: { stat: 'allProductionMultiplier', valuePerLevel: 1.02 } },
+  { id: 'rep_research', name: 'Research Amplification', description: '+5% RP per level', icon: 'i-lucide-flask-conical', branch: 'society', baseResearchCost: 1.5e4, costScale: 1.5, effect: { stat: 'researchMultiplier', valuePerLevel: 1.05 } },
 ]
 
 export function useResearchConfig() {

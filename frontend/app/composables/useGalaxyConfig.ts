@@ -5,32 +5,32 @@ import type { StarTypeDefinition, SystemTraitDefinition } from '~/types/galaxy'
 const starTypes: StarTypeDefinition[] = [
   {
     type: 'yellow_dwarf', name: 'Yellow Dwarf', color: 'yellow', icon: 'i-lucide-sun',
-    baseOutput: { credits: 5, cg: 0, trade: 0, researchSpeed: 0 },
+    baseOutput: { credits: 5, cg: 0, trade: 0, rp: 0 },
     maintenanceCost: 1, rarity: 0.35,
   },
   {
     type: 'red_giant', name: 'Red Giant', color: 'red', icon: 'i-lucide-flame',
-    baseOutput: { credits: 12, cg: 0, trade: 0, researchSpeed: 0 },
+    baseOutput: { credits: 12, cg: 0, trade: 0, rp: 0 },
     maintenanceCost: 4, rarity: 0.20,
   },
   {
     type: 'blue_supergiant', name: 'Blue Supergiant', color: 'blue', icon: 'i-lucide-sparkles',
-    baseOutput: { credits: 3, cg: 0, trade: 8, researchSpeed: 0 },
+    baseOutput: { credits: 3, cg: 0, trade: 8, rp: 0 },
     maintenanceCost: 3, rarity: 0.10,
   },
   {
     type: 'white_dwarf', name: 'White Dwarf', color: 'zinc', icon: 'i-lucide-circle',
-    baseOutput: { credits: 0, cg: 4, trade: 0, researchSpeed: 0 },
+    baseOutput: { credits: 0, cg: 4, trade: 0, rp: 0 },
     maintenanceCost: 1, rarity: 0.15,
   },
   {
     type: 'neutron_star', name: 'Neutron Star', color: 'violet', icon: 'i-lucide-zap',
-    baseOutput: { credits: 2, cg: 0, trade: 0, researchSpeed: 0.05 },
+    baseOutput: { credits: 2, cg: 0, trade: 0, rp: 3 },
     maintenanceCost: 5, rarity: 0.05,
   },
   {
     type: 'binary_system', name: 'Binary System', color: 'amber', icon: 'i-lucide-orbit',
-    baseOutput: { credits: 6, cg: 3, trade: 0, researchSpeed: 0 },
+    baseOutput: { credits: 6, cg: 3, trade: 0, rp: 0 },
     maintenanceCost: 3, rarity: 0.15,
   },
 ]

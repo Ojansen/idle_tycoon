@@ -10,7 +10,7 @@ function createHomeSystem(): StarSystemState {
     status: 'claimed',
     stars: [{
       type: 'yellow_dwarf',
-      output: { credits: 3, cg: 0, trade: 0, researchSpeed: 0 },
+      output: { credits: 3, cg: 0, trade: 0, rp: 0 },
       maintenanceCost: 0,
     }],
     planets: [{
@@ -56,6 +56,7 @@ function createDefaultState(): GameState {
     homeworldType: 'garden',
     credits: 0,
     totalCreditsEarned: 0,
+    researchPoints: 0,
     influence: 0,
     systems: [createHomeSystem()],
     lastDiscoveryTime: now,
@@ -83,7 +84,7 @@ export function useGameState() {
   const state = useState<GameState>('gameState', createDefaultState)
   const { kardashevLevels, prestigeUpgrades, repeatablePrestigeUpgrades } = useGameConfig()
 
-  function getPrestigeMultiplier(type: 'creditsMultiplier' | 'workerOutputMultiplier' | 'cgMultiplier' | 'tradeMultiplier' | 'popGrowthMultiplier' | 'divisionCostMultiplier' | 'maintenanceReduction'): number {
+  function getPrestigeMultiplier(type: 'creditsMultiplier' | 'workerOutputMultiplier' | 'cgMultiplier' | 'tradeMultiplier' | 'popGrowthMultiplier' | 'divisionCostMultiplier' | 'maintenanceReduction' | 'researchMultiplier'): number {
     let multiplier = 1
     for (const upgradeId of state.value.prestigeUpgradesBought) {
       const upgrade = prestigeUpgrades.find(u => u.id === upgradeId)
@@ -157,7 +158,7 @@ export function useGameState() {
   function tick() {
     const dt = 0.1
     const { netCreditsPerSecond, cgThrottle } = useUpkeep()
-    const { tickPopGrowth } = usePlanets()
+    const { tickPopGrowth, grossRpPerSecond } = usePlanets()
     const creditGain = netCreditsPerSecond.value * dt
 
     state.value.credits = Math.max(0, state.value.credits + creditGain)
@@ -170,12 +171,15 @@ export function useGameState() {
     tickPopGrowth(dt, cgAvailability)
 
     // Galaxy discovery + survey progress
-    const { tickDiscovery } = useGalaxy()
+    const { tickDiscovery, totalStarRp } = useGalaxy()
     tickDiscovery(dt)
+
+    // Research points accumulation (planets + neutron stars)
+    state.value.researchPoints += (grossRpPerSecond.value + totalStarRp.value) * dt
 
     // Research & megastructure progress
     const { tickResearch, tickMegastructures } = useResearchActions()
-    tickResearch(dt)
+    tickResearch(dt, grossRpPerSecond.value + totalStarRp.value)
     tickMegastructures(dt)
 
     if (kardashevLevel.value > state.value.kardashevHighWaterMark) {
@@ -212,6 +216,7 @@ export function useGameState() {
     // New format — apply defaults for any missing fields
     saved.systems ??= [createHomeSystem()]
     saved.lastDiscoveryTime ??= Date.now()
+    saved.researchPoints ??= 0
     saved.prestigeUpgradesBought ??= []
     saved.prestigeRepeatables ??= {}
     saved.setupComplete ??= false

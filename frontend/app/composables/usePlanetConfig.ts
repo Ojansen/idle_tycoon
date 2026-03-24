@@ -102,6 +102,14 @@ const divisions: DivisionDefinition[] = [
     baseUpgradeCost: 40,
     costMultiplier: 1.4,
   },
+  {
+    type: 'research', name: 'Research Division', icon: 'i-lucide-flask-conical', color: 'purple',
+    description: 'Produces research points to advance technology',
+    resource: 'research',
+    baseProd: 2.0,
+    baseUpgradeCost: 80,
+    costMultiplier: 1.5,
+  },
 ]
 
 // ── Planet Definitions (per Kardashev tier) ──

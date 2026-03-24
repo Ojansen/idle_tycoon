@@ -16,7 +16,7 @@ const planetSize = computed(() => planet.value ? getPlanetSize(planet.value.size
 const housingCap = computed(() => planet.value ? getPlanetHousingCap(planet.value) : 0)
 const totalLevels = computed(() => planet.value ? getPlanetTotalLevels(planet.value) : 0)
 const maxLevels = computed(() => planet.value ? getPlanetMaxLevels(planet.value) : 0)
-const production = computed(() => planet.value ? getPlanetProduction(planet.value) : { credits: 0, cg: 0, trade: 0 })
+const production = computed(() => planet.value ? getPlanetProduction(planet.value) : { credits: 0, cg: 0, trade: 0, research: 0 })
 const jobStats = computed(() => planet.value ? getPlanetJobStats(planet.value) : { totalJobs: 0, filledJobs: 0, unemployed: 0, perDivision: [] })
 const atLevelCap = computed(() => totalLevels.value >= maxLevels.value)
 
@@ -96,6 +96,7 @@ const divColorMap: Record<string, string> = {
   industrial: 'text-emerald-400',
   commerce: 'text-violet-400',
   administrative: 'text-sky-400',
+  research: 'text-purple-400',
 }
 
 const divBgMap: Record<string, string> = {
@@ -103,6 +104,7 @@ const divBgMap: Record<string, string> = {
   industrial: 'border-emerald-800/40 bg-emerald-950/20',
   commerce: 'border-violet-800/40 bg-violet-950/20',
   administrative: 'border-sky-800/40 bg-sky-950/20',
+  research: 'border-purple-800/40 bg-purple-950/20',
 }
 
 const openSlot = ref<number | null>(null)
@@ -166,7 +168,7 @@ const sizeLabel = computed(() => {
     <!-- Body -->
     <div class="px-4 pb-4 pt-2 space-y-3 bg-white/[0.02]">
       <!-- Stats row -->
-      <div class="grid grid-cols-5 gap-1 text-center">
+      <div class="grid gap-1 text-center" :class="production.research > 0 ? 'grid-cols-6' : 'grid-cols-5'">
         <div>
           <div class="text-xs font-bold text-cyan-400">{{ Math.floor(planet.pops) }}</div>
           <div class="text-[10px] text-zinc-600">/ {{ housingCap }} pop</div>
@@ -186,6 +188,10 @@ const sizeLabel = computed(() => {
         <div>
           <div class="text-xs font-bold text-emerald-400">{{ formatNumber(production.cg) }}</div>
           <div class="text-[10px] text-zinc-600">CG/s</div>
+        </div>
+        <div v-if="production.research > 0">
+          <div class="text-xs font-bold text-purple-400">{{ formatNumber(production.research) }}</div>
+          <div class="text-[10px] text-zinc-600">RP/s</div>
         </div>
       </div>
       <!-- Unemployed warning -->

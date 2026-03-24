@@ -18,6 +18,7 @@ export type PrestigeEffect =
   | { type: 'maintenanceReduction'; value: number }
   | { type: 'popGrowthMultiplier'; value: number }
   | { type: 'tradeMultiplier'; value: number }
+  | { type: 'researchMultiplier'; value: number }
   | { type: 'allProductionMultiplier'; value: number }
   | { type: 'quickStart'; divisionLevels: number }
   | { type: 'unlockKardashev'; level: number }
@@ -40,7 +41,7 @@ export interface KardashevLevel {
   creditsPerSecond: number
 }
 
-export type TraitStat = 'creditsMultiplier' | 'cgMultiplier' | 'workerOutputMultiplier' | 'divisionCostMultiplier' | 'maintenanceReduction' | 'popGrowthMultiplier' | 'tradeMultiplier' | 'allProductionMultiplier'
+export type TraitStat = 'creditsMultiplier' | 'cgMultiplier' | 'workerOutputMultiplier' | 'divisionCostMultiplier' | 'maintenanceReduction' | 'popGrowthMultiplier' | 'tradeMultiplier' | 'researchMultiplier' | 'allProductionMultiplier'
 
 export type TradePolicy = 'wealth_creation' | 'consumer_benefits'
 
@@ -74,8 +75,7 @@ export interface ResearchDefinition {
   icon: string
   branch: ResearchBranch
   tier: number
-  creditsCost: number
-  researchTime: number
+  researchCost: number
   prerequisites: readonly string[]
   effects: readonly ResearchEffect[]
   unlockKardashev: number
@@ -87,10 +87,8 @@ export interface RepeatableResearchDefinition {
   description: string
   icon: string
   branch: ResearchBranch
-  baseCreditsCost: number
+  baseResearchCost: number
   costScale: number
-  baseResearchTime: number
-  timeScale: number
   effect: { stat: TraitStat; valuePerLevel: number }
 }
 
@@ -101,7 +99,6 @@ export interface MegastructureDefinition {
   icon: string
   stages: number
   creditsCostPerStage: number
-  buildTimePerStage: number
   requiredResearch: readonly string[]
   unlockKardashev: number
   effects: readonly ResearchEffect[]
@@ -111,8 +108,7 @@ export interface MegastructureDefinition {
 
 export interface ResearchProgress {
   techId: string
-  elapsed: number
-  creditsSpent: number
+  rpInvested: number  // RP spent so far
 }
 
 export interface MegastructureProgress {
@@ -128,6 +124,7 @@ export interface GameState {
   companyTraits: string[]
   homeworldType: PlanetType
   credits: number
+  researchPoints: number
   totalCreditsEarned: number
   influence: number
   systems: StarSystemState[]

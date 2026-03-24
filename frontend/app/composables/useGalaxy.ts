@@ -74,7 +74,7 @@ export function generateSystem(seed: number, tier: number, starTypeDefs: readonl
         credits: def.baseOutput.credits * tierScale * (0.8 + rng() * 0.4),
         cg: def.baseOutput.cg * tierScale * (0.8 + rng() * 0.4),
         trade: def.baseOutput.trade * tierScale * (0.8 + rng() * 0.4),
-        researchSpeed: def.baseOutput.researchSpeed * (1 + tier * 0.3),
+        rp: def.baseOutput.rp * (1 + tier * 0.3),
       },
       maintenanceCost: def.maintenanceCost * tierScale * 0.3,
     })
@@ -192,12 +192,12 @@ export function useGalaxy() {
     return total
   })
 
-  const totalResearchSpeedBonus = computed(() => {
+  const totalStarRp = computed(() => {
     let total = 0
     for (const sys of state.value.systems ?? []) {
       if (sys.status !== 'claimed') continue
       for (const star of sys.stars) {
-        total += star.output.researchSpeed
+        total += star.output.rp
       }
     }
     return total
@@ -300,7 +300,7 @@ export function useGalaxy() {
     totalStarCredits,
     totalStarCg,
     totalStarTrade,
-    totalResearchSpeedBonus,
+    totalStarRp,
     totalSystemMaintenance,
     claimedSystemCount,
     totalStarCount,

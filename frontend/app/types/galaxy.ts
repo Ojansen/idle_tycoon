@@ -9,7 +9,7 @@ export interface StarTypeDefinition {
   name: string
   color: string       // tailwind color stem
   icon: string        // lucide icon
-  baseOutput: { credits: number; cg: number; trade: number; researchSpeed: number }
+  baseOutput: { credits: number; cg: number; trade: number; rp: number }
   maintenanceCost: number // ₢/s per star
   rarity: number      // 0-1, lower = rarer
 }
@@ -18,7 +18,7 @@ export interface StarTypeDefinition {
 
 export interface GeneratedStar {
   type: StarType
-  output: { credits: number; cg: number; trade: number; researchSpeed: number }
+  output: { credits: number; cg: number; trade: number; rp: number }
   maintenanceCost: number
 }
 

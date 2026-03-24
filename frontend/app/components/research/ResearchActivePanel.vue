@@ -5,30 +5,27 @@ const {
   isResearching,
   activeResearchDef,
   researchProgress,
-  creditsDrainPerSecond,
-  getResearchSpeedMultiplier,
+  getRepeatableResearchCost,
   cancelResearch
 } = useResearchActions()
 
-const eta = computed(() => {
-  if (!isResearching.value || !activeResearchDef.value) return 0
-  const active = state.value.activeResearch!
-  const def = activeResearchDef.value
-  const remaining = ('researchTime' in def ? def.researchTime : def.baseResearchTime) - active.elapsed
-  return Math.max(0, remaining / getResearchSpeedMultiplier())
+const { grossRpPerSecond } = usePlanets()
+const { totalStarRp } = useGalaxy()
+
+const totalRpPerSecond = computed(() => grossRpPerSecond.value + totalStarRp.value)
+
+const activeResearchCost = computed(() => {
+  const active = state.value.activeResearch
+  if (!active || !activeResearchDef.value) return 0
+  if (active.techId.startsWith('rep:')) {
+    const repId = active.techId.slice(4)
+    return getRepeatableResearchCost(repId)
+  }
+  const def = activeResearchDef.value as { researchCost: number }
+  return def.researchCost ?? 0
 })
 
-function formatTime(seconds: number): string {
-  if (seconds < 60) return `${Math.ceil(seconds)}s`
-  if (seconds < 3600) {
-    const m = Math.floor(seconds / 60)
-    const s = Math.ceil(seconds % 60)
-    return `${m}m ${s}s`
-  }
-  const h = Math.floor(seconds / 3600)
-  const m = Math.ceil((seconds % 3600) / 60)
-  return `${h}h ${m}m`
-}
+const rpInvested = computed(() => state.value.activeResearch?.rpInvested ?? 0)
 </script>
 
 <template>
@@ -68,12 +65,12 @@ function formatTime(seconds: number): string {
       <UProgress :value="researchProgress * 100" size="xs" color="secondary" />
       <div class="flex justify-between text-xs text-zinc-400">
         <span>
-          <UIcon name="i-lucide-banknote" class="align-middle text-amber-400" />
-          Draining ₢{{ formatNumber(creditsDrainPerSecond) }}/s
+          <UIcon name="i-lucide-flask-conical" class="align-middle text-violet-400" />
+          {{ formatNumber(rpInvested) }} / {{ formatNumber(activeResearchCost) }} RP
+          <span class="text-zinc-500 ml-1">({{ formatNumber(totalRpPerSecond) }} RP/s)</span>
         </span>
         <span>
-          {{ Math.round(researchProgress * 100) }}% — ETA
-          <span class="text-violet-300 font-medium">{{ formatTime(eta) }}</span>
+          {{ Math.round(researchProgress * 100) }}%
         </span>
       </div>
     </div>
