@@ -27,35 +27,15 @@ export function useGamePersistence() {
     }
   }
 
-  async function loadGame(): Promise<{ offlineCredits: number; offlineSeconds: number }> {
+  async function loadGame(): Promise<void> {
     try {
       const { state: saved } = await $fetch('/api/game/load') as { state?: string }
-      if (!saved) return { offlineCredits: 0, offlineSeconds: 0 }
+      if (!saved) return
 
       loadState(saved as any)
-
-      // Calculate offline earnings
-      const now = Date.now()
-      const elapsed = (now - state.value.lastSaveTimestamp) / 1000
-      const maxOffline = 24 * 60 * 60 // 24h cap
-      const cappedElapsed = Math.min(elapsed, maxOffline)
-
-      if (cappedElapsed > 10) {
-        const { netCreditsPerSecond } = useUpkeep()
-        const offlineCredits = Math.max(0, cappedElapsed * netCreditsPerSecond.value)
-
-        state.value.credits += offlineCredits
-        state.value.totalCreditsEarned += offlineCredits
-        state.value.lastSaveTimestamp = now
-
-        return { offlineCredits, offlineSeconds: cappedElapsed }
-      }
-
-      state.value.lastSaveTimestamp = now
-      return { offlineCredits: 0, offlineSeconds: 0 }
+      state.value.lastSaveTimestamp = Date.now()
     } catch (e) {
       console.warn('Failed to load game:', e)
-      return { offlineCredits: 0, offlineSeconds: 0 }
     }
   }
 

@@ -23,10 +23,6 @@ const activeTab = ref('galaxy')
 // Loading state
 const loaded = ref(false)
 
-// Offline earnings modal
-const offlineData = ref<{ credits: number; seconds: number } | null>(null)
-const showOfflineModal = ref(false)
-
 // Victory modal
 const showVictoryModal = ref(false)
 
@@ -44,12 +40,8 @@ const loadError = ref('')
 
 onMounted(async () => {
   try {
-    const { offlineCredits, offlineSeconds } = await loadGame()
+    await loadGame()
     suppressExistingToasts()
-    if (offlineCredits > 0) {
-      offlineData.value = { credits: offlineCredits, seconds: offlineSeconds }
-      showOfflineModal.value = true
-    }
     startAutoSave()
   } catch (e: any) {
     loadError.value = e.message + '\n' + (e.stack?.substring(0, 300) ?? '')
@@ -65,7 +57,7 @@ function onSetupComplete() {
 
 <template>
   <div class="min-h-screen flex flex-col">
-    <!-- Emergency debug -->
+    <!-- Loading -->
     <div v-if="!loaded" class="text-white p-4">Loading game...</div>
     <div v-if="loadError" class="text-red-400 p-4 font-mono text-xs whitespace-pre-wrap">{{ loadError }}</div>
 
@@ -88,7 +80,8 @@ function onSetupComplete() {
 
         <!-- Galaxy tab -->
         <div v-if="activeTab === 'galaxy'">
-          <div class="text-white p-4">Galaxy tab is active. Systems: {{ state.systems?.length ?? 'none' }}</div>
+          <div class="text-white text-xs p-2 mb-2">Systems: {{ state.systems?.length ?? 'none' }}, claimed: {{ state.systems?.filter(s => s.status === 'claimed').length ?? 0 }}</div>
+          <GalaxyView />
         </div>
 
         <!-- Overview tab -->
@@ -121,14 +114,6 @@ function onSetupComplete() {
           <GameProfilePanel />
         </div>
       </div>
-
-      <!-- Offline earnings modal -->
-      <GameOfflineEarningsModal
-        v-if="offlineData"
-        v-model:open="showOfflineModal"
-        :credits="offlineData.credits"
-        :seconds="offlineData.seconds"
-      />
 
       <!-- Victory modal -->
       <GameVictoryModal v-model:open="showVictoryModal" />
