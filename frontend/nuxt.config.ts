@@ -9,7 +9,8 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@nuxthub/core',
     'nuxt-toast',
-    'nuxt-charts'
+    'nuxt-charts',
+    '@nuxtjs/leaflet'
   ],
 
   devtools: {
