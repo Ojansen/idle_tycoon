@@ -11,6 +11,9 @@ export function useGalaxyActions() {
     const sys = state.value.systems?.[systemIndex]
     if (!sys || sys.status !== 'undiscovered') return false
     if (sys.surveyProgress > 0) return false // already surveying
+    // Frontier check: must be adjacent to a claimed system
+    const { frontierIds } = useGalaxy()
+    if (!frontierIds.value.includes(sys.id)) return false
     const costMod = getSystemTraitMod(sys, 'surveyCost')
     return state.value.credits >= sys.surveyCost * costMod
   }

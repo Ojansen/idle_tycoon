@@ -1,50 +1,6 @@
 import type { GameState, TraitStat, TradePolicy } from '~/types/game'
-import type { StarSystemState } from '~/types/galaxy'
 import { KARDASHEV_MILESTONE_GRANTS } from '~/utils/gameMath'
-
-function createHomeSystem(): StarSystemState {
-  return {
-    id: 'home_system',
-    seed: 0,
-    tier: 0,
-    status: 'claimed',
-    stars: [{
-      type: 'yellow_dwarf',
-      output: { credits: 3, cg: 0, trade: 0, rp: 0 },
-      maintenanceCost: 0,
-    }],
-    planets: [{
-      definitionId: 'homeworld',
-      name: 'Terra Nova',
-      type: 'garden',
-      size: 'medium',
-      traits: [],
-      pops: 2,
-      divisions: [
-        { type: 'mining', level: 1 },
-        { type: 'industrial', level: 1 },
-        { type: 'administrative', level: 1 },
-        null,
-      ],
-      policy: 'balanced',
-    }],
-    planetSlots: [{
-      type: 'garden',
-      size: 'medium',
-      traits: [],
-      colonized: true,
-      colonyCost: 0,
-      name: 'Terra Nova',
-    }],
-    traits: [],
-    surveyProgress: 0,
-    surveyTime: 0,
-    surveyCost: 0,
-    claimCost: 0,
-    name: 'Sol',
-    discoveredAt: 0,
-  }
-}
+import { createGalaxy } from '~/composables/useGalaxyGenSystem'
 
 function createDefaultState(): GameState {
   const now = Date.now()
@@ -58,7 +14,7 @@ function createDefaultState(): GameState {
     totalCreditsEarned: 0,
     researchPoints: 0,
     influence: 0,
-    systems: [createHomeSystem()],
+    systems: createGalaxy(now), // seed from timestamp — unique galaxy per game
     lastDiscoveryTime: now,
     prestigeCount: 0,
     prestigeUpgradesBought: [],
@@ -171,8 +127,8 @@ export function useGameState() {
     tickPopGrowth(dt, cgAvailability)
 
     // Galaxy discovery + survey progress
-    const { tickDiscovery, totalStarRp } = useGalaxy()
-    tickDiscovery(dt)
+    const { tickSurveys, totalStarRp } = useGalaxy()
+    tickSurveys(dt)
 
     // Research points accumulation (planets + neutron stars)
     state.value.researchPoints += (grossRpPerSecond.value + totalStarRp.value) * dt
@@ -215,7 +171,7 @@ export function useGameState() {
     }
 
     // New format — apply defaults for any missing fields
-    saved.systems ??= [createHomeSystem()]
+    saved.systems ??= createGalaxy(Date.now())
     saved.lastDiscoveryTime ??= Date.now()
     saved.researchPoints ??= 0
     saved.prestigeUpgradesBought ??= []

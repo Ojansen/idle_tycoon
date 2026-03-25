@@ -19,7 +19,7 @@ export const STRETCH_X = 1.3      // elliptical stretch (oval)
 export const STRETCH_Y = 1.0
 export const GOLDEN_ANGLE = 2.399963 // ~137.5° in radians — golden angle for even distribution
 export const DEFAULT_SYSTEM_COUNT = 120
-export const NEIGHBOR_K = 4       // connect each system to K nearest neighbors
+export const NEIGHBOR_K = 3       // connect each system to 1-3 nearest neighbors
 export const MAX_EDGE_DISTANCE = 200 // max distance for an edge
 
 // ── Types ──
@@ -88,12 +88,14 @@ function crossesVoid(a: { x: number; y: number }, b: { x: number; y: number }, v
   return distToCenter < voidRadius
 }
 
-function buildEdges(nodes: { id: string; x: number; y: number }[]): Map<string, Set<string>> {
+function buildEdges(nodes: { id: string; x: number; y: number }[], rng: () => number): Map<string, Set<string>> {
   const edges = new Map<string, Set<string>>()
   for (const n of nodes) edges.set(n.id, new Set())
 
-  // For each node, connect to K nearest neighbors (that don't cross void)
+  // For each node, connect to 1-3 nearest neighbors (that don't cross void)
   for (const node of nodes) {
+    const k = 1 + Math.floor(rng() * NEIGHBOR_K) // 1 to NEIGHBOR_K edges
+
     // Sort all other nodes by distance
     const sorted = nodes
       .filter(n => n.id !== node.id)
@@ -102,7 +104,7 @@ function buildEdges(nodes: { id: string; x: number; y: number }[]): Map<string, 
 
     let connected = 0
     for (const candidate of sorted) {
-      if (connected >= NEIGHBOR_K) break
+      if (connected >= k) break
       if (candidate.dist > MAX_EDGE_DISTANCE) break
 
       // Check void crossing
@@ -231,7 +233,7 @@ export function generateGalaxy(masterSeed: number, systemCount: number = DEFAULT
   const homeId = nodes[homeIndex]!.id
 
   // 4. Build edges (K nearest neighbors, no void crossing)
-  const edgeMap = buildEdges(nodes)
+  const edgeMap = buildEdges(nodes, rng)
 
   // 5. Ensure connectivity via Dijkstra
   ensureConnected(nodes, edgeMap, homeId)

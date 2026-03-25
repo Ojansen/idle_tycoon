@@ -1,5 +1,6 @@
 import type { TradePolicy } from '~/types/game'
 import { calcPrestigeInfluence, calcRepeatableCost } from '~/utils/gameMath'
+import { createGalaxy } from '~/composables/useGalaxyGenSystem'
 
 export function useGameActions() {
   const { state, kardashevLevel } = useGameState()
@@ -19,37 +20,8 @@ export function useGameActions() {
     const influenceGain = getPrestigeInfluenceGain()
     const now = Date.now()
 
-    // Create default home system for new run
-    const homeSystem = {
-      id: 'home_system',
-      seed: 0,
-      tier: 0,
-      status: 'claimed' as const,
-      stars: [{ type: 'yellow_dwarf' as const, output: { credits: 3, cg: 0, trade: 0, rp: 0 }, maintenanceCost: 0 }],
-      planets: [{
-        definitionId: 'homeworld',
-        name: 'Terra Nova',
-        type: 'garden' as const,
-        size: 'medium' as const,
-        traits: [] as string[],
-        pops: 2,
-        divisions: [
-          { type: 'mining' as const, level: 1 },
-          { type: 'industrial' as const, level: 1 },
-          { type: 'administrative' as const, level: 1 },
-          null,
-        ],
-        policy: 'balanced' as const,
-      }],
-      planetSlots: [{ type: 'garden' as const, size: 'medium' as const, traits: [] as string[], colonized: true, colonyCost: 0, name: 'Terra Nova' }],
-      traits: [] as string[],
-      surveyProgress: 0,
-      surveyTime: 0,
-      surveyCost: 0,
-      claimCost: 0,
-      name: 'Sol',
-      discoveredAt: 0,
-    }
+    // Generate new galaxy with seed from current time — unique per prestige run
+    const newSeed = now
 
     // Atomic replacement
     state.value = {
@@ -62,7 +34,7 @@ export function useGameActions() {
       credits: 0,
       totalCreditsEarned: 0,
       researchPoints: 0,
-      systems: [homeSystem],
+      systems: createGalaxy(newSeed),
       lastDiscoveryTime: now,
       // Kept
       influence: state.value.influence + influenceGain,

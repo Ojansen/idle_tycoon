@@ -59,4 +59,7 @@ export interface StarSystemState {
   claimCost: number             // ₢ to claim
   name: string
   discoveredAt: number          // timestamp
+  x: number                     // map coordinate
+  y: number                     // map coordinate
+  edges: string[]               // connected system IDs
 }
