@@ -43,9 +43,8 @@ export function usePlanets(): {
   getMultiplierStack: (stat: 'creditsMultiplier' | 'cgMultiplier' | 'tradeMultiplier') => number
   getResearchMultiplierStack: () => number
 } {
-  const { state, getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
+  const { state, getTraitMultiplier } = useGameState()
   const { getPlanetDef, getPlanetType, getPlanetSize, getPlanetTrait, getDivision } = usePlanetConfig()
-  const { getAscensionMultiplier } = useAscensionPerks()
   const { getResearchMultiplier } = useResearchActions()
 
   // Helper: collect all colonized planets from all systems
@@ -62,35 +61,23 @@ export function usePlanets(): {
   // ── Multiplier stacks ──
 
   function getMultiplierStack(stat: 'creditsMultiplier' | 'cgMultiplier' | 'tradeMultiplier'): number {
-    return getPrestigeMultiplier(stat)
-      * getTraitMultiplier(stat)
-      * getAscensionMultiplier(stat)
-      * getRepeatableMultiplier(stat)
+    return getTraitMultiplier(stat)
       * getResearchMultiplier(stat)
       * getTraitMultiplier('allProductionMultiplier')
   }
 
   function getWorkerOutputStack(): number {
-    return getPrestigeMultiplier('workerOutputMultiplier')
-      * getTraitMultiplier('workerOutputMultiplier')
-      * getAscensionMultiplier('workerOutputMultiplier')
-      * getRepeatableMultiplier('workerOutputMultiplier')
+    return getTraitMultiplier('workerOutputMultiplier')
       * getResearchMultiplier('workerOutputMultiplier')
   }
 
   function getResearchMultiplierStack(): number {
-    return getPrestigeMultiplier('researchMultiplier')
-      * getTraitMultiplier('researchMultiplier')
-      * getAscensionMultiplier('researchMultiplier')
-      * getRepeatableMultiplier('researchMultiplier')
+    return getTraitMultiplier('researchMultiplier')
       * getResearchMultiplier('researchMultiplier')
   }
 
   function getPopGrowthMultiplier(): number {
-    return getPrestigeMultiplier('popGrowthMultiplier')
-      * getTraitMultiplier('popGrowthMultiplier')
-      * getAscensionMultiplier('popGrowthMultiplier')
-      * getRepeatableMultiplier('popGrowthMultiplier')
+    return getTraitMultiplier('popGrowthMultiplier')
       * getResearchMultiplier('popGrowthMultiplier')
   }
 

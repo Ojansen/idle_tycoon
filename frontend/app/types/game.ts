@@ -1,46 +1,6 @@
 import type { PlanetType } from '~/types/planet'
 import type { StarSystemState } from '~/types/galaxy'
 
-export interface PrestigeUpgradeDefinition {
-  id: string
-  name: string
-  description: string
-  cost: number
-  effect: PrestigeEffect
-  requiredKardashev?: number
-}
-
-export type PrestigeEffect =
-  | { type: 'creditsMultiplier'; value: number }
-  | { type: 'cgMultiplier'; value: number }
-  | { type: 'workerOutputMultiplier'; value: number }
-  | { type: 'divisionCostMultiplier'; value: number }
-  | { type: 'maintenanceReduction'; value: number }
-  | { type: 'popGrowthMultiplier'; value: number }
-  | { type: 'tradeMultiplier'; value: number }
-  | { type: 'researchMultiplier'; value: number }
-  | { type: 'allProductionMultiplier'; value: number }
-  | { type: 'quickStart'; divisionLevels: number }
-  | { type: 'unlockKardashev'; level: number }
-
-export interface RepeatablePrestigeUpgrade {
-  id: string
-  name: string
-  description: string
-  icon: string
-  baseCost: number
-  costScale: number
-  maxLevel: number
-  effect: { type: TraitStat; valuePerLevel: number }
-}
-
-export interface KardashevLevel {
-  level: number
-  name: string
-  description: string
-  creditsPerSecond: number
-}
-
 export type TraitStat = 'creditsMultiplier' | 'cgMultiplier' | 'workerOutputMultiplier' | 'divisionCostMultiplier' | 'maintenanceReduction' | 'popGrowthMultiplier' | 'tradeMultiplier' | 'researchMultiplier' | 'allProductionMultiplier'
 
 export type TradePolicy = 'wealth_creation' | 'consumer_benefits'
@@ -78,7 +38,6 @@ export interface ResearchDefinition {
   researchCost: number
   prerequisites: readonly string[]
   effects: readonly ResearchEffect[]
-  unlockKardashev: number
 }
 
 export interface RepeatableResearchDefinition {
@@ -100,7 +59,6 @@ export interface MegastructureDefinition {
   stages: number
   creditsCostPerStage: number
   requiredResearch: readonly string[]
-  unlockKardashev: number
   effects: readonly ResearchEffect[]
   creditsUpkeepPerSecond?: number
   cgUpkeepPerSecond?: number
@@ -126,14 +84,8 @@ export interface GameState {
   credits: number
   researchPoints: number
   totalCreditsEarned: number
-  influence: number
   systems: StarSystemState[]
   lastDiscoveryTime: number
-  prestigeCount: number
-  prestigeUpgradesBought: string[]
-  prestigeRepeatables: Record<string, number>
-  kardashevHighWaterMark: number
-  ascensionPerks: { stat: TraitStat; value: number }[]
   achievements: string[]
   completedResearch: string[]
   activeResearch: ResearchProgress | null

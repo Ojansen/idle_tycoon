@@ -1,7 +1,7 @@
 import { calcEmpireSize, calcSprawlPenalty, EMPIRE_SIZE_THRESHOLD } from '~/utils/gameMath'
 
 export function useUpkeep() {
-  const { state, creditsPerSecond, cgPerSecond, getRepeatableMultiplier } = useGameState()
+  const { state, creditsPerSecond, cgPerSecond } = useGameState()
   const { megastructures } = useResearchConfig()
   const { totalPops, totalDivisionLevels, totalMaintenance, baseCgConsumption, grossCreditsPerSecond } = usePlanets()
 
@@ -45,9 +45,7 @@ export function useUpkeep() {
   }
 
   function getFullUpkeepReduction(): number {
-    const repeatable = getRepeatableMultiplier('maintenanceReduction')
-    const research = getResearchUpkeepReduction()
-    return repeatable * research
+    return getResearchUpkeepReduction()
   }
 
   // ── CG production (gross, from planets + stars) ──

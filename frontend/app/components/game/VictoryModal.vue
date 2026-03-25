@@ -21,24 +21,16 @@ const playTimeFormatted = computed(() => {
 
         <div class="grid grid-cols-2 gap-4 mb-6 text-center">
           <div>
-            <div class="text-lg font-bold text-violet-400">{{ state.prestigeCount }}</div>
-            <div class="text-xs text-zinc-500">Prestiges</div>
-          </div>
-          <div>
             <div class="text-lg font-bold text-amber-400">{{ playTimeFormatted }}</div>
             <div class="text-xs text-zinc-500">Play Time</div>
           </div>
           <div>
-            <div class="text-lg font-bold text-emerald-400">₢{{ formatNumber(state.totalCreditsEarned) }}</div>
+            <div class="text-lg font-bold text-emerald-400">{{ formatNumber(state.totalCreditsEarned) }}</div>
             <div class="text-xs text-zinc-500">Total Credits Earned</div>
-          </div>
-          <div>
-            <div class="text-lg font-bold text-cyan-400">{{ state.influence }}</div>
-            <div class="text-xs text-zinc-500">Influence Earned</div>
           </div>
         </div>
 
-        <p class="text-xs text-zinc-500 mb-4">Type VI civilization and beyond awaits. The journey continues...</p>
+        <p class="text-xs text-zinc-500 mb-4">The journey continues...</p>
 
         <UButton color="primary" @click="open = false">
           Continue Playing

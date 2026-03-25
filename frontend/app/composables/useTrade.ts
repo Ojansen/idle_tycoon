@@ -32,8 +32,7 @@ export const TRADE_POLICIES: TradePolicyDefinition[] = [
 ]
 
 export function useTrade() {
-  const { state, getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
-  const { getAscensionMultiplier } = useAscensionPerks()
+  const { state, getTraitMultiplier } = useGameState()
   const { getResearchMultiplier } = useResearchActions()
   const { rawTradeValue: planetRawTradeValue, totalDivisionLevels } = usePlanets()
 
@@ -44,10 +43,7 @@ export function useTrade() {
 
   // Trade multiplier stack (standard pattern)
   const tradeMultiplierStack = computed(() => {
-    return getPrestigeMultiplier('tradeMultiplier')
-      * getTraitMultiplier('tradeMultiplier')
-      * getAscensionMultiplier('tradeMultiplier')
-      * getRepeatableMultiplier('tradeMultiplier')
+    return getTraitMultiplier('tradeMultiplier')
       * getResearchMultiplier('tradeMultiplier')
   })
 

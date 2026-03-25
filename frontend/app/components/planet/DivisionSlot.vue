@@ -10,6 +10,8 @@ const props = defineProps<{
 const { state } = useGameState()
 const { assignDivision, upgradeDivision, canUpgradeDivision, getDivisionUpgradeCost, getAssignCost } = usePlanetActions()
 const { getDivision, divisions } = usePlanetConfig()
+
+const isMaxLevel = computed(() => (division.value?.level ?? 0) >= 10)
 const { formatNumber } = useNumberFormat()
 
 const planet = computed(() => state.value.systems[props.systemIndex]?.planets[props.planetIndex])
@@ -106,6 +108,17 @@ const hoverMap: Record<string, string> = {
         <!-- Upgrade button -->
         <div class="mt-auto" @click.stop>
           <UButton
+            v-if="isMaxLevel"
+            size="xs"
+            variant="soft"
+            color="neutral"
+            disabled
+            class="w-full justify-center text-[10px]"
+          >
+            MAX
+          </UButton>
+          <UButton
+            v-else
             size="xs"
             variant="soft"
             :color="canAffordUpgrade ? 'primary' : 'neutral'"

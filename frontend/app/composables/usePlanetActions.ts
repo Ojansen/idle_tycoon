@@ -29,9 +29,9 @@ export function usePlanetActions() {
   function canColonize(planetDefId: string): boolean {
     const def = getPlanetDef(planetDefId)
     if (!def) return false
-    // Check Kardashev level
-    const { kardashevLevel } = useGameState()
-    if (kardashevLevel.value < def.unlockKardashev) return false
+    // Check required research
+    const { isResearchComplete } = useResearchActions()
+    if (!def.requiredResearch.every(techId => isResearchComplete(techId))) return false
     // Check not already colonized
     const alreadyColonized = state.value.systems.some(sys =>
       sys.planets.some(p => p.definitionId === planetDefId)
@@ -168,7 +168,7 @@ export function usePlanetActions() {
     const fromDef = getPlanetDef(fromPlanet.definitionId)
     const toDef = getPlanetDef(toPlanet.definitionId)
     if (!fromDef || !toDef) return Infinity
-    const tierDiff = Math.abs(fromDef.unlockKardashev - toDef.unlockKardashev)
+    const tierDiff = Math.abs(fromDef.requiredResearch.length - toDef.requiredResearch.length)
     return calcTransferCost(popCount, POP_TRANSFER_BASE_COST, POP_TRANSFER_TIER_SCALE, tierDiff)
   }
 
@@ -204,13 +204,13 @@ export function usePlanetActions() {
   // ── Available planets for colonization ──
 
   const availablePlanets = computed(() => {
-    const { kardashevLevel } = useGameState()
+    const { isResearchComplete } = useResearchActions()
     const colonized = new Set(
       state.value.systems.flatMap(sys => sys.planets.map(p => p.definitionId))
     )
     return planetDefs.filter(p => {
       if (colonized.has(p.id)) return false
-      if (p.unlockKardashev > kardashevLevel.value) return false
+      if (!p.requiredResearch.every(techId => isResearchComplete(techId))) return false
       return true
     })
   })

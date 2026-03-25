@@ -46,7 +46,7 @@ export interface PlanetDefinition {
   type: PlanetType
   size: PlanetSize
   traits: string[]           // trait IDs
-  unlockKardashev: number
+  requiredResearch: string[]  // research IDs needed to unlock
   colonyCost: number         // ₢ cost to colonize
   maintenanceCost: number    // base ₢/s upkeep
 }

@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
   formatNumber,
-  calcPrestigeInfluence,
-  calcRepeatableCost,
   calcBuildingMultiplier,
   calcUpkeepMultiplier,
   calcBuildingCost,
@@ -61,49 +59,6 @@ describe('formatNumber', () => {
   it('handles negative numbers', () => {
     expect(formatNumber(-1500)).toBe('-1.50K')
     expect(formatNumber(-5)).toBe('-5.0')
-  })
-})
-
-// ── calcPrestigeInfluence ──
-// Formula: floor(log2(totalEnergyEarned / 1e5) * 50)
-// Kardashev milestone grants are awarded separately (one-time, not per-prestige)
-
-describe('calcPrestigeInfluence', () => {
-  it('returns 0 for 0 energy', () => {
-    expect(calcPrestigeInfluence(0)).toBe(0)
-  })
-
-  it('returns 0 for energy below threshold (1e5)', () => {
-    expect(calcPrestigeInfluence(99999)).toBe(0)
-    expect(calcPrestigeInfluence(1e5)).toBe(0) // log2(1) = 0
-  })
-
-  it('returns ~166 for 1e6 energy', () => {
-    // log2(10) * 50 ≈ 166
-    expect(calcPrestigeInfluence(1e6)).toBe(Math.floor(Math.log2(10) * 50))
-  })
-
-  it('returns ~830 for 1e10 energy', () => {
-    // log2(1e5) * 50 ≈ 830
-    expect(calcPrestigeInfluence(1e10)).toBe(Math.floor(Math.log2(1e5) * 50))
-  })
-
-  it('growth is logarithmic — doubling energy adds exactly 50 influence', () => {
-    const at1e10 = calcPrestigeInfluence(1e10)
-    const at2e10 = calcPrestigeInfluence(2e10)
-    expect(at2e10 - at1e10).toBe(50)
-  })
-
-  it('late game stays controlled — 1e30 gives only ~4.2K', () => {
-    const result = calcPrestigeInfluence(1e30)
-    // log2(1e25) * 50 ≈ 4152
-    expect(result).toBeLessThan(5000)
-    expect(result).toBeGreaterThan(4000)
-  })
-
-  it('floors fractional results', () => {
-    const result = calcPrestigeInfluence(2e5) // log2(2) * 50 = 50 exactly
-    expect(result).toBe(50)
   })
 })
 
@@ -237,27 +192,6 @@ describe('calcBuildingCost', () => {
   })
 })
 
-// ── calcRepeatableCost ──
-
-describe('calcRepeatableCost', () => {
-  it('returns baseCost at level 0', () => {
-    expect(calcRepeatableCost(2, 1.5, 0)).toBe(2)
-  })
-
-  it('scales with costScale at level 1', () => {
-    expect(calcRepeatableCost(2, 1.5, 1)).toBe(Math.floor(2 * 1.5))
-  })
-
-  it('scales exponentially at level 5', () => {
-    expect(calcRepeatableCost(2, 1.5, 5)).toBe(Math.floor(2 * Math.pow(1.5, 5)))
-  })
-
-  it('floors the result', () => {
-    // 3 * 1.2^1 = 3.6 → floor = 3
-    expect(calcRepeatableCost(3, 1.2, 1)).toBe(3)
-  })
-})
-
 // ── Game progression scenario ──
 
 describe('game progression', () => {
@@ -277,14 +211,6 @@ describe('game progression', () => {
       const output = baseOutput * calcBuildingMultiplier(owned)
       expect(output).toBe(expected[i])
     })
-  })
-
-  it('prestige influence scales logarithmically with energy', () => {
-    // Doubling energy does not double influence
-    const inf1 = calcPrestigeInfluence(1e6)
-    const inf2 = calcPrestigeInfluence(2e6)
-    expect(inf2).toBeLessThan(inf1 * 2)
-    expect(inf2).toBeGreaterThan(inf1)
   })
 })
 

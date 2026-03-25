@@ -3,7 +3,7 @@ import type { TraitStat } from '~/types/game'
 export type MegastructureState = 'locked' | 'available' | 'building' | 'awaiting_stage' | 'complete'
 
 export function useResearchActions() {
-  const { state, kardashevLevel } = useGameState()
+  const { state } = useGameState()
   const { researchTree, megastructures, repeatableResearchDefs } = useResearchConfig()
   const toast = useToast()
 
@@ -20,7 +20,6 @@ export function useResearchActions() {
     if (!def) return false
     if (isResearchComplete(techId)) return false
     if (state.value.activeResearch?.techId === techId) return false
-    if (def.unlockKardashev > kardashevLevel.value) return false
     return def.prerequisites.every(prereqId => isResearchComplete(prereqId))
   }
 
@@ -143,7 +142,8 @@ export function useResearchActions() {
     if (!active) return
 
     const speedMult = getResearchSpeedMultiplier()
-    const rpGain = rpPerSecond * dt * speedMult
+    // Sprawl slows effective RP gain (not inflate cost) so progress bar stays accurate
+    const rpGain = rpPerSecond * dt * speedMult / sprawlMult
 
     // Handle repeatable research (techId starts with 'rep:')
     if (active.techId.startsWith('rep:')) {
@@ -154,7 +154,7 @@ export function useResearchActions() {
       const totalCost = getRepeatableResearchCost(repId)
       const newRpInvested = active.rpInvested + rpGain
 
-      if (newRpInvested >= totalCost * sprawlMult) {
+      if (newRpInvested >= totalCost) {
         state.value.repeatableResearch[repId] = (state.value.repeatableResearch[repId] || 0) + 1
         state.value.activeResearch = null
         toast.success({ title: 'Research Complete!', message: `${def.name} (Lv ${state.value.repeatableResearch[repId]})` })
@@ -169,7 +169,7 @@ export function useResearchActions() {
 
     const newRpInvested = active.rpInvested + rpGain
 
-    if (newRpInvested >= def.researchCost * sprawlMult) {
+    if (newRpInvested >= def.researchCost) {
       state.value.completedResearch.push(active.techId)
       state.value.activeResearch = null
       toast.success({ title: 'Research Complete!', message: def.name })
@@ -187,7 +187,6 @@ export function useResearchActions() {
     const def = megastructures.find(m => m.id === megaId)
     if (!def) return false
     if (megaId in state.value.megastructures) return false
-    if (def.unlockKardashev > kardashevLevel.value) return false
     if (!def.requiredResearch.every(techId => isResearchComplete(techId))) return false
 
     // Omega Structure requires all other megastructures completed

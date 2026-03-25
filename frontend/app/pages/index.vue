@@ -85,16 +85,11 @@ function onSetupComplete() {
         </div>
 
         <div class="flex-1 max-w-6xl mx-auto w-full px-4 py-4 space-y-4">
-          <GameKardashevDisplay />
-
           <div v-if="activeTab === 'galaxy'">
             <GalaxyView />
           </div>
           <div v-else-if="activeTab === 'overview'">
             <GameOverviewPanel />
-          </div>
-          <div v-else-if="activeTab === 'prestige'">
-            <GamePrestigePanel />
           </div>
           <div v-else-if="activeTab === 'research'">
             <ResearchView />

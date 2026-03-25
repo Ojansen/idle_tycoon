@@ -13,19 +13,18 @@ interface MultiplierBreakdown {
   sources: MultiplierSource[]
 }
 
-const statMeta: { stat: TraitStat; label: string; icon: string; hasPrestige: boolean }[] = [
-  { stat: 'creditsMultiplier', label: 'Credits/s', icon: 'i-lucide-banknote', hasPrestige: true },
-  { stat: 'workerOutputMultiplier', label: 'Worker Output', icon: 'i-lucide-users', hasPrestige: true },
-  { stat: 'cgMultiplier', label: 'Consumer Goods/s', icon: 'i-lucide-package', hasPrestige: true },
-  { stat: 'divisionCostMultiplier', label: 'Division Costs', icon: 'i-lucide-tags', hasPrestige: true },
-  { stat: 'tradeMultiplier', label: 'Trade Capacity', icon: 'i-lucide-handshake', hasPrestige: true },
-  { stat: 'researchMultiplier', label: 'Research Output', icon: 'i-lucide-flask-conical', hasPrestige: true },
-  { stat: 'maintenanceReduction', label: 'Maintenance Costs', icon: 'i-lucide-trending-down', hasPrestige: false }
+const statMeta: { stat: TraitStat; label: string; icon: string }[] = [
+  { stat: 'creditsMultiplier', label: 'Credits/s', icon: 'i-lucide-banknote' },
+  { stat: 'workerOutputMultiplier', label: 'Worker Output', icon: 'i-lucide-users' },
+  { stat: 'cgMultiplier', label: 'Consumer Goods/s', icon: 'i-lucide-package' },
+  { stat: 'divisionCostMultiplier', label: 'Division Costs', icon: 'i-lucide-tags' },
+  { stat: 'tradeMultiplier', label: 'Trade Capacity', icon: 'i-lucide-handshake' },
+  { stat: 'researchMultiplier', label: 'Research Output', icon: 'i-lucide-flask-conical' },
+  { stat: 'maintenanceReduction', label: 'Maintenance Costs', icon: 'i-lucide-trending-down' }
 ]
 
 export function useMultiplierBreakdown() {
-  const { getPrestigeMultiplier, getTraitMultiplier, getRepeatableMultiplier } = useGameState()
-  const { getAscensionMultiplier } = useAscensionPerks()
+  const { getTraitMultiplier } = useGameState()
   const { getResearchMultiplier } = useResearchActions()
   const { getFullUpkeepReduction } = useUpkeep()
 
@@ -37,17 +36,6 @@ export function useMultiplierBreakdown() {
 
       const trait = getTraitMultiplier(meta.stat)
       if (trait !== 1) sources.push({ label: 'Traits', value: trait })
-
-      if (meta.hasPrestige) {
-        const prestige = getPrestigeMultiplier(meta.stat as 'creditsMultiplier' | 'workerOutputMultiplier' | 'divisionCostMultiplier' | 'cgMultiplier' | 'tradeMultiplier' | 'researchMultiplier')
-        if (prestige !== 1) sources.push({ label: 'Prestige', value: prestige })
-      }
-
-      const ascension = getAscensionMultiplier(meta.stat)
-      if (ascension !== 1) sources.push({ label: 'Ascension', value: ascension })
-
-      const repeatable = getRepeatableMultiplier(meta.stat)
-      if (repeatable !== 1) sources.push({ label: 'Repeatable', value: repeatable })
 
       if (meta.stat === 'maintenanceReduction') {
         // maintenanceReduction uses a custom research effect type, not the standard multiplier

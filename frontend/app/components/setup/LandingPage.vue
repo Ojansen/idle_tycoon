@@ -16,8 +16,8 @@ const emit = defineEmits<{ start: [] }>()
       <!-- Lore -->
       <p class="text-sm text-zinc-500 leading-relaxed max-w-lg mx-auto">
         Humanity has reached beyond its cradle. From a single world, civilizations now stretch across star systems.
-        Forge an empire &mdash; claim stars, colonize worlds, and ascend the Kardashev scale
-        until the galaxy bows to your dominion.
+        Forge an empire &mdash; claim stars, colonize worlds, and research your way
+        to galactic dominion.
       </p>
 
       <!-- Three pillars -->
@@ -40,8 +40,8 @@ const emit = defineEmits<{ start: [] }>()
           <div class="w-12 h-12 mx-auto rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center">
             <span class="text-violet-400 text-xl">*</span>
           </div>
-          <div class="text-xs font-semibold uppercase tracking-wider text-violet-400">Ascend</div>
-          <div class="text-[10px] text-zinc-600">Rise on the Kardashev scale</div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-violet-400">Research</div>
+          <div class="text-[10px] text-zinc-600">Unlock megastructures</div>
         </div>
       </div>
 

@@ -13,9 +13,9 @@ useHead({
 
 useSeoMeta({
   title: 'MegaCorp — Intergalactic Empire',
-  description: 'Build your intergalactic megacorporation. Click, expand, and ascend the Kardashev scale.',
+  description: 'Build your intergalactic empire. Explore, colonize, and research your way to galactic dominion.',
   ogTitle: 'MegaCorp — Intergalactic Empire',
-  ogDescription: 'Build your intergalactic megacorporation. Click, expand, and ascend the Kardashev scale.'
+  ogDescription: 'Build your intergalactic empire. Explore, colonize, and research your way to galactic dominion.'
 })
 </script>
 

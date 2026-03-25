@@ -153,13 +153,7 @@ function deleteAccount() {
             </div>
           </div>
 
-          <div class="rounded bg-zinc-900 p-3 text-xs text-zinc-400 space-y-1">
-            <div>Prestige count: {{ state.prestigeCount }}</div>
-            <div>Influence: {{ state.influence }}</div>
-            <div>Kardashev record: Type {{ state.kardashevHighWaterMark }}</div>
-          </div>
-
-          <p class="text-sm text-zinc-300">All progress, prestige upgrades, research, and achievements will be permanently lost. You will start fresh with a new account.</p>
+          <p class="text-sm text-zinc-300">All progress, research, and achievements will be permanently lost. You will start fresh with a new account.</p>
 
           <div class="flex gap-3 pt-2">
             <UButton

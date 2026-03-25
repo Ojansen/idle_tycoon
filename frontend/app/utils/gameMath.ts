@@ -12,28 +12,6 @@ export function formatNumber(n: number): string {
   return formatted + suffixes[tier]
 }
 
-// ── Prestige ──
-export function calcPrestigeInfluence(totalEnergyEarned: number): number {
-  if (totalEnergyEarned < 1e5) return 0
-  return Math.floor(Math.log2(totalEnergyEarned / 1e5) * 50)
-}
-
-// One-time Kardashev milestone influence grants (awarded when kardashevHighWaterMark increases)
-// Index = Kardashev level reached
-export const KARDASHEV_MILESTONE_GRANTS: Record<number, number> = {
-  1: 500,
-  2: 5000,
-  3: 50000,
-  4: 500000,
-  5: 2000000,
-  6: 10000000,
-}
-
-// ── Repeatable upgrade cost ──
-export function calcRepeatableCost(baseCost: number, costScale: number, level: number): number {
-  return Math.floor(baseCost * Math.pow(costScale, level))
-}
-
 // ── Building milestone multiplier ──
 export function calcBuildingMultiplier(owned: number): number {
   return Math.pow(2, Math.floor(owned / 25))

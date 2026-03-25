@@ -46,12 +46,11 @@ export function useGamePersistence() {
     // Periodic save every 30s
     const { pause } = useIntervalFn(saveGame, 30000)
 
-    // Watch for planet/division changes and prestige events, save shortly after
+    // Watch for planet/division changes, save shortly after
     watch(() => [
       (state.value.systems ?? []).filter(s => s.status === 'claimed').reduce((n, s) => n + s.planets.length, 0),
       (state.value.systems ?? []).flatMap(s => s.planets).reduce((sum, p) => sum + p.divisions.filter(d => d !== null).length, 0),
-      state.value.prestigeUpgradesBought.length,
-      state.value.prestigeCount
+      state.value.completedResearch.length
     ], () => {
       debouncedSave()
     })

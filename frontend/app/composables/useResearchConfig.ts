@@ -14,7 +14,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 6000,
     prerequisites: [],
     effects: [{ type: 'multiplier', stat: 'creditsMultiplier', value: 1.15 }],
-    unlockKardashev: 0
+
   },
   {
     id: 'ind_supply_chains',
@@ -26,7 +26,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 500,
     prerequisites: [],
     effects: [{ type: 'multiplier', stat: 'cgMultiplier', value: 1.15 }],
-    unlockKardashev: 0
+
   },
   {
     id: 'ind_logistics',
@@ -38,7 +38,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 250000,
     prerequisites: ['ind_automation'],
     effects: [{ type: 'multiplier', stat: 'creditsMultiplier', value: 1.25 }],
-    unlockKardashev: 1
+
   },
   {
     id: 'ind_mass_production',
@@ -50,7 +50,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 5e4,
     prerequisites: ['ind_supply_chains'],
     effects: [{ type: 'multiplier', stat: 'cgMultiplier', value: 1.25 }],
-    unlockKardashev: 1
+
   },
   {
     id: 'ind_nanofab',
@@ -62,7 +62,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 2500000,
     prerequisites: ['ind_logistics'],
     effects: [{ type: 'multiplier', stat: 'divisionCostMultiplier', value: 0.85 }],
-    unlockKardashev: 1
+
   },
   {
     id: 'ind_megascale',
@@ -77,7 +77,7 @@ const researchTree: ResearchDefinition[] = [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 1.2 },
       { type: 'unlockMegastructure', megastructureId: 'stellar_forge' }
     ],
-    unlockKardashev: 2
+
   },
   {
     id: 'ind_nano_assembly',
@@ -92,7 +92,7 @@ const researchTree: ResearchDefinition[] = [
       { type: 'multiplier', stat: 'cgMultiplier', value: 1.5 },
       { type: 'unlockMegastructure', megastructureId: 'universal_replicator' }
     ],
-    unlockKardashev: 3
+
   },
   {
     id: 'ind_matter_prog',
@@ -107,7 +107,7 @@ const researchTree: ResearchDefinition[] = [
       { type: 'multiplier', stat: 'divisionCostMultiplier', value: 0.75 },
       { type: 'unlockMegastructure', megastructureId: 'matrioshka_brain' }
     ],
-    unlockKardashev: 3
+
   },
   {
     id: 'ind_reality_fab',
@@ -122,7 +122,7 @@ const researchTree: ResearchDefinition[] = [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 2.0 },
       { type: 'unlockMegastructure', megastructureId: 'genesis_engine' }
     ],
-    unlockKardashev: 4
+
   },
 
   {
@@ -138,7 +138,7 @@ const researchTree: ResearchDefinition[] = [
       { type: 'multiplier', stat: 'cgMultiplier', value: 2.0 },
       { type: 'unlockMegastructure', megastructureId: 'omnifabricator' }
     ],
-    unlockKardashev: 5
+
   },
 
   // ── TRADE (Industry branch) ──
@@ -152,7 +152,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 4000,
     prerequisites: [],
     effects: [{ type: 'multiplier', stat: 'tradeMultiplier', value: 1.15 }],
-    unlockKardashev: 0
+
   },
   {
     id: 'trade_consumer_policy',
@@ -164,7 +164,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 1e5,
     prerequisites: ['trade_fundamentals'],
     effects: [{ type: 'multiplier', stat: 'tradeMultiplier', value: 1.10 }],
-    unlockKardashev: 1
+
   },
   {
     id: 'trade_energy_policy',
@@ -176,7 +176,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 1e5,
     prerequisites: ['trade_fundamentals'],
     effects: [{ type: 'multiplier', stat: 'tradeMultiplier', value: 1.10 }],
-    unlockKardashev: 1
+
   },
   {
     id: 'trade_balanced_policy',
@@ -188,7 +188,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 2e6,
     prerequisites: ['trade_consumer_policy', 'trade_energy_policy'],
     effects: [{ type: 'multiplier', stat: 'tradeMultiplier', value: 1.25 }],
-    unlockKardashev: 2
+
   },
   {
     id: 'trade_mastery',
@@ -200,7 +200,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 5e10,
     prerequisites: ['trade_balanced_policy'],
     effects: [{ type: 'multiplier', stat: 'tradeMultiplier', value: 1.50 }],
-    unlockKardashev: 3
+
   },
 
   // =============================================
@@ -216,7 +216,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 5000,
     prerequisites: [],
     effects: [{ type: 'multiplier', stat: 'creditsMultiplier', value: 1.15 }],
-    unlockKardashev: 0
+
   },
   {
     id: 'nrg_fusion_adv',
@@ -228,7 +228,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 200000,
     prerequisites: ['nrg_grid_opt'],
     effects: [{ type: 'multiplier', stat: 'creditsMultiplier', value: 1.25 }],
-    unlockKardashev: 1
+
   },
   {
     id: 'nrg_antimatter',
@@ -240,7 +240,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 2000000,
     prerequisites: ['nrg_fusion_adv'],
     effects: [{ type: 'multiplier', stat: 'creditsMultiplier', value: 1.3 }],
-    unlockKardashev: 1
+
   },
   {
     id: 'nrg_zero_point',
@@ -255,7 +255,7 @@ const researchTree: ResearchDefinition[] = [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 1.5 },
       { type: 'unlockMegastructure', megastructureId: 'dyson_brain' }
     ],
-    unlockKardashev: 2
+
   },
   {
     id: 'nrg_vacuum',
@@ -267,7 +267,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 5e20,
     prerequisites: ['nrg_zero_point'],
     effects: [{ type: 'multiplier', stat: 'creditsMultiplier', value: 1.75 }],
-    unlockKardashev: 3
+
   },
   {
     id: 'nrg_entropy_rev',
@@ -282,7 +282,7 @@ const researchTree: ResearchDefinition[] = [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 2.0 },
       { type: 'unlockMegastructure', megastructureId: 'cosmic_engine' }
     ],
-    unlockKardashev: 4
+
   },
   {
     id: 'nrg_omega',
@@ -294,7 +294,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 1.5e41,
     prerequisites: ['nrg_entropy_rev'],
     effects: [{ type: 'multiplier', stat: 'creditsMultiplier', value: 3.0 }],
-    unlockKardashev: 5
+
   },
 
   // Upkeep reduction research (energy branch)
@@ -308,7 +308,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 5e10,
     prerequisites: ['nrg_antimatter'],
     effects: [{ type: 'maintenanceReduction', value: 0.9 }],
-    unlockKardashev: 2
+
   },
   {
     id: 'nrg_efficiency_II',
@@ -320,7 +320,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 8e10,
     prerequisites: ['nrg_efficiency_I', 'nrg_zero_point'],
     effects: [{ type: 'maintenanceReduction', value: 0.85 }],
-    unlockKardashev: 2
+
   },
   {
     id: 'nrg_efficiency_III',
@@ -332,7 +332,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 5e11,
     prerequisites: ['nrg_efficiency_II'],
     effects: [{ type: 'maintenanceReduction', value: 0.8 }],
-    unlockKardashev: 2
+
   },
 
   // =============================================
@@ -348,7 +348,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 5500,
     prerequisites: [],
     effects: [{ type: 'multiplier', stat: 'workerOutputMultiplier', value: 1.25 }],
-    unlockKardashev: 0
+
   },
   {
     id: 'soc_cybernetics',
@@ -363,7 +363,7 @@ const researchTree: ResearchDefinition[] = [
       { type: 'multiplier', stat: 'workerOutputMultiplier', value: 1.3 },
       { type: 'multiplier', stat: 'creditsMultiplier', value: 1.1 }
     ],
-    unlockKardashev: 1
+
   },
   {
     id: 'soc_hive_mind',
@@ -375,7 +375,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 2200000,
     prerequisites: ['soc_cybernetics'],
     effects: [{ type: 'multiplier', stat: 'workerOutputMultiplier', value: 1.5 }],
-    unlockKardashev: 1
+
   },
   {
     id: 'soc_uplift',
@@ -390,7 +390,7 @@ const researchTree: ResearchDefinition[] = [
       { type: 'multiplier', stat: 'workerOutputMultiplier', value: 1.5 },
       { type: 'multiplier', stat: 'creditsMultiplier', value: 1.1 }
     ],
-    unlockKardashev: 2
+
   },
   {
     id: 'soc_transcend',
@@ -405,7 +405,7 @@ const researchTree: ResearchDefinition[] = [
       { type: 'multiplier', stat: 'workerOutputMultiplier', value: 2.0 },
       { type: 'multiplier', stat: 'creditsMultiplier', value: 1.25 }
     ],
-    unlockKardashev: 3
+
   },
   {
     id: 'soc_omega',
@@ -417,7 +417,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 1.1e31,
     prerequisites: ['soc_transcend'],
     effects: [{ type: 'multiplier', stat: 'workerOutputMultiplier', value: 3.0 }],
-    unlockKardashev: 4
+
   },
 
   // =============================================
@@ -436,7 +436,7 @@ const researchTree: ResearchDefinition[] = [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 1.1 },
       { type: 'multiplier', stat: 'tradeMultiplier', value: 1.1 }
     ],
-    unlockKardashev: 1
+
   },
   {
     id: 'exo_wormholes',
@@ -448,7 +448,7 @@ const researchTree: ResearchDefinition[] = [
     researchCost: 2.5e10,
     prerequisites: ['exo_xeno_arch'],
     effects: [{ type: 'researchSpeed', value: 1.25 }],
-    unlockKardashev: 2
+
   },
   {
     id: 'exo_dark_matter',
@@ -463,7 +463,7 @@ const researchTree: ResearchDefinition[] = [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 1.5 },
       { type: 'unlockMegastructure', megastructureId: 'nidavellir_forge' }
     ],
-    unlockKardashev: 2
+
   },
   {
     id: 'exo_dimension',
@@ -478,7 +478,7 @@ const researchTree: ResearchDefinition[] = [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 1.5 },
       { type: 'multiplier', stat: 'tradeMultiplier', value: 1.5 }
     ],
-    unlockKardashev: 3
+
   },
   {
     id: 'exo_time_manip',
@@ -493,7 +493,7 @@ const researchTree: ResearchDefinition[] = [
       { type: 'researchSpeed', value: 1.5 },
       { type: 'multiplier', stat: 'creditsMultiplier', value: 1.25 }
     ],
-    unlockKardashev: 4
+
   },
   {
     id: 'exo_reality',
@@ -508,7 +508,7 @@ const researchTree: ResearchDefinition[] = [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 3.0 },
       { type: 'unlockMegastructure', megastructureId: 'reality_engine' }
     ],
-    unlockKardashev: 5
+
   }
 ]
 
@@ -521,7 +521,8 @@ const megastructures: MegastructureDefinition[] = [
     stages: 3,
     creditsCostPerStage: 50e9,
     requiredResearch: ['ind_megascale'],
-    unlockKardashev: 2,
+
+
     effects: [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 1.5 },
       { type: 'multiplier', stat: 'divisionCostMultiplier', value: 0.8 }
@@ -537,7 +538,8 @@ const megastructures: MegastructureDefinition[] = [
     stages: 4,
     creditsCostPerStage: 200e9,
     requiredResearch: ['nrg_zero_point'],
-    unlockKardashev: 2,
+
+
     effects: [
       { type: 'multiplier', stat: 'workerOutputMultiplier', value: 2.0 }
     ],
@@ -552,7 +554,8 @@ const megastructures: MegastructureDefinition[] = [
     stages: 3,
     creditsCostPerStage: 10e15,
     requiredResearch: ['exo_dark_matter'],
-    unlockKardashev: 3,
+
+
     effects: [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 2.0 },
       { type: 'multiplier', stat: 'tradeMultiplier', value: 1.5 }
@@ -568,7 +571,8 @@ const megastructures: MegastructureDefinition[] = [
     stages: 5,
     creditsCostPerStage: 100e15,
     requiredResearch: ['ind_matter_prog', 'nrg_vacuum'],
-    unlockKardashev: 3,
+
+
     effects: [
       { type: 'multiplier', stat: 'workerOutputMultiplier', value: 2.0 },
       { type: 'researchSpeed', value: 2.0 }
@@ -584,7 +588,8 @@ const megastructures: MegastructureDefinition[] = [
     stages: 4,
     creditsCostPerStage: 5e24,
     requiredResearch: ['ind_reality_fab'],
-    unlockKardashev: 4,
+
+
     effects: [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 3.0 },
       { type: 'multiplier', stat: 'workerOutputMultiplier', value: 2.0 }
@@ -600,7 +605,8 @@ const megastructures: MegastructureDefinition[] = [
     stages: 5,
     creditsCostPerStage: 50e24,
     requiredResearch: ['nrg_entropy_rev', 'exo_dimension'],
-    unlockKardashev: 4,
+
+
     effects: [
       { type: 'multiplier', stat: 'tradeMultiplier', value: 2.0 },
       { type: 'multiplier', stat: 'creditsMultiplier', value: 2.0 }
@@ -616,7 +622,8 @@ const megastructures: MegastructureDefinition[] = [
     stages: 6,
     creditsCostPerStage: 1e33,
     requiredResearch: ['exo_reality'],
-    unlockKardashev: 5,
+
+
     effects: [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 5.0 },
       { type: 'multiplier', stat: 'workerOutputMultiplier', value: 3.0 }
@@ -632,7 +639,8 @@ const megastructures: MegastructureDefinition[] = [
     stages: 10,
     creditsCostPerStage: 1e36,
     requiredResearch: ['exo_reality', 'ind_reality_fab', 'nrg_omega', 'soc_omega'],
-    unlockKardashev: 5,
+
+
     effects: [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 10.0 },
       { type: 'multiplier', stat: 'workerOutputMultiplier', value: 5.0 }
@@ -648,7 +656,8 @@ const megastructures: MegastructureDefinition[] = [
     stages: 5,
     creditsCostPerStage: 1e27,
     requiredResearch: ['ind_nano_assembly'],
-    unlockKardashev: 4,
+
+
     effects: [
       { type: 'multiplier', stat: 'cgMultiplier', value: 5.0 },
       { type: 'maintenanceReduction', value: 0.7 }
@@ -664,7 +673,8 @@ const megastructures: MegastructureDefinition[] = [
     stages: 8,
     creditsCostPerStage: 1e36,
     requiredResearch: ['ind_reality_forge'],
-    unlockKardashev: 5,
+
+
     effects: [
       { type: 'multiplier', stat: 'cgMultiplier', value: 10.0 },
       { type: 'maintenanceReduction', value: 0.5 }
@@ -680,7 +690,8 @@ const megastructures: MegastructureDefinition[] = [
     stages: 8,
     creditsCostPerStage: 5e39,
     requiredResearch: ['ind_reality_fab'],
-    unlockKardashev: 6,
+
+
     effects: [
       { type: 'multiplier', stat: 'creditsMultiplier', value: 3.0 },
       { type: 'multiplier', stat: 'cgMultiplier', value: 2.0 },
@@ -697,7 +708,8 @@ const megastructures: MegastructureDefinition[] = [
     stages: 10,
     creditsCostPerStage: 1e42,
     requiredResearch: ['exo_reality'],
-    unlockKardashev: 6,
+
+
     effects: [
       { type: 'researchSpeed', value: 3.0 },
       { type: 'multiplier', stat: 'creditsMultiplier', value: 2.0 },

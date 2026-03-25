@@ -2,15 +2,12 @@
 const { state } = useGameState()
 
 const activeTab = defineModel<string>('tab', { default: 'galaxy' })
-const { pendingAscensionLevels } = useAscensionPerks()
-const hasPendingPerks = computed(() => pendingAscensionLevels.value.length > 0)
 
 const mobileMenuOpen = ref(false)
 
 const tabs = [
   { key: 'galaxy', label: 'Galaxy', icon: 'i-lucide-orbit' },
   { key: 'overview', label: 'Overview', icon: 'i-lucide-gauge' },
-  { key: 'prestige', label: 'Prestige', icon: 'i-lucide-star' },
   { key: 'research', label: 'Research', icon: 'i-lucide-flask-conical' },
   { key: 'trade', label: 'Trade', icon: 'i-lucide-handshake' },
   { key: 'stats', label: 'Stats', icon: 'i-lucide-bar-chart-3' },
@@ -52,11 +49,7 @@ function selectTab(key: string) {
           :variant="activeTab === tab.key ? 'solid' : 'ghost'"
           @click="activeTab = tab.key"
         >
-          <span v-if="tab.key === 'prestige'" class="relative">
-            <UIcon :name="tab.icon" class="mr-1" />
-            <span v-if="hasPendingPerks" class="absolute -top-1 -right-1 w-2 h-2 bg-violet-500 rounded-full animate-pulse" />
-          </span>
-          <UIcon v-else :name="tab.icon" class="mr-1" />
+          <UIcon :name="tab.icon" class="mr-1" />
           {{ tab.label }}
         </UButton>
       </div>
@@ -96,22 +89,10 @@ function selectTab(key: string) {
             class="justify-start"
             @click="selectTab(tab.key)"
           >
-            <span v-if="tab.key === 'prestige'" class="relative">
-              <UIcon :name="tab.icon" class="mr-2" />
-              <span v-if="hasPendingPerks" class="absolute -top-1 -right-1 w-2 h-2 bg-violet-500 rounded-full animate-pulse" />
-            </span>
-            <UIcon v-else :name="tab.icon" class="mr-2" />
+            <UIcon :name="tab.icon" class="mr-2" />
             {{ tab.label }}
           </UButton>
         </nav>
-
-        <!-- Stats at bottom -->
-        <div v-if="state.prestigeCount > 0" class="mt-auto pt-6 border-t border-white/10 text-sm text-zinc-400">
-          <div>
-            <UIcon name="i-lucide-star" class="text-amber-400 align-middle" />
-            {{ state.influence }} Influence
-          </div>
-        </div>
       </div>
     </template>
   </USlideover>

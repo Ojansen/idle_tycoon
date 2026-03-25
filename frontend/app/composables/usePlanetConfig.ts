@@ -112,35 +112,35 @@ const divisions: DivisionDefinition[] = [
   },
 ]
 
-// ── Planet Definitions (per Kardashev tier) ──
+// ── Planet Definitions (gated by research) ──
 
 const planets: PlanetDefinition[] = [
-  // Type 0: Homeworld (free, given at start)
-  { id: 'homeworld', name: 'Terra Nova', type: 'garden', size: 'medium', traits: [], unlockKardashev: 0, colonyCost: 0, maintenanceCost: 0 },
+  // Tier 0: Homeworld (free, given at start)
+  { id: 'homeworld', name: 'Terra Nova', type: 'garden', size: 'medium', traits: [], requiredResearch: [], colonyCost: 0, maintenanceCost: 0 },
 
-  // Type I: +2 planets (3 total)
-  { id: 'vulcan_prime', name: 'Vulcan Prime', type: 'volcanic', size: 'medium', traits: ['mineral_rich'], unlockKardashev: 1, colonyCost: 1e5, maintenanceCost: 50 },
-  { id: 'oceanus', name: 'Oceanus', type: 'ocean', size: 'small', traits: ['trade_hub'], unlockKardashev: 1, colonyCost: 1.5e5, maintenanceCost: 60 },
+  // Tier 1: Early expansion (no research required — just need credits)
+  { id: 'vulcan_prime', name: 'Vulcan Prime', type: 'volcanic', size: 'medium', traits: ['mineral_rich'], requiredResearch: [], colonyCost: 1e5, maintenanceCost: 50 },
+  { id: 'oceanus', name: 'Oceanus', type: 'ocean', size: 'small', traits: ['trade_hub'], requiredResearch: [], colonyCost: 1.5e5, maintenanceCost: 60 },
 
-  // Type II: +3 planets (6 total)
-  { id: 'thermia', name: 'Thermia', type: 'desert', size: 'large', traits: ['mineral_rich'], unlockKardashev: 2, colonyCost: 1e9, maintenanceCost: 5e4 },
-  { id: 'cryos', name: 'Cryos Station', type: 'ice', size: 'medium', traits: ['low_gravity'], unlockKardashev: 2, colonyCost: 8e8, maintenanceCost: 3e4 },
-  { id: 'kronos', name: 'Kronos', type: 'volcanic', size: 'large', traits: ['industrial_deposits'], unlockKardashev: 2, colonyCost: 1.5e9, maintenanceCost: 7e4 },
+  // Tier 2: Requires interstellar logistics
+  { id: 'thermia', name: 'Thermia', type: 'desert', size: 'large', traits: ['mineral_rich'], requiredResearch: ['ind_logistics'], colonyCost: 1e9, maintenanceCost: 5e4 },
+  { id: 'cryos', name: 'Cryos Station', type: 'ice', size: 'medium', traits: ['low_gravity'], requiredResearch: ['ind_logistics'], colonyCost: 8e8, maintenanceCost: 3e4 },
+  { id: 'kronos', name: 'Kronos', type: 'volcanic', size: 'large', traits: ['industrial_deposits'], requiredResearch: ['ind_logistics'], colonyCost: 1.5e9, maintenanceCost: 7e4 },
 
-  // Type III: +4 planets (10 total)
-  { id: 'eden', name: 'New Eden', type: 'garden', size: 'large', traits: ['lush_biosphere'], unlockKardashev: 3, colonyCost: 1e15, maintenanceCost: 5e10 },
-  { id: 'tartarus', name: 'Tartarus', type: 'barren', size: 'large', traits: ['mineral_rich', 'hostile_atmosphere'], unlockKardashev: 3, colonyCost: 5e14, maintenanceCost: 2e10 },
-  { id: 'nexus', name: 'Nexus Prime', type: 'ocean', size: 'medium', traits: ['trade_hub', 'ancient_ruins'], unlockKardashev: 3, colonyCost: 1.5e15, maintenanceCost: 8e10 },
-  { id: 'inferno', name: 'Inferno', type: 'volcanic', size: 'medium', traits: ['extreme_weather', 'mineral_rich'], unlockKardashev: 3, colonyCost: 8e14, maintenanceCost: 4e10 },
+  // Tier 3: Requires nanofabrication
+  { id: 'eden', name: 'New Eden', type: 'garden', size: 'large', traits: ['lush_biosphere'], requiredResearch: ['ind_nanofab'], colonyCost: 1e15, maintenanceCost: 5e10 },
+  { id: 'tartarus', name: 'Tartarus', type: 'barren', size: 'large', traits: ['mineral_rich', 'hostile_atmosphere'], requiredResearch: ['ind_nanofab'], colonyCost: 5e14, maintenanceCost: 2e10 },
+  { id: 'nexus', name: 'Nexus Prime', type: 'ocean', size: 'medium', traits: ['trade_hub', 'ancient_ruins'], requiredResearch: ['exo_dark_matter'], colonyCost: 1.5e15, maintenanceCost: 8e10 },
+  { id: 'inferno', name: 'Inferno', type: 'volcanic', size: 'medium', traits: ['extreme_weather', 'mineral_rich'], requiredResearch: ['ind_nanofab'], colonyCost: 8e14, maintenanceCost: 4e10 },
 
-  // Type IV: +3 planets (13 total)
-  { id: 'elysium', name: 'Elysium', type: 'gaia', size: 'large', traits: ['lush_biosphere'], unlockKardashev: 4, colonyCost: 1e24, maintenanceCost: 5e19 },
-  { id: 'void_terminus', name: 'Void Terminus', type: 'barren', size: 'large', traits: ['ancient_ruins', 'low_gravity'], unlockKardashev: 4, colonyCost: 5e23, maintenanceCost: 2e19 },
-  { id: 'aurora', name: 'Aurora', type: 'ice', size: 'large', traits: ['industrial_deposits', 'trade_hub'], unlockKardashev: 4, colonyCost: 8e23, maintenanceCost: 3e19 },
+  // Tier 4: Requires programmable matter / dimensional physics
+  { id: 'elysium', name: 'Elysium', type: 'gaia', size: 'large', traits: ['lush_biosphere'], requiredResearch: ['ind_matter_prog'], colonyCost: 1e24, maintenanceCost: 5e19 },
+  { id: 'void_terminus', name: 'Void Terminus', type: 'barren', size: 'large', traits: ['ancient_ruins', 'low_gravity'], requiredResearch: ['exo_dimension'], colonyCost: 5e23, maintenanceCost: 2e19 },
+  { id: 'aurora', name: 'Aurora', type: 'ice', size: 'large', traits: ['industrial_deposits', 'trade_hub'], requiredResearch: ['ind_matter_prog'], colonyCost: 8e23, maintenanceCost: 3e19 },
 
-  // Type V: +2 planets (15 total)
-  { id: 'genesis', name: 'Genesis', type: 'gaia', size: 'large', traits: ['lush_biosphere', 'trade_hub'], unlockKardashev: 5, colonyCost: 1e33, maintenanceCost: 5e28 },
-  { id: 'convergence', name: 'The Convergence', type: 'ocean', size: 'large', traits: ['ancient_ruins', 'mineral_rich'], unlockKardashev: 5, colonyCost: 5e33, maintenanceCost: 2e29 },
+  // Tier 5: Requires reality fabrication
+  { id: 'genesis', name: 'Genesis', type: 'gaia', size: 'large', traits: ['lush_biosphere', 'trade_hub'], requiredResearch: ['ind_reality_fab'], colonyCost: 1e33, maintenanceCost: 5e28 },
+  { id: 'convergence', name: 'The Convergence', type: 'ocean', size: 'large', traits: ['ancient_ruins', 'mineral_rich'], requiredResearch: ['exo_reality'], colonyCost: 5e33, maintenanceCost: 2e29 },
 ]
 
 // ── Reassignment cost (₢ to change a division's type) ──

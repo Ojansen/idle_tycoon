@@ -51,20 +51,6 @@ const achievements: AchievementDefinition[] = [
     check: (s) => s.systems.some(sys => sys.planets.some(p => p.divisions.length > 0 && p.divisions.every(d => d !== null)))
   },
 
-  // Kardashev
-  { id: 'type_1', name: 'Planetary Civilization', description: 'Reach Type I', icon: 'i-lucide-globe', category: 'Kardashev', check: s => s.kardashevHighWaterMark >= 1 },
-  { id: 'type_2', name: 'Stellar Civilization', description: 'Reach Type II', icon: 'i-lucide-sun', category: 'Kardashev', check: s => s.kardashevHighWaterMark >= 2 },
-  { id: 'type_3', name: 'Galactic Civilization', description: 'Reach Type III', icon: 'i-lucide-orbit', category: 'Kardashev', check: s => s.kardashevHighWaterMark >= 3 },
-  { id: 'type_4', name: 'Universal Civilization', description: 'Reach Type IV', icon: 'i-lucide-atom', category: 'Kardashev', check: s => s.kardashevHighWaterMark >= 4 },
-  { id: 'type_5', name: 'Multiversal Civilization', description: 'Reach Type V', icon: 'i-lucide-infinity', category: 'Kardashev', check: s => s.kardashevHighWaterMark >= 5 },
-
-  // Prestige
-  { id: 'first_prestige', name: 'Fresh Start', description: 'Prestige for the first time', icon: 'i-lucide-refresh-cw', category: 'Prestige', check: s => s.prestigeCount >= 1 },
-  { id: 'prestige_5', name: 'Serial Restructurer', description: 'Prestige 5 times', icon: 'i-lucide-refresh-cw', category: 'Prestige', check: s => s.prestigeCount >= 5 },
-  { id: 'prestige_10', name: 'Serial Resetter', description: 'Prestige 10 times', icon: 'i-lucide-refresh-cw', category: 'Prestige', check: s => s.prestigeCount >= 10 },
-  { id: 'prestige_25', name: 'Prestige Addict', description: 'Prestige 25 times', icon: 'i-lucide-refresh-cw', category: 'Prestige', check: s => s.prestigeCount >= 25 },
-  { id: 'prestige_50', name: 'Eternal Return', description: 'Prestige 50 times', icon: 'i-lucide-refresh-cw', category: 'Prestige', check: s => s.prestigeCount >= 50 },
-
   // Research
   { id: 'research_all', name: 'Omniscient', description: 'Complete all research', icon: 'i-lucide-flask-conical', category: 'Research', check: s => s.completedResearch.length >= 28 },
 
@@ -89,18 +75,6 @@ const achievements: AchievementDefinition[] = [
     }
   },
 
-  // Prestige completion
-  {
-    id: 'all_prestige_bought',
-    name: 'Prestige Complete',
-    description: 'Buy all one-time prestige upgrades',
-    icon: 'i-lucide-star',
-    category: 'Prestige',
-    check: (s) => s.prestigeUpgradesBought.length >= 16
-  },
-
-  // Influence milestone
-  { id: 'influence_10k', name: 'Influential', description: 'Accumulate 10K total influence', icon: 'i-lucide-star', category: 'Prestige', check: s => s.influence >= 10000 }
 ]
 
 export function useAchievements() {

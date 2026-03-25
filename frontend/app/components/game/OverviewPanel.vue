@@ -155,7 +155,7 @@ const growthCategories = {
       <div class="text-sm text-zinc-400">
         <span v-if="upkeepReduction > 0" class="text-green-400">-{{ upkeepReduction }}%</span>
         <span v-else class="text-zinc-500">No reductions active</span>
-        <span class="text-zinc-600 ml-2">from research & prestige upgrades</span>
+        <span class="text-zinc-600 ml-2">from research</span>
       </div>
     </div>
 

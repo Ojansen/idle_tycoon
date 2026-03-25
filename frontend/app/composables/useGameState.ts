@@ -1,5 +1,4 @@
 import type { GameState, TraitStat, TradePolicy } from '~/types/game'
-import { KARDASHEV_MILESTONE_GRANTS } from '~/utils/gameMath'
 import { createGalaxy } from '~/composables/useGalaxyGenSystem'
 
 function createDefaultState(): GameState {
@@ -13,14 +12,8 @@ function createDefaultState(): GameState {
     credits: 0,
     totalCreditsEarned: 0,
     researchPoints: 0,
-    influence: 0,
     systems: createGalaxy(now % 2147483647), // seed from timestamp, capped to 32-bit
     lastDiscoveryTime: now,
-    prestigeCount: 0,
-    prestigeUpgradesBought: [],
-    prestigeRepeatables: {},
-    kardashevHighWaterMark: 0,
-    ascensionPerks: [],
     achievements: [],
     completedResearch: [],
     activeResearch: null,
@@ -38,30 +31,6 @@ function createDefaultState(): GameState {
 
 export function useGameState() {
   const state = useState<GameState>('gameState', createDefaultState)
-  const { kardashevLevels, prestigeUpgrades, repeatablePrestigeUpgrades } = useGameConfig()
-
-  function getPrestigeMultiplier(type: 'creditsMultiplier' | 'workerOutputMultiplier' | 'cgMultiplier' | 'tradeMultiplier' | 'popGrowthMultiplier' | 'divisionCostMultiplier' | 'maintenanceReduction' | 'researchMultiplier'): number {
-    let multiplier = 1
-    for (const upgradeId of state.value.prestigeUpgradesBought) {
-      const upgrade = prestigeUpgrades.find(u => u.id === upgradeId)
-      if (upgrade && upgrade.effect.type === type) {
-        multiplier *= upgrade.effect.value
-      }
-    }
-    return multiplier
-  }
-
-  function getRepeatableMultiplier(stat: TraitStat): number {
-    let multiplier = 1
-    for (const upgrade of repeatablePrestigeUpgrades) {
-      if (upgrade.effect.type !== stat) continue
-      const level = state.value.prestigeRepeatables[upgrade.id] || 0
-      if (level > 0) {
-        multiplier *= Math.pow(upgrade.effect.valuePerLevel, level)
-      }
-    }
-    return multiplier
-  }
 
   function getTraitMultiplier(stat: TraitStat): number {
     const { traits } = useTraits()
@@ -73,11 +42,6 @@ export function useGameState() {
       if (trait.malus.stat === stat) multiplier *= trait.malus.value
     }
     return multiplier
-  }
-
-  function getAscensionMultiplier(stat: TraitStat): number {
-    const { getAscensionMultiplier: getAscMult } = useAscensionPerks()
-    return getAscMult(stat)
   }
 
   function getResearchMult(stat: TraitStat): number {
@@ -94,21 +58,6 @@ export function useGameState() {
   const cgPerSecond: ComputedRef<number> = computed(() => {
     const { grossCgPerSecond } = usePlanets()
     return grossCgPerSecond.value
-  })
-
-  // Kardashev now tracks gross ₢/s production rate
-  const kardashevLevel = computed(() => {
-    const cps = creditsPerSecond.value
-    let level = 0
-    for (const k of kardashevLevels) {
-      if (cps >= k.creditsPerSecond) level = k.level
-    }
-    return level
-  })
-
-  const nextKardashevLevel = computed(() => {
-    const current = kardashevLevel.value
-    return kardashevLevels.find(k => k.level === current + 1) ?? null
   })
 
   function tick() {
@@ -138,14 +87,6 @@ export function useGameState() {
     const { tickResearch, tickMegastructures } = useResearchActions()
     tickResearch(dt, grossRpPerSecond.value + totalStarRp.value, sprawlPenalty.value)
     tickMegastructures(dt)
-
-    if (kardashevLevel.value > state.value.kardashevHighWaterMark) {
-      for (let lvl = state.value.kardashevHighWaterMark + 1; lvl <= kardashevLevel.value; lvl++) {
-        const grant = KARDASHEV_MILESTONE_GRANTS[lvl]
-        if (grant) state.value.influence += grant
-      }
-      state.value.kardashevHighWaterMark = kardashevLevel.value
-    }
   }
 
   function loadState(saved: GameState) {
@@ -157,11 +98,6 @@ export function useGameState() {
       fresh.companyName = saved.companyName ?? ''
       fresh.companyDescription = saved.companyDescription ?? ''
       fresh.companyTraits = saved.companyTraits ?? []
-      fresh.influence = saved.influence ?? 0
-      fresh.prestigeCount = saved.prestigeCount ?? 0
-      fresh.prestigeUpgradesBought = saved.prestigeUpgradesBought ?? []
-      fresh.prestigeRepeatables = saved.prestigeRepeatables ?? {}
-      fresh.kardashevHighWaterMark = saved.kardashevHighWaterMark ?? 0
       fresh.achievements = saved.achievements ?? []
       fresh.totalPlayTime = saved.totalPlayTime ?? 0
       fresh.createdAt = saved.createdAt ?? Date.now()
@@ -174,14 +110,11 @@ export function useGameState() {
     saved.systems ??= createGalaxy(Date.now())
     saved.lastDiscoveryTime ??= Date.now()
     saved.researchPoints ??= 0
-    saved.prestigeUpgradesBought ??= []
-    saved.prestigeRepeatables ??= {}
     saved.setupComplete ??= false
     saved.companyName ??= ''
     saved.companyDescription ??= ''
     saved.companyTraits ??= []
     saved.homeworldType ??= 'garden'
-    saved.ascensionPerks ??= []
     saved.achievements ??= []
     saved.completedResearch ??= []
     saved.activeResearch ??= null
@@ -199,11 +132,7 @@ export function useGameState() {
     state,
     creditsPerSecond,
     cgPerSecond,
-    kardashevLevel,
-    nextKardashevLevel,
-    getPrestigeMultiplier,
     getTraitMultiplier,
-    getRepeatableMultiplier,
     getResearchMult,
     tick,
     loadState
