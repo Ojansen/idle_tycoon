@@ -14,7 +14,7 @@ function createDefaultState(): GameState {
     totalCreditsEarned: 0,
     researchPoints: 0,
     influence: 0,
-    systems: createGalaxy(now), // seed from timestamp — unique galaxy per game
+    systems: createGalaxy(now % 2147483647), // seed from timestamp, capped to 32-bit
     lastDiscoveryTime: now,
     prestigeCount: 0,
     prestigeUpgradesBought: [],
