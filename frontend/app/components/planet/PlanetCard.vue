@@ -232,20 +232,24 @@ const sizeLabel = computed(() => {
               </span>
             </div>
             <div class="flex items-center gap-1">
-              <button
-                class="text-[11px] px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-zinc-300 disabled:opacity-30"
+              <UButton
+                size="xs"
+                color="neutral"
+                variant="soft"
                 :disabled="!canUpgradeDivision(systemIndex, planetIndex, i)"
                 @click="upgradeDivision(systemIndex, planetIndex, i)"
               >
                 ₢{{ formatNumber(getDivisionUpgradeCost(systemIndex, planetIndex, i)) }}
-              </button>
-              <button
-                class="text-[11px] px-1.5 py-0.5 rounded text-zinc-500 hover:text-red-400 hover:bg-red-500/10"
+              </UButton>
+              <UButton
+                size="xs"
+                color="error"
+                variant="ghost"
                 @click="downgradeDivision(systemIndex, planetIndex, i)"
                 title="Downgrade (removes at Lv.1)"
               >
-                &#x25BC;
-              </button>
+                <UIcon name="i-lucide-chevron-down" />
+              </UButton>
             </div>
           </div>
         </div>
