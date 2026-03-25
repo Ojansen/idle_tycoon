@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const { state } = useGameState()
-const { claimedSystems, surveyedSystems, undiscoveredSystems, canStartSurvey, startSurvey, canClaimSystem, claimSystem } = useGalaxyActions()
+const { claimedSystems, surveyedSystems, undiscoveredSystems, canStartSurvey, startSurvey, canClaimSystem, claimSystem, canColonizePlanet, colonizePlanet } = useGalaxyActions()
 const { totalStarCredits, totalStarCg, totalSystemMaintenance, claimedSystemCount, totalStarCount, allPlanets, frontierIds } = useGalaxy()
 const { getStarType } = useGalaxyConfig()
 const { formatNumber } = useNumberFormat()
@@ -122,7 +122,16 @@ function doClaim() {
               <span class="text-[10px] text-zinc-600">{{ slot.type }} · {{ slot.size }}</span>
             </div>
             <span v-if="slot.colonized" class="text-emerald-400 text-[10px]">Colonized</span>
-            <span v-else class="text-zinc-500 text-[10px]">₢{{ formatNumber(slot.colonyCost) }}</span>
+            <button v-else
+              class="text-[10px] px-2 py-0.5 rounded transition-colors"
+              :class="selectedSystemIndex !== null && canColonizePlanet(selectedSystemIndex, selectedSystem!.planetSlots.indexOf(slot))
+                ? 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
+                : 'bg-zinc-800 text-zinc-600'"
+              :disabled="selectedSystemIndex === null || !canColonizePlanet(selectedSystemIndex, selectedSystem!.planetSlots.indexOf(slot))"
+              @click="selectedSystemIndex !== null && colonizePlanet(selectedSystemIndex, selectedSystem!.planetSlots.indexOf(slot))"
+            >
+              Colonize ₢{{ formatNumber(slot.colonyCost) }}
+            </button>
           </div>
         </div>
         <div v-else class="text-[10px] text-zinc-600">No planets in this system</div>
