@@ -24,9 +24,9 @@ function getSystemColor(sys: { id: string; status: string }): string {
 }
 
 function getSystemRadius(sys: { status: string }): number {
-  if (sys.status === 'claimed') return 6
-  if (sys.status === 'surveyed') return 5
-  return 3
+  if (sys.status === 'claimed') return 12
+  if (sys.status === 'surveyed') return 10
+  return 7
 }
 
 function getSystemOpacity(sys: { id: string; status: string }): number {
