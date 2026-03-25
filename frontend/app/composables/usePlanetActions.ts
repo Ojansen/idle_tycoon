@@ -118,13 +118,19 @@ export function usePlanetActions() {
     return state.value.credits >= getDivisionUpgradeCost(systemIndex, planetIndex, slotIndex)
   }
 
-  // ── Demolish a division ──
+  // ── Downgrade a division (level - 1, removes at level 0) ──
 
-  function demolishDivision(systemIndex: number, planetIndex: number, slotIndex: number): boolean {
+  function downgradeDivision(systemIndex: number, planetIndex: number, slotIndex: number): boolean {
     const planet = getPlanet(systemIndex, planetIndex)
     if (!planet) return false
-    if (!planet.divisions[slotIndex]) return false // already empty
-    planet.divisions[slotIndex] = null
+    const div = planet.divisions[slotIndex]
+    if (!div) return false
+    if (div.level <= 1) {
+      // Level 1 → remove entirely
+      planet.divisions[slotIndex] = null
+    } else {
+      div.level--
+    }
     return true
   }
 
@@ -218,7 +224,7 @@ export function usePlanetActions() {
     upgradeDivision,
     canUpgradeDivision,
     getDivisionUpgradeCost,
-    demolishDivision,
+    downgradeDivision,
     setPlanetPolicy,
     transferPops,
     canTransferPops,

@@ -6,7 +6,7 @@ const props = defineProps<{ systemIndex: number; planetIndex: number }>()
 const { state } = useGameState()
 const { getPlanetDef, getPlanetType, getPlanetSize, getPlanetTrait, getDivision } = usePlanetConfig()
 const { getPlanetHousingCap, getPlanetProduction, getPlanetJobStats } = usePlanets()
-const { setPlanetPolicy, upgradeDivision, getDivisionUpgradeCost, canUpgradeDivision, assignDivision, getAssignCost, demolishDivision } = usePlanetActions()
+const { setPlanetPolicy, upgradeDivision, getDivisionUpgradeCost, canUpgradeDivision, assignDivision, getAssignCost, downgradeDivision } = usePlanetActions()
 const { formatNumber } = useNumberFormat()
 
 const planet = computed(() => state.value.systems[props.systemIndex]?.planets[props.planetIndex])
@@ -240,10 +240,11 @@ const sizeLabel = computed(() => {
                 ₢{{ formatNumber(getDivisionUpgradeCost(systemIndex, planetIndex, i)) }}
               </button>
               <button
-                class="text-[10px] px-1.5 py-0.5 rounded text-red-400/60 hover:text-red-400 hover:bg-red-500/10"
-                @click="demolishDivision(systemIndex, planetIndex, i)"
+                class="text-[10px] px-1.5 py-0.5 rounded text-zinc-500 hover:text-red-400 hover:bg-red-500/10"
+                @click="downgradeDivision(systemIndex, planetIndex, i)"
+                title="Downgrade (removes at Lv.1)"
               >
-                x
+                -
               </button>
             </div>
           </div>
