@@ -45,7 +45,7 @@ const policies: { id: PlanetPolicy; label: string }[] = [
   { id: 'prioritize_trade', label: 'Trade' },
 ]
 
-const divisionTypes = ['mining', 'industrial', 'commerce', 'administrative'] as const
+const divisionTypes = ['mining', 'industrial', 'commerce', 'administrative', 'research'] as const
 
 const borderMap: Record<string, string> = {
   emerald: 'border-emerald-500/30',
